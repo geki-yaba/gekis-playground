@@ -12,6 +12,15 @@ inherit boost
 
 EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install
 
+DESCRIPTION="boost.org tools"
+HOMEPAGE="http://www.boost.org/"
+SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
+	http://gekis-playground.googlecode.com/files/gentoo-boost.tar.bz2"
+
+LICENSE="Boost-1.0"
+SLOT="$(get_version_component_range 1-2)"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
+
 boost-tools_pkg_setup() {
 	boost_pkg_setup
 }
