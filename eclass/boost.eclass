@@ -11,13 +11,20 @@ inherit check-reqs flag-o-matic multilib python toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install
 
+LICENSE="Boost-1.0"
 SLOT="$(get_version_component_range 1-2)"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 
 MAJOR_PV=$(replace_all_version_separators _ ${SLOT})
 BJAM="bjam-${MAJOR_PV}"
 
 BOOST_LIB="${PN/boost-}"
 BOOST_P="boost_$(replace_all_version_separators _)"
+
+DESCRIPTION="boost.org ${BOOST_LIB} libraries for C++"
+HOMEPAGE="http://www.boost.org/"
+SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
+	http://gekis-playground.googlecode.com/files/gentoo-boost.tar.bz2"
 
 IUSE="debug doc static test"
 
@@ -104,10 +111,9 @@ boost_src_unpack() {
 }
 
 boost_src_prepare() {
-	epatch "${FILESDIR}/remove-toolset-1.42.0.patch"
-
-	# skip header install
-	epatch "${FILESDIR}/skip-headers.diff"
+	EPATCH_SUFFIX="diff" \
+	EPATCH_FORCE="yes" \
+	epatch "${WORKDIR}/patches"
 }
 
 boost_src_configure() {
@@ -162,7 +168,7 @@ __EOF__
 	# Please take a look at the boost-build ebuild
 	# for more infomration.
 
-	options="${OPTIONAL_OPTIONS}"
+	options="${BOOST_OPTIONAL_OPTIONS}"
 	if [ ${CATEGORY} == dev-libs ] ; then
 		options+=" --with-${BOOST_LIB}"
 	fi

@@ -12,9 +12,11 @@ MAJOR_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))
 DESCRIPTION="A system for large project software construction, which is simple to use and powerful."
 HOMEPAGE="http://www.boost.org/doc/tools/build/index.html"
 SRC_URI="mirror://sourceforge/boost/boost_${MY_PV}.tar.bz2"
+
 LICENSE="Boost-1.0"
 SLOT="$(get_version_component_range 1-2)"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86"
+
 IUSE="examples python"
 
 DEPEND="!<dev-libs/boost-1.34.0
