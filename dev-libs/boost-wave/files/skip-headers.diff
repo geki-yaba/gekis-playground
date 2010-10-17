@@ -1,0 +1,11 @@
+--- Jamroot.orig	2010-03-13 15:41:52.000000000 +0100
++++ Jamroot	2010-03-13 16:38:34.000000000 +0100
+@@ -679,7 +679,7 @@
+ rule boost-install ( libraries * )
+ {
+     package.install install
+-        : <dependency>/boost//install-proper-headers $(install-requirements)
++        : $(install-requirements)
+         : # No binaries
+         : $(libraries)
+         : # No headers, it is handled by the dependency.
