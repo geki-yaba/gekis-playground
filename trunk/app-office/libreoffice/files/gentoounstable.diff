@@ -1,0 +1,38 @@
+--- configure.in	2006-01-27 01:25:47.000000000 +0100
++++ configure.in	2006-01-31 23:30:57.000000000 +0100
+@@ -1615,6 +1615,7 @@
+ distro-configs/NovellWin32Eval.conf
+ distro-configs/NovellWin32ISO.conf
+ distro-configs/Gentoo.conf
++distro-configs/GentooUnstable.conf
+ distro-configs/Frugalware.conf
+ distro-configs/openmamba.conf
+ distro-configs/translate-org-za-linux.conf
+--- distro-configs/Common.conf.in	2006-06-15 20:03:35.000000000 +0200
++++ distro-configs/Common.conf.in	2006-06-15 20:05:11.000000000 +0200
+@@ -1,5 +1,3 @@
+---disable-binfilter
+---disable-crashdump
+ --with-lang=\"@OOO_LANGS@\"
+ --with-use-shell=bash
+ --without-gpc
+--- distro-configs/CommonLinux.conf.in	2006-11-04 23:51:23.000000000 +0100
++++ distro-configs/CommonLinux.conf.in	2006-11-04 23:51:43.000000000 +0100
+@@ -1,17 +1,12 @@
+ --disable-epm
+---with-openldap
+ --with-build-version=\"libreoffice-build @OOO_BUILDVERSION@\"
+ --without-fonts
+ --with-system-jpeg
+ --with-system-libxml
+---with-system-mozilla
+---with-system-openssl
+ --with-system-python
+ --with-system-stdlibs
+ --with-system-zlib
+ --with-system-poppler
+ --with-unix-wrapper=ooffice@OOO_BINSUFFIX@
+---enable-evolution2
+---enable-dbus
+ --with-alloc=system
+ @CAIRO_CONFIGURE_FLAG@

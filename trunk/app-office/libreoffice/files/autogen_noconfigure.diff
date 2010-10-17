@@ -1,0 +1,12 @@
+--- bin/build-ooo.orig	2010-10-03 14:32:26.532418545 +0200
++++ bin/build-ooo	2010-10-03 14:38:46.856418157 +0200
+@@ -49,7 +49,8 @@
+ echo "Log Env for configure to `pwd`/env.log"
+ set > env.log
+ 
+-eval ./autogen.sh "$CONFIGURE_OPTIONS" "$PROPAGATED_ARGS" || exit 1;
++NOCONFIGURE=1 eval ./autogen.sh "$CONFIGURE_OPTIONS" "$PROPAGATED_ARGS" || exit 1;
++eval ./configure "$CONFIGURE_OPTIONS" "$PROPAGATED_ARGS" || exit 1;
+ 
+ # Final build preparation
+ 

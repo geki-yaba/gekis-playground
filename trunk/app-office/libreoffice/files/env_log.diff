@@ -1,0 +1,25 @@
+--- bin/build-ooo.orig	2008-09-26 17:00:53.000000000 +0200
++++ bin/build-ooo	2008-09-26 17:02:11.000000000 +0200
+@@ -37,9 +37,8 @@
+ echo "configuring ...";
+ autoconf || exit 1;
+ 
+-echo "Env for configure:"
+-set
+-echo "Env for configure ends"
++echo "Log Env for configure to `pwd`/env.log"
++set > env.log
+ 
+ eval ./configure "$CONFIGURE_OPTIONS" "$PROPAGATED_ARGS" || exit 1;
+ 
+@@ -123,8 +122,8 @@
+ # similar that gives child nmake's pain.
+ unset MAKEFLAGS
+ 
+-echo "Env:"
+-set
++echo "Log Env to `pwd`/env.log"
++set > env.log
+ 
+ if test "z$BUILD_WIN32" != "z"; then
+     mkdir -p $OOBUILDDIR/external/msvcp90

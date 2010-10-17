@@ -1,0 +1,10 @@
+--- download_external_sources.sh	2010-07-13 14:11:43.299576221 +0200
++++ download_external_sources.sh	2010-07-13 14:12:21.507575775 +0200
+@@ -10,6 +10,7 @@
+     cd $tmp
+     wget http://cgit.freedesktop.org/libreoffice/bootstrap/plain/fetch_tarballs.sh?id=$GIT_TAG -O fetch_tarballs.sh && chmod 755 fetch_tarballs.sh
+     wget http://cgit.freedesktop.org/libreoffice/bootstrap/plain/ooo.lst?id=$GIT_TAG -O ooo.lst
++    sed -e /boost/d -e /seamonkey/d -e /Python/d -e /icu4c/d -e /vigra/d -i ooo.lst
+     ./fetch_tarballs.sh ooo.lst &&  rm -f fetch_tarballs.sh ooo.lst
+     cd ..
+     rmdir $tmp
