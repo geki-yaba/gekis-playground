@@ -56,6 +56,26 @@ SAL_USE_VCLPLUGIN - 'gen', 'gtk' or 'kde4'
 
 === Good to know about ... ===
 
+<u>hack source</u>
+
+ * enter openoffice environment
+
+{{{
+ export ARCH_FLAGS="<CXXFLAGS>"
+ export LINKFLAGSOPTIMIZE="<LDFLAGS>"
+ export S=/var/tmp/portage/libreoffice*/work/libreoffice-build*/build/libreoffice-build*
+ cd $S
+ export LinuxEnvSet="Linux<ARCH>Env.Set.sh"
+ source $S/$LinuxEnvSet
+
+ # optional: build with debugging symbols
+ # '-s' will strip the code anyway!
+ export ENABLE_SYMBOLS=TRUE
+ export DISABLE_STRIP=TRUE
+
+ ... hack the source ...
+}}}
+
 <u>generating a system-locale-encoded _const char pointer_ (from rtl_uString)</u>
 
  * http://api.openoffice.org/docs/cpp/ref/names/rtl/c-OUString.html
