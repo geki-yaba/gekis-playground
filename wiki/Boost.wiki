@@ -1,0 +1,48 @@
+== [Boost split build of Boost.org libraries] ==
+
+=== What the ... happened? ===
+
+ * code moved from ebuild to eclasses
+ * multiple ebuilds as descriptors for eclasses
+ * created tarball for generic diff files
+ * no eselect code necessary
+ * *not* supported is unversioned libraries in LIBDIR with SLOTing => automagic is evil(tm)
+
+=== What to do before? ===
+
+Remove boost & eselect-boost and its left-overs located at:
+
+{{{
+/usr/include/boost
+/usr/lib/libboost_*
+}}}
+
+Check the system for boost libraries used:
+
+{{{
+# libraries
+for f in $(find /usr/lib/ -type f -name '*.so*'); do echo $f; ldd $f | grep boost; done
+
+# binaries
+for f in $(find /usr/bin/ -type f -perm -111); do echo $f; ldd $f | grep boost; done
+
+# binaries under LIBDIR
+for f in $(find /usr/lib/ -type f -perm -111 ! -name '*.so*'); do echo $f; ldd $f | grep boost; done
+}}}
+
+=== How to fix packages from Gentoo repository? ===
+
+ * add 'boost-utils' to 'inherit' at the top of the ebuild
+ * add this line to src_configure before configure:
+( it checks for the respective library path of the boost-headers version! )
+
+{{{
+add_boost_paths
+}}}
+
+Truely fixes these bugs:
+[https://bugs.gentoo.org/306151 306151] &
+[http://sources.gentoo.org/viewcvs.py/gentoo-x86/dev-python/visual/visual-5.13.ebuild?r1=1.1&r2=1.2 hackerly ebuild diff]
+
+
+That is about it!
