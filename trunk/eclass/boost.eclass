@@ -260,14 +260,15 @@ boost_src_install() {
 
 	# install tests
 	cd "${S}/libs/${BOOST_LIB}/test" || die
+
 	if [ -f regress.log ] ; then
 		docinto status || die
 		dohtml *.html "${S}"/boost.png || die
 		dodoc regress.log || die
 	fi
-	cd "${S}"
 
 	# install docs
+	cd "${S}"
 	if use doc ; then
 		find libs/${BOOST_LIB}/* -iname "test" -or -iname "src" | xargs rm -rf
 
@@ -412,7 +413,7 @@ boost_src_test() {
 
 	local path="${S}"
 
-	if [[ ${@} != tools ]] ; then
+	if [ ${CATEGORY} == dev-libs ] ; then
 		path+="/libs/${BOOST_LIB}/test"
 	else
 		path+="/status"

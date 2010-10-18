@@ -135,8 +135,7 @@ CDEPEND="${SDEPEND}
 	  app-text/libwpd
 	  app-text/libwps
 	  app-text/poppler[xpdf-headers]
-	  dev-libs/boost-program_options
-	  dev-libs/boost-thread
+	  dev-libs/boost[program_options,thread]
 	  dev-libs/expat
 	>=dev-libs/icu-4.2.1
 	  dev-libs/libxml2

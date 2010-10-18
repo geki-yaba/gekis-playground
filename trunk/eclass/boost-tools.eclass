@@ -50,24 +50,23 @@ boost-tools_src_compile() {
 boost-tools_src_install() {
 	# install tests
 	cd "${S}/status" || die
+
 	if [ -f regress.log ] ; then
 		docinto status || die
 		dohtml *.html "${S}"/boost.png || die
 		dodoc regress.log || die
 	fi
-	cd "${S}"
 
 	# install docs
+	cd "${S}"
 	if use doc ; then
 		find libs/*/* -iname "test" -or -iname "src" | xargs rm -rf
 
-		dohtml \
-			-A pdf,txt,cpp,hpp \
+		dohtml -A pdf,txt,cpp,hpp \
 			*.{htm,html,png,css} \
 			-r doc more people wiki || die
 
-		dohtml \
-			-A pdf,txt \
+		dohtml -A pdf,txt \
 			-r tools || die
 
 		insinto /usr/share/doc/${PF}/html
@@ -96,5 +95,5 @@ boost-tools_src_install() {
 }
 
 boost-tools_src_test() {
-	boost_src_test tools
+	boost_src_test
 }
