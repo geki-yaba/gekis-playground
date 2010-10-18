@@ -30,19 +30,23 @@ for f in $(find /usr/bin/ -type f -perm -111); do echo $f; ldd $f | grep boost; 
 for f in $(find /usr/lib/ -type f -perm -111 ! -name '*.so*'); do echo $f; ldd $f | grep boost; done
 }}}
 
+=== What now? ===
+
+Install the respective split packages and/or install _dev-libs/boost_ with its respective useflags!
+
 === How to fix packages from Gentoo repository? ===
 
  * add 'boost-utils' to 'inherit' at the top of the ebuild
  * add this line to src_configure before configure:
-( it checks for the respective library path of the boost-headers version! )
 
 {{{
 add_boost_paths
 }}}
+( it checks for the respective library path of the boost-headers version! )
 
 Truely fixes these bugs:
 [https://bugs.gentoo.org/306151 306151] &
 [http://sources.gentoo.org/viewcvs.py/gentoo-x86/dev-python/visual/visual-5.13.ebuild?r1=1.1&r2=1.2 hackerly ebuild diff]
 
-
+<br><br>
 That is about it!
