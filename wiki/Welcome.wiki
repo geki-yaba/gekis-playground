@@ -26,6 +26,8 @@ Following are some notes to the packages of mine.
 
 A general-purpose scalable concurrent malloc(3) implementation.
 
-Not much to say but it is said to reduce memory fragmentation and utilization with some programs. Anything more to add? Tell me!
-
 [http://www.canonware.com/jemalloc/ homepage] [https://bugs.gentoo.org/339474 Gentoo bugreport]
+
+Not much to say but it is said to reduce memory fragmentation and utilization with some programs.
+
+Anything more to add? Tell me!
