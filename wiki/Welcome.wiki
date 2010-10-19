@@ -15,10 +15,14 @@ Following are some notes to the packages of mine.
 
 == LibreOffice ==
 
+Be _libre_, or so.
+
 [http://planet.documentfoundation.org/ news / issues]
 [https://forums.gentoo.org/viewtopic-t-804244.html discussion]
 
 == [Boost split build of Boost.org libraries] ==
+
+What to say; state-of-the-art, keep simple and the ptr_container and circular_buffer relief of pain somewhat.
 
 [https://forums.gentoo.org/viewtopic-t-819332.html discussion]
 
