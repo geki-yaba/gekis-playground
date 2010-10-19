@@ -20,11 +20,12 @@ BJAM="bjam-${MAJOR_PV}"
 
 BOOST_LIB="${PN/boost-}"
 BOOST_P="boost_$(replace_all_version_separators _)"
+BOOST_PATCHSET="gentoo-boost.tar.bz2"
 
 DESCRIPTION="boost.org ${BOOST_LIB} libraries for C++"
 HOMEPAGE="http://www.boost.org/"
 SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
-	http://gekis-playground.googlecode.com/files/gentoo-boost.tar.bz2"
+	http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 IUSE="debug doc static test"
 
@@ -108,6 +109,9 @@ boost_src_unpack() {
 	# libraries to build
 	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2 ${targets}"
 	echo ${cmd}; ${cmd}
+
+	# unpack generic boost patches
+	unpack "${BOOST_PATCHSET}"
 }
 
 boost_src_prepare() {
