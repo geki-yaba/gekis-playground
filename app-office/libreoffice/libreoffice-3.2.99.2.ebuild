@@ -115,8 +115,8 @@ CDEPEND="${SDEPEND}
 	java? ( dev-java/bsh
 		dev-java/lucene:2.9[analyzers] )
 	jemalloc? ( dev-libs/jemalloc )
-	kde? ( >=x11-libs/qt-core-4.6
-		>=x11-libs/qt-gui-4.6
+	kde? ( x11-libs/qt-core:4.6
+		x11-libs/qt-gui:4.6
 		>=kde-base/kdelibs-4.4
 		>=kde-base/kstyles-4.4 )
 	ldap? ( net-nds/openldap )
