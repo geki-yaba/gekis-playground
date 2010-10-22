@@ -44,6 +44,13 @@ add_boost_paths
 }}}
 ( it checks for the respective library path of the boost-headers version! )
 
+_or_
+
+ * fix configure options in ebuilds like the example of mkvtoolnix
+
+http://gekis-playground.googlecode.com/files/mkvtoolnix_boost.diff
+
+<br><br>
 Truely fixes these bugs:
 [https://bugs.gentoo.org/306151 306151] &
 [http://sources.gentoo.org/viewcvs.py/gentoo-x86/dev-python/visual/visual-5.13.ebuild?r1=1.1&r2=1.2 hackerly ebuild diff]
