@@ -50,7 +50,7 @@ for template in ${TEMPLATES}; do
 		${EXT_SRC}/Sun_ODF_Template_Pack_${template/en*/en-US}.oxt )"
 done
 
-DESCRIPTION="OpenOffice.org, unstable 3.x development sources."
+DESCRIPTION="LibreOffice, unstable 3.x development sources."
 HOMEPAGE="http://www.documentfoundation.org/"
 
 SLOT="0"
