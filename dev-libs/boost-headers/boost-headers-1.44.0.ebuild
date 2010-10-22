@@ -2,13 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-#
-# There is a headers package, but they are generated so late.
-#
-
 EAPI="2"
 
-inherit eutils versionator
+inherit eutils multilib versionator
 
 MY_P="boost_$(replace_all_version_separators _)"
 LIB="${PN/boost-}"
@@ -28,6 +24,26 @@ DEPEND=""
 PDEPEND="dev-libs/boost:$(get_version_component_range 1-2)"
 
 S="${WORKDIR}/${MY_P}"
+
+pkg_setup() {
+	local err=
+
+	ls -1 /usr/$(get_libdir)/libboost_* | grep -v boost_*_*
+	[[ -z ${?} ]] && err=1
+
+	ls -1 /usr/include/boost_* >/dev/null 2>&1
+	[[ -z ${?} ]] && err=1
+
+	if [ ${err} ] ; then
+		eerror
+		eerror "Old files from boost.org package of the Gentoo Repository found."
+		eerror "Please clean your system following the howto at:"
+		eerror
+		eerror "	http://code.google.com/p/gekis-playground/wiki/Boost"
+		eerror
+		die "keep cool and clean! ;)"
+	fi
+}
 
 src_unpack() {
 	tar xjpf "${DISTDIR}/${A}" "${MY_P}/boost"
