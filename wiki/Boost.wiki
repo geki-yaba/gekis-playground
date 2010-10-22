@@ -42,11 +42,11 @@ Install the respective split packages and/or install _dev-libs/boost_ with its r
 {{{
 add_boost_paths
 }}}
-( it checks for the respective library path of the boost-headers version! )
+( It checks for the respective library path of the boost-headers version! )
 
-_or_
+_... or ..._
 
- * fix configure options in ebuilds like the example of mkvtoolnix
+ * fix configure options in ebuilds like the example of mkvtoolnix:
 
 http://gekis-playground.googlecode.com/files/mkvtoolnix_boost.diff
 
