@@ -13,7 +13,7 @@ inherit eutils versionator
 MY_P="boost_$(replace_all_version_separators _)"
 LIB="${PN/boost-}"
 
-DESCRIPTION="boost.org ${LIB} Libraries for C++"
+DESCRIPTION="boost.org ${LIB} libraries for C++"
 HOMEPAGE="http://www.boost.org/"
 SRC_URI="mirror://sourceforge/boost/${MY_P}.tar.bz2"
 

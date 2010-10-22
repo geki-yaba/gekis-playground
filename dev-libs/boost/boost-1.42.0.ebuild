@@ -6,7 +6,7 @@ EAPI="2"
 
 inherit versionator
 
-DESCRIPTION="boost.org Libraries for C++ - Compatibility Wrapper"
+DESCRIPTION="boost.org libraries for C++ - Compatibility Wrapper"
 HOMEPAGE="http://www.boost.org/"
 SRC_URI=""
 
