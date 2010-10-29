@@ -6,7 +6,7 @@ Welcome to my hacking playground of Gentoo Linux distribution.
 = Details =
 
 I just hack on interesting stuff for me.<br>
-Sometimes it may happen others see it needful, too.
+Sometimes, it may happen others see it as needful things, too.
 
 Following are some notes to the packages of mine.
 
