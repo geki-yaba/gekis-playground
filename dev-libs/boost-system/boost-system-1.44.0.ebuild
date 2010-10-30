@@ -6,7 +6,5 @@ EAPI="2"
 
 inherit boost
 
-IUSE=""
-
 RDEPEND=""
 DEPEND=""

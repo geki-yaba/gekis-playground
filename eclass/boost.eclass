@@ -4,7 +4,7 @@
 
 #
 # Author: Hanno Meyer-Thurow <h.mth@web.de>
-# Purpose: Selectively build/install boost libraries/headers
+# Purpose: Selectively build/install boost libraries
 #
 
 inherit check-reqs flag-o-matic multilib python toolchain-funcs versionator

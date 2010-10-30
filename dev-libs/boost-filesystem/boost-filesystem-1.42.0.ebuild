@@ -6,8 +6,6 @@ EAPI="2"
 
 inherit boost
 
-IUSE=""
-
 RDEPEND="dev-libs/boost-system:${SLOT}"
 DEPEND="${RDEPEND}"
 
