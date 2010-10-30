@@ -6,7 +6,5 @@ EAPI="2"
 
 inherit boost-tools
 
-IUSE=""
-
 RDEPEND=">=dev-libs/icu-3.3"
 DEPEND="${RDEPEND}"

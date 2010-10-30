@@ -6,8 +6,6 @@ EAPI="2"
 
 inherit boost
 
-IUSE=""
-
 RDEPEND="dev-libs/boost-date_time:${SLOT}
 	dev-libs/boost-filesystem:${SLOT}
 	dev-libs/boost-system:${SLOT}
