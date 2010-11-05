@@ -8,12 +8,12 @@ inherit autotools eutils flag-o-matic
 
 DESCRIPTION="Jemalloc is a general-purpose scalable concurrent allocator"
 HOMEPAGE="http://www.canonware.com/jemalloc/"
-
 SRC_URI="http://www.canonware.com/download/${PN}/${P}.tar.bz2"
 
 LICENSE="bsd"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
+
 IUSE="debug profiling statistics"
 
 DEPEND=""

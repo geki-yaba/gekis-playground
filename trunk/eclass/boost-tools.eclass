@@ -8,9 +8,11 @@
 #          - Wrap boost eclass
 #
 
+EAPI="2"
+
 inherit boost
 
-EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install
+EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
 
 DESCRIPTION="boost.org tools"
 HOMEPAGE="http://www.boost.org/"

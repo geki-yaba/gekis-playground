@@ -7,9 +7,11 @@
 # Purpose: Selectively build/install boost libraries
 #
 
+EAPI="2"
+
 inherit check-reqs flag-o-matic multilib python toolchain-funcs versionator
 
-EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install
+EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
 
 LICENSE="Boost-1.0"
 SLOT="$(get_version_component_range 1-2)"
@@ -21,6 +23,7 @@ BJAM="bjam-${MAJOR_PV}"
 BOOST_LIB="${PN/boost-}"
 BOOST_P="boost_$(replace_all_version_separators _)"
 BOOST_PATCHSET="gentoo-boost.tar.bz2"
+BOOST_PATCHDIR="${WORKDIR}/patches"
 
 DESCRIPTION="boost.org ${BOOST_LIB} libraries for C++"
 HOMEPAGE="http://www.boost.org/"
@@ -117,7 +120,7 @@ boost_src_unpack() {
 boost_src_prepare() {
 	EPATCH_SUFFIX="diff" \
 	EPATCH_FORCE="yes" \
-	epatch "${WORKDIR}/patches"
+	epatch "${BOOST_PATCHDIR}"
 }
 
 boost_src_configure() {

@@ -11,12 +11,12 @@ inherit autotools eutils flag-o-matic git
 
 DESCRIPTION="Jemalloc is a general-purpose scalable concurrent allocator"
 HOMEPAGE="http://www.canonware.com/jemalloc/"
-
 SRC_URI=""
 
 LICENSE="bsd"
 SLOT="0"
 KEYWORDS=""
+
 IUSE="debug profiling statistics"
 
 DEPEND=""
