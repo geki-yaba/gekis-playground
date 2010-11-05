@@ -44,7 +44,7 @@ SAL_USE_VCLPLUGIN - 'gen', 'gtk' or 'kde4'
 {{{
  export ARCH_FLAGS="<CXXFLAGS>"
  export LINKFLAGSOPTIMIZE="<LDFLAGS>"
- export S=/var/tmp/portage/libreoffice*/work/libreoffice-build*/build/libreoffice-build*
+ export S=/var/tmp/portage/app-office/libreoffice*/work/libreoffice-*/build/libreoffice-build*
  cd $S
  export LinuxEnvSet="Linux<ARCH>Env.Set.sh"
  source $S/$LinuxEnvSet
