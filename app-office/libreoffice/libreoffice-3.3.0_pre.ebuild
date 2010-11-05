@@ -39,7 +39,7 @@ for language in ${MYSPELLS}; do
 done
 
 # available templates
-# - en_* => en_US templates for simplicity; fix
+# - en_* => en_US templates for simplicity; fix:
 # https://forums.gentoo.org/viewtopic-p-6449940.html#6449940
 TEMPLATES="de en en_GB en_ZA es fr hu it"
 EXT_SRC="ftp://ftp.devall.hu/kami/go-oo"
@@ -312,7 +312,7 @@ src_prepare() {
 	echo "--enable-ext-presenter-console" >> ${CONFFILE}
 	echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
 	echo "--enable-ext-presenter-ui" >> ${CONFFILE}
-	use java && use reportbuilder && echo "--enable-report-builder" >> ${CONFFILE}
+	use java && use reportbuilder && echo "--enable-ext-report-builder" >> ${CONFFILE}
 	use java && use wiki && echo "--enable-ext-wiki-publisher" >> ${CONFFILE}
 
 	# internal
