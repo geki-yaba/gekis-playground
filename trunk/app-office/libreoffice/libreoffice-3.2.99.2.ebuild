@@ -39,7 +39,7 @@ for language in ${MYSPELLS}; do
 done
 
 # available templates
-# - en_* => en_US templates for simplicity; fix
+# - en_* => en_US templates for simplicity; fix:
 # https://forums.gentoo.org/viewtopic-p-6449940.html#6449940
 TEMPLATES="de en en_GB en_ZA es fr hu it"
 EXT_SRC="ftp://ftp.devall.hu/kami/go-oo"
