@@ -7,6 +7,8 @@
 # Purpose: Install boost headers
 #
 
+EAPI="2"
+
 inherit eutils multilib versionator
 
 EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install

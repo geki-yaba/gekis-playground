@@ -2,8 +2,6 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
-
 inherit boost
 
 IUSE="python"
@@ -13,18 +11,11 @@ RDEPEND="python? ( virtual/python )
 	|| ( sys-cluster/openmpi[cxx] sys-cluster/mpich2[cxx,threads] )"
 DEPEND="${RDEPEND}"
 
-pkg_setup() {
-	# It doesn't compile with USE="python mpi" and python-3 (bug 295705)
-	if use python ; then
-		if [[ "$(python_get_version --major)" != "2" ]]; then
-			eerror "The Boost.MPI python bindings do not support any other python version"
-			eerror "than 2.x. Please either use eselect to select a python 2.x version or"
-			eerror "disable the python and/or mpi use flag for =${CATEGORY}/${PF}."
-			die "unsupported python version"
-		fi
-	fi
+src_unpack() {
+	boost_src_unpack
 
-	boost_pkg_setup
+	# copy library specific patches
+	cp -v "${FILESDIR}/${PN}"-*.diff "${BOOST_PATCHDIR}"
 }
 
 src_configure() {
