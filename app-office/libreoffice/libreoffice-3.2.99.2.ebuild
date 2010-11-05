@@ -61,6 +61,7 @@ RESTRICT="binchecks mirror"
 
 # configs
 MY_P="${PN}-build-${PV}"
+MY_PV="3.3"
 
 S="${WORKDIR}/${MY_P}"
 
@@ -68,13 +69,13 @@ S="${WORKDIR}/${MY_P}"
 GO_SRC="http://download.go-oo.org"
 LIBRE_SRC="http://download.documentfoundation.org/libreoffice/src"
 
-SRC_URI="${LIBRE_SRC}/${MY_P}.tar.gz
-	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-3.3.tar.bz2 )
-	templates? ( ${TDEPEND} )
-	${GO_SRC}/SRC680/biblio.tar.bz2
+SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 	${GO_SRC}/SRC680/extras-3.tar.bz2
+	${LIBRE_SRC}/${MY_P}.tar.gz
 	blog? ( ${GO_SRC}/src/oooblogger-0.1.oxt )
-	languagetool? ( ${GO_SRC}/src/JLanguageTool-1.0.0.tar.bz2 )"
+	languagetool? ( ${GO_SRC}/src/JLanguageTool-1.0.0.tar.bz2 )
+	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
+	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
 MODULES="artwork base bootstrap calc components extensions extras filters help
@@ -195,7 +196,7 @@ pkg_setup() {
 
 	# welcome
 	elog
-	eerror "This ${PN} version uses an experimental patchset."
+	eerror "This ${PN} version is experimental."
 	eerror "Things could just break."
 	elog
 
@@ -485,9 +486,6 @@ src_compile() {
 }
 
 src_install() {
-	# version
-	local oover="3.3" # "$(get_version_component_range 1-2)"
-
 	# install
 	make DESTDIR="${D}" install || die "install failed"
 
@@ -496,7 +494,7 @@ src_install() {
 
 	# record java libraries
 	use java && java-pkg_regjar \
-		"${ED}/usr/$(get_libdir)/${PN}/basis${oover}/program/classes"/*.jar \
+		"${ED}/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/classes"/*.jar \
 		"${ED}/usr/$(get_libdir)/${PN}/ure/share/java"/*.jar
 
 	# move bash-completion from /etc to /usr/share/bash-completion. bug 226061
@@ -505,9 +503,6 @@ src_install() {
 }
 
 pkg_postinst() {
-	# version
-	local oover="3.3" # "$(get_version_component_range 1-2)"
-
 	# mime data
 	fdo-mime_desktop_database_update
 	fdo-mime_mime_database_update
@@ -520,7 +515,7 @@ pkg_postinst() {
 
 	# record jdbc-mysql java library to openoffice classpath if possible
 	# - for a happy user experience
-	"${EPREFIX}"/usr/$(get_libdir)/${PN}/basis${oover}/program/java-set-classpath \
+	"${EPREFIX}"/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/java-set-classpath \
 		$(java-config --classpath=jdbc-mysql 2>/dev/null) >/dev/null
 
 	# bash-completion postinst

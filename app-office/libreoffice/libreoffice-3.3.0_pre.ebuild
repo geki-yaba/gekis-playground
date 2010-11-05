@@ -190,8 +190,8 @@ pkg_setup() {
 
 	# welcome
 	elog
-	eerror "This ${PN} version uses the master branch."
-	eerror "Expect it to just break."
+	eerror "This ${PN} version is experimental."
+	eerror "Things could just break."
 	elog
 
 	# ...
