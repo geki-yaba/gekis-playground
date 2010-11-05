@@ -36,6 +36,7 @@ Install the respective split packages and/or install _dev-libs/boost_ with its r
 
 === How to fix packages from Gentoo repository? ===
 
+ * copy the boost-utils.eclass to the repository which holds the edited ebuild
  * add 'boost-utils' to 'inherit' at the top of the ebuild
  * add this line to src_configure before configure:
 
@@ -49,6 +50,12 @@ _... or ..._
  * fix configure options in ebuilds like the example of mkvtoolnix:
 
 http://gekis-playground.googlecode.com/files/mkvtoolnix_boost.diff
+
+_... or ..._
+
+ * fix cmake based ebuilds like ... *TODO*
+
+https://forums.gentoo.org/viewtopic-p-6476602.html#6476602
 
 <br><br>
 Truely fixes these bugs:
