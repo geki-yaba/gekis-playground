@@ -11,7 +11,7 @@ KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
 inherit autotools bash-completion boost-utils check-reqs confutils db-use \
-	eutils fdo-mime flag-o-matic java-pkg-opt-2 kde4-base mono multilib \
+	eutils fdo-mime flag-o-matic git java-pkg-opt-2 kde4-base mono multilib \
 	versionator
 
 IUSE="blog cups dbus debug eds gnome graphite gstreamer gtk jemalloc junit kde
@@ -60,24 +60,20 @@ KEYWORDS=""
 RESTRICT="binchecks mirror"
 
 # configs
-GIT_BUILD="3a7a43cebb335ee3164be58cc379a35747a65ccd"
-MY_P="build-${GIT_BUILD}"
-MY_PV="$(get_version_component_range 1-3)"
+MY_PV="$(get_version_component_range 1-2)"
 
-S="${WORKDIR}/${MY_P}"
+S="${WORKDIR}/${PN}"
 
 # paths
 CLONE_DIR="${S}/clone"
-GIT_DIR="git://anongit.freedesktop.org/git/libreoffice"
 GO_SRC="http://download.go-oo.org"
 
-SRC_URI="http://cgit.freedesktop.org/libreoffice/build/snapshot/${MY_P}.tar.gz
-	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-$(get_version_component_range 1-2).tar.bz2 )
-	templates? ( ${TDEPEND} )
-	${GO_SRC}/SRC680/biblio.tar.bz2
-	${GO_SRC}/SRC680/extras-3.tar.bz2
+SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
+	${GO_SRC}/SRC680/extras-3.1.tar.bz2
 	blog? ( ${GO_SRC}/src/oooblogger-0.1.oxt )
-	languagetool? ( ${GO_SRC}/src/JLanguageTool-1.0.0.tar.bz2 )"
+	languagetool? ( ${GO_SRC}/src/JLanguageTool-1.0.0.tar.bz2 )
+	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
+	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
 MODULES="artwork base bootstrap calc components extensions extras filters help
@@ -266,25 +262,21 @@ pkg_setup() {
 
 src_unpack() {
 	# layered clone/build process - fun! :)
+	local root="git://anongit.freedesktop.org/${PN}"
+	EGIT_BRANCH="${PN}-$(replace_all_version_separators - ${MY_PV})"
 
-	# ideal solution:
-	# - use eclass/git
-	# - clone ooo with specific tag/hash
-	# - clone OOo split sources with their own specific tag
-	# - anyone? :D
+	# unpack build tools
+	EGIT_PROJECT="${PN}/build"
+	EGIT_REPO_URI="${root}/build"
+	git_src_unpack
 
-	unpack ${MY_P}.tar.gz
-
-	cd "${S}"
-
-	# prepare paths
-	mkdir -p "${CLONE_DIR}"
-
-	pushd "${CLONE_DIR}" >/dev/null
-		for module in ${MODULES}; do
-			git clone "${GIT_DIR}/${module}"
-		done
-	popd >/dev/null
+	# unpack modules
+	for module in ${MODULES}; do
+		local S="${CLONE_DIR}/${module}"
+		EGIT_PROJECT="${PN}/${module}"
+		EGIT_REPO_URI="${root}/${module}"
+		git_src_unpack
+	done
 }
 
 src_prepare() {
@@ -316,11 +308,12 @@ src_prepare() {
 
 	# extensions
 	echo "--with-extension-integration" >> ${CONFFILE}
-	echo "--enable-minimizer" >> ${CONFFILE}
-	echo "--enable-pdfimport" >> ${CONFFILE}
-	echo "--enable-presenter-console" >> ${CONFFILE}
+	echo "--enable-ext-pdfimport" >> ${CONFFILE}
+	echo "--enable-ext-presenter-console" >> ${CONFFILE}
+	echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
+	echo "--enable-ext-presenter-ui" >> ${CONFFILE}
 	use java && use reportbuilder && echo "--enable-report-builder" >> ${CONFFILE}
-	use java && use wiki && echo "--enable-wiki-publisher" >> ${CONFFILE}
+	use java && use wiki && echo "--enable-ext-wiki-publisher" >> ${CONFFILE}
 
 	# internal
 	echo "--disable-binfilter" >> ${CONFFILE}
@@ -502,9 +495,6 @@ src_compile() {
 }
 
 src_install() {
-	# version
-	local oover="$(get_version_component_range 1-2)"
-
 	# install
 	make DESTDIR="${D}" install || die "install failed"
 
@@ -513,7 +503,7 @@ src_install() {
 
 	# record java libraries
 	use java && java-pkg_regjar \
-		"${ED}/usr/$(get_libdir)/${PN}/basis${oover}/program/classes"/*.jar \
+		"${ED}/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/classes"/*.jar \
 		"${ED}/usr/$(get_libdir)/${PN}/ure/share/java"/*.jar
 
 	# move bash-completion from /etc to /usr/share/bash-completion. bug 226061
@@ -522,9 +512,6 @@ src_install() {
 }
 
 pkg_postinst() {
-	# version
-	local oover="$(get_version_component_range 1-2)"
-
 	# mime data
 	fdo-mime_desktop_database_update
 	fdo-mime_mime_database_update
@@ -537,7 +524,7 @@ pkg_postinst() {
 
 	# record jdbc-mysql java library to openoffice classpath if possible
 	# - for a happy user experience
-	"${EPREFIX}"/usr/$(get_libdir)/${PN}/basis${oover}/program/java-set-classpath \
+	"${EPREFIX}"/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/java-set-classpath \
 		$(java-config --classpath=jdbc-mysql 2>/dev/null) >/dev/null
 
 	# bash-completion postinst
@@ -561,6 +548,7 @@ pkg_postinst() {
 	elog " - pdfimport"
 	elog " - presentation console"
 	elog " - presentation minimizer"
+	elog " - presentation ui"
 	use java && use reportbuilder && \
 		elog " - report builder"
 	use java && use wiki && \
