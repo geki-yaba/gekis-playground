@@ -15,6 +15,6 @@ src_prepare() {
 		mkdir -p libs/random/build
 		cp "${FILESDIR}/random-Jamfile" libs/random/build/Jamfile.v2
 		# yeah, we WANT it to work on non-Linux too
-		sed -i -e 's/#ifdef __linux__/#if 1/' libs/random/random_device.cpp || die
+		sed -i -e 's/#ifdef __linux__/#if 1/' libs/random/src/random_device.cpp || die
 	fi
 }
