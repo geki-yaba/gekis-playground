@@ -6,3 +6,6 @@ inherit boost
 
 RDEPEND="dev-libs/boost-mpi:${SLOT}"
 DEPEND="${RDEPEND}"
+
+# additional targets to extract
+BOOST_ADDITIONAL_TARGETS="detail serialization"
