@@ -290,6 +290,7 @@ src_prepare() {
 	local CONFFILE="${S}/distro-configs/GentooUnstable.conf.in"
 	cp -dP ${S}/distro-configs/Gentoo.conf.in ${CONFFILE}
 	echo "--with-build-version=\\\"geki built ${PV} (unsupported)\\\"" >> ${CONFFILE}
+	echo "--with-lang=\\\"${LINGUAS_OOO}\\\"" >> ${CONFFILE}
 
 	# gentooexperimental defaults
 	echo "--without-afms" >> ${CONFFILE}
