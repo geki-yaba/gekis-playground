@@ -1,0 +1,10 @@
+--- driver/CMakeLists.txt.orig	2010-11-06 12:45:20.584004580 +0100
++++ driver/CMakeLists.txt	2010-11-06 12:46:37.212004579 +0100
+@@ -273,6 +273,7 @@
+ 	INSTALL(TARGETS mysqlcppconn mysqlcppconn-static
+ 		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+ 		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++		CONFIGURATIONS GentooFull
+ 	)
+ ENDIF(WIN32)
+ 
