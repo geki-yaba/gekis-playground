@@ -1,26 +1,23 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-db/mysql-connector-c++/mysql-connector-c++-1.1.0_pre814.ebuild,v 1.3 2010/03/25 18:59:39 robbat2 Exp $
+# $Header: $
 
 EAPI="2"
 
-inherit base cmake-utils flag-o-matic
+inherit cmake-utils eutils flag-o-matic
+
+DEBIAN_URI="mirror://debian/pool/main/${PN:0:1}/${PN}"
+DEBIAN_SRC="${PN}_${PV}-1.debian.tar.gz"
 
 DESCRIPTION="MySQL database connector for C++ (mimics JDBC 4.0 API)"
 HOMEPAGE="http://forge.mysql.com/wiki/Connector_C++"
-
-DEBIAN_PV=1
-MY_PV="${PV}~r814"
-MY_P="${PN}_${MY_PV}"
-DEBIAN_URI="mirror://debian/pool/main/${PN:0:1}/${PN}"
-DEBIAN_PATCH="${MY_P}-${DEBIAN_PV}.diff.gz"
-DEBIAN_SRC="${MY_P}.orig.tar.gz"
-SRC_URI="${DEBIAN_URI}/${DEBIAN_PATCH}
-	ftp://sunsite.informatik.rwth-aachen.de/pub/mirror/www.mysql.com/Downloads/Connector-C++/mysql-connector-c++-1.1.0.tar.gz"
+SRC_URI="${DEBIAN_URI}/${DEBIAN_SRC}
+	mirror://mysql/Downloads/Connector-C++/${P}.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86"
+
 IUSE="debug examples gcov static"
 
 DEPEND=">=virtual/mysql-5.1
@@ -28,22 +25,17 @@ DEPEND=">=virtual/mysql-5.1
 	dev-libs/openssl"
 RDEPEND="${DEPEND}"
 
-S="${WORKDIR}/${P/_pre/~r}"
-
 # cmake config that works ...
 CMAKE_IN_SOURCE_BUILD="1"
 
-src_unpack() {
-	unpack "${P}.tar.gz"
-}
-
 src_prepare() {
-	EPATCH_OPTS="-p1" epatch "${DISTDIR}"/"${DEBIAN_PATCH}"
-	rm "${S}"/debian/patches/02_*
-	for i in "${S}"/debian/patches/??_* ; do
-		epatch "${i}"
-	done
-	epatch "${FILESDIR}"/${PN}-1.1.0_pre814-libdir.patch
+	EPATCH_SUFFIX="diff"
+	EPATCH_FORCE="yes"
+	EPATCH_MULTI_MSG="Applying Debian patches"
+	epatch "${WORKDIR}"/debian/patches
+	epatch "${FILESDIR}/${PN}"-1.1.0_pre814-libdir.patch
+	epatch "${FILESDIR}/${PN}"-1.1.0-clean-doc.patch
+	epatch "${FILESDIR}/${PN}"-1.1.0-install-components.patch
 }
 
 src_configure() {
@@ -57,6 +49,8 @@ src_configure() {
 		$(cmake-utils_use gconv MYSQLCPPCONN_GCOV_ENABLE)
 	)
 
+	use static && CMAKE_BUILD_TYPE="GentooFull"
+
 	cmake-utils_src_configure
 }
 
@@ -69,13 +63,13 @@ src_compile() {
 }
 
 src_install() {
-	# install - ignore failure for now ...
-	emake DESTDIR="${D}" install/fast
+	# install
+	emake DESTDIR="${D}" install/fast || die
 
-	# fast install fails on useflag [-static-libs]
-	# http://bugs.mysql.com/bug.php?id=52281
-	insinto /usr/include
-	doins driver/mysql_{connection,driver}.h || die
+	# install static
+	if use static; then
+		emake DESTDIR="${D}" CMAKE_INSTALL_CONFIG_NAME=full install/fast || die
+	fi
 
 	dodoc ANNOUNCE* CHANGES* README || die
 
@@ -84,7 +78,4 @@ src_install() {
 		insinto /usr/share/doc/${PF}/examples
 		doins "${S}"/examples/* || die
 	fi
-
-	# remove superfluous
-	rm -v "${D}"/usr/{ANNOUNCEMENT,COPYING,README}
 }
