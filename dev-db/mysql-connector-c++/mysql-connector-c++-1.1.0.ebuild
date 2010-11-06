@@ -49,6 +49,8 @@ src_configure() {
 		$(cmake-utils_use gconv MYSQLCPPCONN_GCOV_ENABLE)
 	)
 
+	# eclass/cmake-utils relies on this variable for various things
+	# - how to do proper install targets? dynamic vs static? :)
 	use static && CMAKE_BUILD_TYPE="GentooFull"
 
 	cmake-utils_src_configure
@@ -65,11 +67,6 @@ src_compile() {
 src_install() {
 	# install
 	emake DESTDIR="${D}" install/fast || die
-
-	# install static
-	if use static; then
-		emake DESTDIR="${D}" CMAKE_INSTALL_CONFIG_NAME=full install/fast || die
-	fi
 
 	dodoc ANNOUNCE* CHANGES* README || die
 
