@@ -6,7 +6,7 @@ inherit boost
 
 IUSE="icu"
 
-RDEPEND="icu? ( >=dev-libs/icu-3.3 )"
+RDEPEND="icu? ( dev-libs/icu )"
 DEPEND="${RDEPEND}"
 
 pkg_setup() {

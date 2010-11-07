@@ -138,7 +138,7 @@ CDEPEND="${SDEPEND}
 	  app-text/poppler[xpdf-headers]
 	  dev-libs/boost[program_options,thread]
 	  dev-libs/expat
-	>=dev-libs/icu-4.2.1
+	  dev-libs/icu
 	  dev-libs/libxml2
 	  dev-libs/libxslt
 	  dev-libs/openssl

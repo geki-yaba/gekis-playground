@@ -4,5 +4,5 @@
 
 inherit boost-tools
 
-RDEPEND=">=dev-libs/icu-3.3"
+RDEPEND="dev-libs/icu"
 DEPEND="${RDEPEND}"
