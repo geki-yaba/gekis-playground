@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-inherit eutils
+EAPI="2"
 
 DESCRIPTION="WordPerfect Document import/export library"
 HOMEPAGE="http://libwpd.sf.net"
@@ -21,8 +21,11 @@ DEPEND="${RDEPEND}
 	dev-util/pkgconfig
 	doc? ( app-doc/doxygen )"
 
-src_compile() {
+src_configure() {
 	econf $(use_with doc docs) $(use_with gsf stream)
+}
+
+src_compile() {
 	emake || die "emake failed"
 }
 
