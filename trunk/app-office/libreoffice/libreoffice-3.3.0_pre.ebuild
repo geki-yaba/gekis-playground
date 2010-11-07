@@ -140,7 +140,6 @@ CDEPEND="${SDEPEND}
 	  dev-util/gperf
 	  media-libs/fontconfig
 	  media-libs/freetype:2
-	  media-libs/jpeg
 	  media-libs/libpng
 	  media-libs/libwpg
 	  media-libs/vigra
@@ -151,7 +150,8 @@ CDEPEND="${SDEPEND}
 	  x11-libs/libXaw
 	  x11-libs/libXinerama
 	  x11-libs/libXtst
-	  x11-libs/startup-notification"
+	  x11-libs/startup-notification
+	  virtual/jpeg"
 
 RDEPEND="${CDEPEND}
 	java? ( >=virtual/jre-1.5 )"
