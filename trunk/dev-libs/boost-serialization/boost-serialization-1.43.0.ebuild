@@ -5,7 +5,7 @@
 inherit boost
 
 RDEPEND=""
-DEPEND="${RDEPEND}"
+DEPEND=""
 
 # additional targets to extract
 BOOST_ADDITIONAL_TARGETS="detail"

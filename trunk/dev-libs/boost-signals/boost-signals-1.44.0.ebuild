@@ -5,4 +5,4 @@
 inherit boost
 
 RDEPEND=""
-DEPEND="${RDEPEND}"
+DEPEND=""
