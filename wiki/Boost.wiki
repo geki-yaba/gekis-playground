@@ -55,6 +55,14 @@ _... or ..._
 
  * cmake based builds should use FindBoost.cmake properly, works then!
 
+ * cmake based builds with useflag`[-threads]` need to add a cmake define in /etc/make.conf
+
+{{{
+MYCMAKEARGS="-DBoost_USE_MULTITHREADED=OFF"
+}}}
+
+_Take care not to overwrite MYCMAKEARGS of some ebuilds. As of now, only dev-util/piklab has it set._
+
 <br><br>
 Truely fixes these bugs:
 [https://bugs.gentoo.org/306151 306151] &
