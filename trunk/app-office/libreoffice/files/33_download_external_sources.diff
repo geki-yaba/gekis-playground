@@ -1,0 +1,10 @@
+--- download_external_sources.sh.orig	2010-11-07 18:54:00.936004608 +0100
++++ download_external_sources.sh	2010-11-07 18:54:20.536004571 +0100
+@@ -6,6 +6,7 @@
+ export CLONEDIR
+ 
+ if test -e $CLONEDIR/bootstrap/fetch_tarballs.sh -a -e $CLONEDIR/bootstrap/ooo.lst; then
++    sed -e /boost/d -e /seamonkey/d -e /Python/d -e /icu4c/d -e /vigra/d -i $CLONEDIR/bootstrap/ooo.lst
+     $CLONEDIR/bootstrap/fetch_tarballs.sh $CLONEDIR/bootstrap/ooo.lst
+ else
+     GIT_TAG=`echo $OOO_SOURCEDIRNAME | tr "a-z.-" "A-Z__"`
