@@ -26,9 +26,7 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86
 
 IUSE="examples python"
 
-DEPEND="!<dev-libs/boost-1.34.0
-	!<=dev-util/boost-build-1.35.0-r1
-	python? ( dev-lang/python )"
+DEPEND="python? ( dev-lang/python )"
 RDEPEND="${DEPEND}"
 
 S="${WORKDIR}/boost_${MY_PV}/tools"
