@@ -34,7 +34,7 @@ IUSE="debug doc static test"
 
 # build threaded libraries?
 if [[ ${BOOST_LIB} != thread ]] ; then
-	IUSE+=" threads"
+	IUSE+=" +threads"
 fi
 
 RDEPEND="sys-libs/zlib"
