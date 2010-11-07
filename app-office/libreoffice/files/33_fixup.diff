@@ -146,16 +146,3 @@
  @@ -3172,6 +3180,26 @@
   fi
   
---- bin/package-ooo.orig	2010-11-05 18:15:03.336004579 +0100
-+++ bin/package-ooo	2010-11-05 18:15:32.964004579 +0100
-@@ -440,8 +440,8 @@
- }
- 
- if ! test -f $OODESTDIR/gid_Module_Root; then
--    echo "Failed to generate package file lists";
--    exit 1;
-+    echo "No need to generate package file lists, exit ...";
-+    exit 0;
- fi
- 
- cd $OODESTDIR
