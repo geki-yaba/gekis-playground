@@ -264,6 +264,8 @@ src_unpack() {
 	# layered clone/build process - fun! :)
 	local root="git://anongit.freedesktop.org/${PN}"
 	EGIT_BRANCH="${PN}-$(replace_all_version_separators - ${MY_PV})"
+	# eclass/git feature: if not equal use EGIT_COMMIT, which defaults to master
+	EGIT_COMMIT="${EGIT_BRANCH}"
 
 	# unpack build tools
 	EGIT_PROJECT="${PN}/build"
