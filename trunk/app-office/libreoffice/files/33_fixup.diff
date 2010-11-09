@@ -1,65 +1,32 @@
---- patches/dev300/apply.orig	2010-11-05 15:23:33.068004579 +0100
-+++ patches/dev300/apply	2010-11-05 15:33:55.500004578 +0100
-@@ -14,22 +14,22 @@
- 	 Fixes, DefaultSettings, Features, VCL, Misc, HelpContent, \
- 	 Icons, CalcFixes, WriterFixes, EasterEgg, \
- 	 CWSBackports, Cleanups, WMF, GnomeVFS, WebDAV, \
--	 Layout, VBABits, VBAObjects, CalcErrors, GCJ, \
-+	 Layout, VBABits, CalcErrors, GCJ, \
- 	 OOXML, OOXMLExportDevel, OOXMLExport, UnitTesting, \
--	 FedoraCommonFixes, LayoutDialogs, Fuzz, \
-+	 FedoraCommonFixes, Fuzz, \
- 	 BuildFix, WriterDocComparison, \
- 	 MySQL, BorderTypes, WriterNavigation
+--- patches/64bit/64bit-jdk-server-paths.diff.orig	2010-11-09 18:40:06.132004578 +0100
++++ patches/64bit/64bit-jdk-server-paths.diff	2010-11-09 18:53:17.348004577 +0100
+@@ -1,10 +1,12 @@
+ --- jvmfwk/plugins/sunmajor/pluginlib/sunjre.cxx.orig	2006-05-21 21:05:55.000000000 +0200
+ +++ jvmfwk/plugins/sunmajor/pluginlib/sunjre.cxx	2006-05-21 21:45:05.000000000 +0200
+-@@ -90,6 +91,7 @@
++@@ -90,9 +91,7 @@
+      static char const * ar[] = {
+  
+          "/lib/" JFW_PLUGIN_ARCH "/client",
+-+        "/lib/" JFW_PLUGIN_ARCH "/server",
++-#if defined(OPENBSD)
++         "/lib/" JFW_PLUGIN_ARCH "/server",
++-#endif
+          "/lib/" JFW_PLUGIN_ARCH "/native_threads", 
+          "/lib/" JFW_PLUGIN_ARCH
+  
+--- patches/dev300/apply.orig	2010-11-09 18:38:34.956004724 +0100
++++ patches/dev300/apply	2010-11-09 19:01:20.240004578 +0100
+@@ -179,7 +179,7 @@
+ [ BuildBits ]
  
- LinuxCommon : Common, Defaults, FontConfigTemporaryHacks, \
- 	      FedoraLinuxOnlyFixes, LinuxOnly, msaccess, OpenGLTransitions, \
--	      CliMonoCommon, Mono, MonoComp, AddressBooks, QuickStarter, KDE4, Netbook, \
-+	      CliMonoCommon, AddressBooks, QuickStarter, KDE4, Netbook, \
- 	      GlobalNSPluginSupport
- MacOSXCommon : Common, Defaults
- Win32Common : Common, Defaults, Win32Only, CliMonoCommon, CliComponent, NotDebian
- # Experimental sections
--Experimental: VBAUntested, ArkOnlyExperimental, \
-+Experimental: MonoComp, VBAUntested, ArkOnlyExperimental, \
- 	      UnUsedButNotYetRemovedFromGit, WebDAVUpstream, \
--	      PostgreSQL, SELinux, \
-+	      PostgreSQL, SELinux, VBAObjects, LayoutDialogs, \
- 	      UnitBootstrap, RadioButtons, UnstableLibwpd, WWInProgress, \
- 	      KDE4Experimental, MinGW, CalcExperimental, \
- 	      OOXMLExportExperimental, CrossWin32Patches, AutoLayout, \
-@@ -305,7 +305,7 @@
+ # Upgraded internal ICU to 4.2.1
+-icu-4.2.1.diff, cbosdo
++#icu-4.2.1.diff, cbosdo
  
- [ Fixes ]
- # printf arguments cleanup
--buildfix-fmtargs.diff, cabral
-+#buildfix-fmtargs.diff, cabral
+ [ TemporaryHacks ]
  
- # use basic (advanced) shapes for rectangle/ellipse on draw/impress's toolbars. make shapes wrap words by default, n#171052, rodo
- sd-toolbar-advanced-shapes.diff, n#171052, rodo
-@@ -716,7 +716,7 @@
- 
- # disable checkdeliver, no point in doing that, especially when we
- # hardlink to solver instead of copying :-)
--disable-checkdeliver.diff, jholesov
-+#disable-checkdeliver.diff, jholesov
- 
- [ DefaultSettings ]
- 
-@@ -793,10 +793,10 @@
- #FIXME src680: separate-helpcontent.diff, jholesov
- 
- # use --hash-style=gnu linking when supported
--speed-hash-style.diff, pmladek
-+#speed-hash-style.diff, pmladek
- 
- # use -Wl,--as-needed, save 1% of relocations
--link-as-needed.diff, i#89511, pmladek
-+#link-as-needed.diff, i#89511, pmladek
- 
- [ DebianOnly ]
- seamonkey-is-iceape.diff
-@@ -874,11 +874,11 @@
+@@ -878,11 +878,11 @@
  # support server-only versions of 64bit JDKs
  64bit-jdk-server-paths.diff, i#65974, hmth
  # use IBM j9vm over IBM classic JVM
@@ -73,76 +40,67 @@
  # default inc/lib
  config_office-XINC-XLIB-defaults.diff, i#65976
  # Sandbox problem with wrong path
-@@ -1874,7 +1874,7 @@
- [ Fixes ]
- fix-ppt-linespacing-import-export.diff, n#355302, rodo
- 
--fields-table-formula.diff, n#631912, cbosdo
-+#fields-table-formula.diff, n#631912, cbosdo
- 
- # Backport from cbosdo06 CWS
- sw-table-frame-uno-fix.diff, i#112564, cbosdo
-@@ -2083,7 +2083,7 @@
- mysqlcppconn-mysqlclient-SONAME.diff
- 
- [ BuildBits ]
--novell-win32-agfa-monotype-fonts.diff, tml
-+#novell-win32-agfa-monotype-fonts.diff, tml
- 
- [ Fixes ]
- # FIXME dev300-m77 sd-print-fix-pageoffset.diff, n#537931, rodo # the code has moved to sd/source/ui/view/DocumentRenderer.cxx
-@@ -2129,7 +2129,7 @@
- 
- [ BuildBits ]
- # build the extra extensions when enabled
--postprocess-extra-extensions.diff, i#123456, pmladek
-+#postprocess-extra-extensions.diff, i#123456, pmladek
- # know how to unpack .oxt files if you want to update a 3rd party one
- solenv-unpack-oxt.diff, pmladek
- 
-@@ -2300,7 +2300,7 @@
- [ GentooExperimental ]
- SectionOwner => hmth
- # make Python2 optional
--disable-python.diff
-+#disable-python.diff
- 
- [ NovellEvaluation ]
- # enable the Subscription menu
-@@ -2327,8 +2327,8 @@
- [ Features ]
- # embed generic media files inside odf docs, plus various related
- # sound fixes from rodo
--impressmedia-features.diff, i#83753, n#515553, thorsten
--slideshow-sound.diff, n#515553, rodo
-+#impressmedia-features.diff, i#83753, n#515553, thorsten
-+#slideshow-sound.diff, n#515553, rodo
- 
- [ Fixes ]
- vcl-gtk-process-events-on-exit.diff, rodo
---- patches/dev300/jvm-search-path.diff.orig	2010-11-05 15:28:04.940004577 +0100
-+++ patches/dev300/jvm-search-path.diff	2010-11-05 15:28:58.880004579 +0100
+--- patches/dev300/jvm-search-path.diff.orig	2010-11-09 18:56:01.896004579 +0100
++++ patches/dev300/jvm-search-path.diff	2010-11-09 18:56:54.476004578 +0100
 @@ -1,9 +1,9 @@
  --- configure.in.orig	2009-04-06 15:15:26.000000000 +0200
  +++ configure.in	2009-04-06 15:32:04.000000000 +0200
  @@ -614,6 +614,14 @@
 -  
 -                           Usage: --with-java-target-version=<jvm version>
-- ],,)
-+         [Disables the use of Xaw for the Netscape/Mozilla plugin.]),
-+ ,)
++                            plugin
+  ],,)
 + 
  +AC_ARG_WITH(jvm-path,
  +[  --with-jvm-path         Use a specific JVM search path at runtime.
  +
-@@ -13,8 +13,8 @@
- +                                 to find JRE/JDK in /usr/lib/jvm/
+--- patches/dev300/disable-python.diff.orig	2010-11-09 19:00:57.868004588 +0100
++++ patches/dev300/disable-python.diff	2010-11-09 19:08:21.752004578 +0100
+@@ -1,9 +1,9 @@
+ --- configure.in.orig	2010-01-02 16:33:48.000000000 +0100
+ +++ configure.in	2010-01-02 16:44:30.000000000 +0100
+ @@ -215,6 +215,9 @@
+-                           options and therefore removes a lot of warnings when
+                            using the cheaper standard compiler. )
+  ],,)
++ 
+ +AC_ARG_ENABLE(python,
+ +[  --disable-python         Disable build of Python 2.x UNO API
  +],,)
-  AC_ARG_ENABLE(gcjaot,
-- [  --enable-gcjaot         Build with[[out]] using Ahead of Time java compilation
--                           support to speed up buildsi by compiling the jars also
-+     AS_HELP_STRING([--enable-gcjaot],
-+         [Build with[[out]] using Ahead of Time java compilation support to speed
- @@ -3172,6 +3180,26 @@
-  fi
+@@ -163,20 +163,18 @@
+ +#endif
+ --- scp2/source/python/module_python_mailmerge.scp.orig	2010-01-02 17:44:38.000000000 +0100
+ +++ scp2/source/python/module_python_mailmerge.scp	2010-01-02 17:44:51.000000000 +0100
+-@@ -30,6 +30,8 @@
+- 
++@@ -30,6 +30,7 @@
+  #include "macros.inc"
   
++ #ifndef AIX
+ +#ifndef DISABLE_PYUNO
+-+
+  File gid_File_Pymailmerge
+      TXT_FILE_BODY;
+      Dir = gid_Dir_Program;
+-@@ -37,3 +39,5 @@
+-     RegistryID = gid_Starregistry_Services_Rdb;
++@@ -37,3 +39,4 @@
+      Styles = (PACKED,UNO_COMPONENT);
+  End
+-+
++ #endif
+ +#endif
+ --- scp2/source/ooo/makefile.mk.orig	2010-01-02 17:47:45.000000000 +0100
+ +++ scp2/source/ooo/makefile.mk	2010-01-02 17:48:19.000000000 +0100
+@@ -250,8 +248,8 @@
+  .ENDIF			# "$(LOCALPYFILES)"!=""
+  
+  $(BIN)$/%.py : $(SOLARSHAREDBIN)$/pyuno$/%.py
+- 	@$(COPY) $< $@
++     @$(COPY) $< $@
+ +.ENDIF			# "$(DISABLE_PYTHON)" != "TRUE"
+  
+- $(BIN)$/intro.zip : $(SOLARCOMMONPCKDIR)$/openoffice_nologo$/intro.zip
+- 	$(COPY) $< $@
++ $(BIN)$/intro.zip : $(SOLARCOMMONPCKDIR)$/brand$/intro.zip
++     $(COPY) $< $@
