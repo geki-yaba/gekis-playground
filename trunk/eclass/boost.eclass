@@ -17,7 +17,7 @@ LICENSE="Boost-1.0"
 SLOT="$(get_version_component_range 1-2)"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 
-MAJOR_PV=$(replace_all_version_separators _ ${SLOT})
+MAJOR_PV="$(replace_all_version_separators _ ${SLOT})"
 BJAM="bjam-${MAJOR_PV}"
 
 BOOST_LIB="${PN/boost-}"
@@ -98,7 +98,7 @@ boost_src_unpack() {
 	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2"
 	cmd+=" --exclude=${BOOST_P}/boost --exclude=${BOOST_P}/doc"
 	cmd+=" --exclude=${BOOST_P}/tools --exclude=${BOOST_P}/libs"
-	echo ${cmd}; ${cmd}
+	echo ${cmd}; ${cmd} || die
 
 	# libraries necessary to build test tools
 	if use test ; then
@@ -111,7 +111,7 @@ boost_src_unpack() {
 
 	# libraries to build
 	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2 ${targets}"
-	echo ${cmd}; ${cmd}
+	echo ${cmd}; ${cmd} || die
 
 	# unpack generic boost patches
 	unpack "${BOOST_PATCHSET}"
