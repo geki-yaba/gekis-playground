@@ -41,7 +41,6 @@ RDEPEND="sys-libs/zlib"
 DEPEND="${RDEPEND}
 	~dev-libs/boost-headers-${PV}
 	dev-util/boost-build:${SLOT}"
-PDEPEND="dev-libs/boost:${SLOT}"
 
 S="${WORKDIR}/${BOOST_P}"
 
