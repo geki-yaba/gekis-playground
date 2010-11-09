@@ -13,8 +13,9 @@ inherit flag-o-matic toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_compile src_install src_test
 
-MY_PV=$(replace_all_version_separators _)
+MY_PV="$(replace_all_version_separators _)"
 MAJOR_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))"
+BOOST_P="boost_${MY_PV}"
 
 DESCRIPTION="A system for large project software construction, which is simple to use and powerful."
 HOMEPAGE="http://www.boost.org/doc/tools/build/index.html"
@@ -34,46 +35,58 @@ S="${WORKDIR}/boost_${MY_PV}/tools"
 boost-build_pkg_setup() {
 	ewarn "Compilation of boost-build is known to break if {C,LD}FLAGS contain"
 	ewarn "extra white space (bug 293652)"
+
+	# set jam root
+	if [[ ${SLOT} > 1.44 ]] ; then
+		BOOST_JAM="${S}/build/v2/engine"
+	else
+		BOOST_JAM="${S}/jam"
+	fi
 }
 
 boost-build_src_unpack() {
-	tar xjpf "${DISTDIR}/${A}" boost_${MY_PV}/tools/{jam,build/v2} || die
+	local cmd
+	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2"
+	cmd+=" boost_${MY_PV}/tools/build/v2"
+
+	# old jam versions
+	[[ ${SLOT} < 1.45 ]] && cmd+=" boost_${MY_PV}/tools/jam"
+
+	# extract
+	echo ${cmd}; ${cmd} || die
 }
 
 boost-build_src_prepare() {
+	cd "${BOOST_JAM}/src" || die
+
 	# Remove stripping option
-	cd "${S}/jam/src"
 	sed -e 's|-s\b||' \
 		-i build.jam || die "sed failed"
 
 	# Force regeneration
-	rm jambase.c
+	rm -v jambase.c
 
 	# This patch allows us to fully control optimization
 	# and stripping flags when bjam is used as build-system
 	# We simply extend the optimization and debug-symbols feature
 	# with empty dummies called 'none'
 	cd "${S}/build/v2"
-	sed -e 's/off speed space/\0 none/' \
-		-e 's/debug-symbols      : on off/\0 none/' \
+	sed -e "s/off speed space/\0 none/" \
+		-e "s/debug-symbols      : on off/\0 none/" \
 		-i tools/builtin.jam || die "sed failed"
 }
 
 boost-build_src_compile() {
-	cd jam/src
-	local toolset
-
-	if [[ ${CHOST} == *-darwin* ]] ; then
-		toolset=darwin
-	else
-		# Using boost's generic toolset here, which respects CC and CFLAGS
-		toolset=cc
-	fi
+	# Using boost's generic toolset here, which respects CC and CFLAGS
+	local toolset=cc
+	[[ ${CHOST} == *-darwin* ]] && toolset=darwin
 
 	append-flags -fno-strict-aliasing
 
+	cd "${BOOST_JAM}/src" || die
+
 	# For slotting
-	sed -e "s|/usr/share/boost-build|/usr/share/boost-build-${MAJOR_PV}|" \
+	sed -e "s|/usr/share/boost-build|\0-${MAJOR_PV}|" \
 		-i Jambase || die "sed failed"
 
 	# The build.jam file for building bjam using a bootstrapped jam0 ignores
@@ -88,7 +101,7 @@ boost-build_src_compile() {
 }
 
 boost-build_src_install() {
-	newbin jam/src/bin.*/bjam bjam-${MAJOR_PV}
+	newbin "${BOOST_JAM}"/src/bin.*/bjam bjam-${MAJOR_PV}
 
 	cd "${S}/build/v2"
 	insinto /usr/share/boost-build-${MAJOR_PV}
@@ -105,6 +118,6 @@ boost-build_src_install() {
 }
 
 boost-build_src_test() {
-	cd jam/test
+	cd "${BOOST_JAM}"/test || die
 	./test.sh || die "tests failed"
 }
