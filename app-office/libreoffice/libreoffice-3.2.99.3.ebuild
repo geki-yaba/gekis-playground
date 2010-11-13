@@ -70,7 +70,7 @@ GO_SRC="http://download.go-oo.org"
 LIBRE_SRC="http://download.documentfoundation.org/libreoffice/src"
 
 SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
-	${GO_SRC}/SRC680/extras-3.tar.bz2
+	${GO_SRC}/SRC680/extras-3.1.tar.bz2
 	${LIBRE_SRC}/${MY_P}.tar.gz
 	blog? ( ${GO_SRC}/src/oooblogger-0.1.oxt )
 	languagetool? ( ${GO_SRC}/src/JLanguageTool-1.0.0.tar.bz2 )

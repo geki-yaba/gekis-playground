@@ -17,15 +17,6 @@
   
 --- patches/dev300/apply.orig	2010-11-09 18:38:34.956004724 +0100
 +++ patches/dev300/apply	2010-11-09 19:01:20.240004578 +0100
-@@ -179,7 +179,7 @@
- [ BuildBits ]
- 
- # Upgraded internal ICU to 4.2.1
--icu-4.2.1.diff, cbosdo
-+#icu-4.2.1.diff, cbosdo
- 
- [ TemporaryHacks ]
- 
 @@ -878,11 +878,11 @@
  # support server-only versions of 64bit JDKs
  64bit-jdk-server-paths.diff, i#65974, hmth
