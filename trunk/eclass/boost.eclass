@@ -45,9 +45,10 @@ DEPEND="${RDEPEND}
 S="${WORKDIR}/${BOOST_P}"
 
 boost_pkg_setup() {
-	# boost compile takes it time and cpu => so use cpuinfo over MAKEOPTS
-	jobs="$(grep -s -c ^processor /proc/cpuinfo)"
-	[[ ${jobs} ]] && jobs="-j${jobs}"
+	# use regular expression to read last job count or default to 1 :D
+	jobs="$(echo "${MAKEOPTS}" | sed -r -e \
+		"s:.*\s*[-]{1,2}j(obs)?([= ])?([0-9]+).*:\3:")"
+	jobs="-j${jobs:=1}"
 
 	if use test ; then
 		CHECKREQS_DISK_BUILD="1024"
