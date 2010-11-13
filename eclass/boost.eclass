@@ -45,13 +45,9 @@ DEPEND="${RDEPEND}
 S="${WORKDIR}/${BOOST_P}"
 
 boost_pkg_setup() {
-	jobs=$( echo " ${MAKEOPTS} " | \
-		sed -e 's/ --jobs[= ]/ -j /g' \
-			-e 's/ -j \([1-9][0-9]*\)/ -j\1/g' \
-			-e 's/ -j\>/ -j1/g' | \
-			( while read -d ' ' j ; do if [[ "${j#-j}" = "$j" ]]; then continue; fi; jobs="${j#-j}"; done; echo ${jobs} ) )
-
-	[[ "${jobs}" != "" ]] && jobs="-j${jobs}"
+	# boost compile takes it time and cpu => so use cpuinfo over MAKEOPTS
+	jobs="$(grep -s -c ^processor /proc/cpuinfo)"
+	[[ ${jobs} ]] && jobs="-j${jobs}"
 
 	if use test ; then
 		CHECKREQS_DISK_BUILD="1024"
