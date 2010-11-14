@@ -14,9 +14,9 @@ inherit autotools bash-completion boost-utils check-reqs confutils db-use \
 	eutils fdo-mime flag-o-matic java-pkg-opt-2 kde4-base mono multilib \
 	versionator
 
-IUSE="blog cups dbus debug eds gnome graphite gstreamer gtk jemalloc junit kde
-languagetool ldap mono mysql nsplugin odbc odk opengl pam python reportbuilder
-templates webdav wiki"
+IUSE="blog cups custom-cflags dbus debug eds gnome graphite gstreamer gtk
+jemalloc junit kde languagetool ldap mono mysql nsplugin odbc odk opengl pam
+python reportbuilder templates webdav wiki"
 # postgres - system only diff available - no chance to choose! :(
 
 # available languages
@@ -200,6 +200,14 @@ pkg_setup() {
 	eerror "Things could just break."
 	elog
 
+	# custom-cflags
+	if use custom-cflags; then
+		eerror "You enabled useflag[custom-cflags]."
+		eerror
+		eerror "You are on your own. Blame yourself if it fails. ;)"
+		eerror "Not only at compile-time but also at runtime!"
+	fi
+
 	# ...
 	if is-flagq -ffast-math; then
 		eerror "You are using -ffast-math, which is known to cause problems."
@@ -299,11 +307,12 @@ src_prepare() {
 
 	# extensions
 	echo "--with-extension-integration" >> ${CONFFILE}
-	echo "--enable-minimizer" >> ${CONFFILE}
-	echo "--enable-pdfimport" >> ${CONFFILE}
-	echo "--enable-presenter-console" >> ${CONFFILE}
-	use java && use reportbuilder && echo "--enable-report-builder" >> ${CONFFILE}
-	use java && use wiki && echo "--enable-wiki-publisher" >> ${CONFFILE}
+	echo "--enable-ext-pdfimport" >> ${CONFFILE}
+	echo "--enable-ext-presenter-console" >> ${CONFFILE}
+	echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
+	echo "--enable-ext-presenter-ui" >> ${CONFFILE}
+	use java && use reportbuilder && echo "--enable-ext-report-builder" >> ${CONFFILE}
+	use java && use wiki && echo "--enable-ext-wiki-publisher" >> ${CONFFILE}
 
 	# internal
 	echo "--disable-binfilter" >> ${CONFFILE}
@@ -417,9 +426,8 @@ src_prepare() {
 }
 
 src_configure() {
-	filter-flags "-funroll-loops"
-	filter-flags "-fprefetch-loop-arrays"
-	filter-flags "-fno-default-inline"
+	# compiler flags
+	use custom-cflags || strip-flags
 	filter-flags "-O*"
 	append-flags "-w"
 
@@ -539,6 +547,7 @@ pkg_postinst() {
 	elog " - pdfimport"
 	elog " - presentation console"
 	elog " - presentation minimizer"
+	elog " - presentation ui"
 	use java && use reportbuilder && \
 		elog " - report builder"
 	use java && use wiki && \
