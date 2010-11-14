@@ -206,6 +206,8 @@ pkg_setup() {
 		eerror
 		eerror "You are on your own. Blame yourself if it fails. ;)"
 		eerror "Not only at compile-time but also at runtime!"
+		eerror
+		eerror "Only reports with a patch are accepted!"
 	fi
 
 	# ...
