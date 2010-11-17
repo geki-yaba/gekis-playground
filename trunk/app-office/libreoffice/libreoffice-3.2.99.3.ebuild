@@ -12,7 +12,6 @@ MY_PV="3.3"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux"
 
 # source
-LIBRE_SRC="http://download.documentfoundation.org/libreoffice/src"
 SRC_URI+=" ${LIBRE_SRC}/${MY_P}.tar.gz
 	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )"
 

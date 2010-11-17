@@ -67,6 +67,7 @@ RESTRICT="binchecks mirror"
 
 # paths
 GO_SRC="http://download.go-oo.org"
+LIBRE_SRC="http://download.documentfoundation.org/libreoffice/src"
 
 SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 	${GO_SRC}/SRC680/extras-3.1.tar.bz2
@@ -78,6 +79,12 @@ SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 MODULES="artwork base bootstrap calc components extensions extras filters help
 impress libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing
 ure writer l10n"
+
+if [[ ${PV} != *_pre ]]; then
+	for module in ${MODULES}; do
+		SRC_URI+=" ${LIBRE_SRC}/${PN}-${module}-${PV}.tar.bz2"
+	done
+fi
 
 #	>=dev-libs/xmlsec-1.2.14
 #	reportbuilder? ( dev-java/sac
@@ -297,7 +304,7 @@ libreoffice_src_prepare() {
 	# specifics not for upstream
 	EPATCH_SUFFIX="diff"
 	EPATCH_FORCE="yes"
-	EPATCH_EXCLUDE="$(for f in "${FILESDIR}"/32_*; do basename $f; done)"
+	#EPATCH_EXCLUDE="$(for f in "${FILESDIR}"/32_*; do basename $f; done)"
 	epatch "${FILESDIR}"
 
 	# gentoo
