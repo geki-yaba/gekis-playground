@@ -465,9 +465,9 @@ libreoffice_src_configure() {
 
 	# git config
 	if [[ ${PV} == *_pre ]]; then
-		config+="--with-git=\"${CLONE_DIR}\""
+		config+="--with-git=${CLONE_DIR}"
 	else
-		config+="--without-git --with-source-version=\"${PV}\""
+		config+="--without-git --with-source-version=${PV}"
 	fi
 
 	cd ${S}
