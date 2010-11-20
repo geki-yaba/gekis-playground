@@ -425,6 +425,14 @@ libreoffice_src_prepare() {
 }
 
 libreoffice_src_configure() {
+	# set allowed flags for libreoffice
+	# by default '-g' and the like are allowed which blow up the code
+	# => not sane: bug 345799
+	ALLOWED_FLAGS="-pipe -mcpu -march -mtune"
+	ALLOWED_FLAGS+=" -fstack-protector -fstack-protector-all"
+	ALLOWED_FLAGS+=" -fbounds-checking -fomit-frame-pointer"
+	ALLOWED_FLAGS+=" -W* -w"
+
 	# compiler flags
 	use custom-cflags || strip-flags
 	filter-flags "-O*"
@@ -522,7 +530,7 @@ libreoffice_pkg_postinst() {
 	fdo-mime_mime_database_update
 
 	# hardened
-	pax_fix
+	_libreoffice_pax_fix
 
 	# kde4
 	use kde && kde4-base_pkg_postinst
@@ -574,7 +582,7 @@ libreoffice_pkg_postinst() {
 	elog "		# unopkg list"
 }
 
-pax_fix() {
+_libreoffice_pax_fix() {
 	if [ -x ${EPREFIX}/sbin/chpax ] || [ -x ${EPREFIX}/sbin/paxctl ]; then
 		local bin="${EPREFIX}/usr/$(get_libdir)/${PN}/program/soffice.bin"
 		[ -e ${bin} ] && scanelf -Xxzm ${bin}
