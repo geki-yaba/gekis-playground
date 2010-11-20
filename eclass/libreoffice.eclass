@@ -201,35 +201,12 @@ libreoffice_pkg_setup() {
 	elog
 
 	# custom-cflags
-	if use custom-cflags; then
-		eerror "You enabled useflag[custom-cflags]."
-		eerror
-		eerror "You are on your own. Blame yourself if it fails. ;)"
-		eerror "Not only at compile-time but also at runtime!"
-		eerror
-		eerror "Only reports with a patch are accepted!"
-	fi
-
-	# ...
-	if is-flagq -ffast-math; then
-		eerror "You are using -ffast-math, which is known to cause problems."
-		eerror "Please remove it from your CFLAGS, using this globally causes"
-		eerror "all sorts of problems."
-		use python && eerror "After that you will also have to - at least - rebuild python"
-		use python && eerror "otherwise the ${PN} build will break."
-		err=1
-	fi
-
-	if is-flagq -finline-functions; then
-		eerror "You are using -finline-functions, which is known to cause problems."
-		eerror "Please remove it from your CFLAGS."
-		err=1
-	fi
+	_libreoffice_custom-cflags_message
 
 	# space
 	CHECKREQS_MEMORY="512"
-	use debug && CHECKREQS_DISK_BUILD="12000" \
-		|| CHECKREQS_DISK_BUILD="6000"
+	use debug && CHECKREQS_DISK_BUILD="14000" \
+		|| CHECKREQS_DISK_BUILD="7000"
 	use debug && CHECKREQS_DISK_USR="1024" \
 		|| CHECKREQS_DISK_USR="512"
 	check_reqs
@@ -519,12 +496,12 @@ libreoffice_src_compile() {
 	./download_external_sources.sh
 
 	# build
-	make || libre_die "make failed"
+	make || _libreoffice_die "make failed"
 }
 
 libreoffice_src_install() {
 	# install
-	make DESTDIR="${D}" install || libre_die "install failed"
+	make DESTDIR="${D}" install || _libreoffice_die "install failed"
 
 	# access
 	use prefix || chown -RP root:0 "${ED}"
@@ -604,16 +581,23 @@ pax_fix() {
 	fi
 }
 
-libre_die() {
-	# custom-cflags
+_libreoffice_custom-cflags_message() {
 	if use custom-cflags; then
 		eerror
 		eerror "You enabled useflag[custom-cflags]."
 		eerror
-		eerror "You are on your own. Blame yourself for this error. ;)"
-		eerror "Only reports with a patch are accepted!"
+		eerror "Custom C[XX]FLAGS cause various random errors for ${PN}!"
+		eerror "Not only at compile-time but also at runtime!"
+		eerror
+		eerror "So, you are on your own. Blame yourself if it fails. ;)"
+		eerror "Only reports with a fix, not a workaround, are accepted!"
 		eerror
 	fi
+}
+
+_libreoffice_die() {
+	# custom-cflags
+	_libreoffice_custom-cflags_message
 
 	die "${@}"
 }
