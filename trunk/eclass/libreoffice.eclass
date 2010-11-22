@@ -493,6 +493,7 @@ libreoffice_src_configure() {
 		$(use_with templates sun-templates) \
 		$(use_with blog oooblogger) \
 		$(use_with languagetool) \
+		--with-additional-sections="KDE4Experimental" \
 		|| die "configure failed"
 }
 
