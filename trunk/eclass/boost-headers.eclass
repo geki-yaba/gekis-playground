@@ -29,7 +29,7 @@ IUSE=""
 
 RDEPEND=""
 DEPEND=""
-PDEPEND="dev-libs/boost:${VER}"
+PDEPEND="~dev-libs/boost-${PV}"
 
 S="${WORKDIR}/${MY_P}"
 
