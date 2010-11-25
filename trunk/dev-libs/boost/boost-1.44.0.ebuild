@@ -20,7 +20,7 @@ wave"
 
 PKGS=
 for pkg in ${IUSE//+} ; do
-	PKGS+=" ${pkg}? ( ~dev-libs/boost-${pkg}-${PV}:${SLOT} )"
+	PKGS+=" ${pkg}? ( ~dev-libs/boost-${pkg}-${PV} )"
 done
 
 RDEPEND="${PKGS}"
