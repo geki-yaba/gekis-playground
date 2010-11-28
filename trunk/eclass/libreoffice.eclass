@@ -103,8 +103,6 @@ fi
 #		dev-java/saxon:9
 #		dev-db/hsqldb
 CDEPEND="${SDEPEND}
-	!app-office/openoffice-bin
-	!app-office/openoffice
 	cups? ( net-print/cups )
 	dbus? ( dev-libs/dbus-glib )
 	eds? ( gnome-extra/evolution-data-server )
@@ -179,7 +177,7 @@ DEPEND="${CDEPEND}
 	dev-util/intltool
 	dev-util/pkgconfig
 	dev-vcs/git
-	media-gfx/imagemagick
+	media-gfx/imagemagick[png]
 	sys-apps/coreutils
 	sys-apps/grep
 	sys-devel/bison
@@ -469,7 +467,7 @@ libreoffice_src_configure() {
 		--with-arch="${ARCH}" \
 		--with-arch-flags="${CXXFLAGS}" \
 		--with-num-cpus="$(grep -s -c ^processor /proc/cpuinfo)" \
-		--with-binsuffix=no \
+		--with-binsuffix="-libre" \
 		--with-installed-ooo-dirname=${PN} \
 		--with-srcdir="${DISTDIR}" \
 		--disable-post-install-scripts \
@@ -536,7 +534,7 @@ libreoffice_pkg_postinst() {
 	# kde4
 	use kde && kde4-base_pkg_postinst
 
-	# record jdbc-mysql java library to openoffice classpath if possible
+	# record jdbc-mysql java library to classpath if possible
 	# - for a happy user experience
 	"${EPREFIX}"/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/java-set-classpath \
 		$(java-config --classpath=jdbc-mysql 2>/dev/null) >/dev/null
