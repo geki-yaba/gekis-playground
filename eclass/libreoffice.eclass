@@ -123,7 +123,7 @@ CDEPEND="${SDEPEND}
 	mono? ( >=dev-lang/mono-2.4 )
 	mysql? ( >=dev-db/mysql-connector-c++-1.1.0_pre814 )
 	opengl? ( virtual/opengl virtual/glu )
-	python? ( dev-lang/python:2.6[threads,xml] )
+	python? ( dev-lang/python:2.7[threads,xml] )
 	webdav? ( net-libs/neon )
 	wiki? ( dev-java/commons-codec:0
 		dev-java/commons-httpclient:3
