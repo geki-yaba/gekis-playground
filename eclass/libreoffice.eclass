@@ -519,7 +519,8 @@ libreoffice_src_install() {
 		"${ED}/usr/$(get_libdir)/${PN}/ure/share/java"/*.jar
 
 	# move bash-completion from /etc to /usr/share/bash-completion. bug 226061
-	dobashcompletion "${ED}"/etc/bash_completion.d/ooffice.sh ooffice
+	local name="ooffice-libre"
+	dobashcompletion "${ED}"/etc/bash_completion.d/${name}.sh ${name}
 	rm -rf "${ED}"/etc/bash_completion.d/ || die "rm failed"
 }
 
