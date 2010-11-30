@@ -15,12 +15,3 @@
      install_script $TOOLSDIR/bin/ooconfig $PREFIX/bin/ooconfig$BINSUFFIX
      install_script $OOBUILDDIR/ootool$BINSUFFIX $PREFIX/bin/ootool$BINSUFFIX
  fi
-@@ -212,7 +212,7 @@
- 	# shared MIME info
- 	mkdir -p $OODESTDIR$PREFIX/share/mime/packages
- 	cd $TOOLSDIR/desktop
--	cp openoffice.xml $OODESTDIR$PREFIX/share/mime/packages
-+	cp openoffice.xml $OODESTDIR$PREFIX/share/mime/packages/libreoffice.xml
- 	if test "z$RUN_POST_INSTALL_SCRIPTS" = "zyes" && 
- 	   which update-mime-database >/dev/null 2>&1 ; then
- 	    update-mime-database /usr/share/mime || :

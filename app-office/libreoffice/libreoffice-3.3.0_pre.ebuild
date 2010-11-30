@@ -18,3 +18,6 @@ S="${WORKDIR}/${PN}"
 
 # git clone
 CLONE_DIR="${S}/clone"
+
+# exclude patches
+EPATCH_EXCLUDE="$(for f in "${FILESDIR}"/32_*; do basename $f; done)"

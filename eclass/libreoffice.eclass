@@ -279,7 +279,6 @@ libreoffice_src_prepare() {
 	# specifics not for upstream
 	EPATCH_SUFFIX="diff"
 	EPATCH_FORCE="yes"
-	#EPATCH_EXCLUDE="$(for f in "${FILESDIR}"/32_*; do basename $f; done)"
 	epatch "${FILESDIR}"
 
 	# gentoo

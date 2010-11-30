@@ -17,3 +17,6 @@ SRC_URI+=" ${LIBRE_SRC}/${MY_P}.tar.gz
 
 # root
 S="${WORKDIR}/${MY_P}"
+
+# exclude patches
+EPATCH_EXCLUDE="$(for f in "${FILESDIR}"/33_*; do basename $f; done)"
