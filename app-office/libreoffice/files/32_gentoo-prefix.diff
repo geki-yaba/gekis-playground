@@ -1,0 +1,34 @@
+--- bin/package-ooo	2008-10-07 08:50:49.000000000 -0500
++++ bin/package-ooo	2008-11-11 14:47:21.000000000 -0600
+@@ -176,11 +176,11 @@
+         # Icons and menu stuff is handled in actions.py
+         ;;
+   *)
+-	mkdir -p $OODESTDIR/usr/share/applications
++	mkdir -p $DATADIR/applications
+ 	cd $TOOLSDIR/desktop
+ 	for source in *.desktop ; do
+ 	    dest=`echo $source | sed "s|.desktop\$||"`
+-	    dest="$OODESTDIR/usr/share/applications/$dest$BINSUFFIX.desktop"
++	    dest="$DATADIR/applications/$dest$BINSUFFIX.desktop"
+ 	    add_version=
+ 	    test "z$VENDORNAME" = "zNovell" -a "z$BINSUFFIX" != "z" && add_version=" ($VERSION)" || :
+ 	    sed -e "s|\(^Name.*\)\$|\1$add_version|
+@@ -188,7 +188,7 @@
+ 	done
+ 
+ 	# icons
+-	icondir=/usr/share/icons/hicolor
++	icondir=$DATADIRBASE/icons/hicolor
+ 	for size in 16x16 22x22 24x24 32x32 48x48 scalable ; do
+ 	    mkdir -p $OODESTDIR/$icondir/$size/apps
+ 	    cd $TOOLSDIR/desktop/$size/
+@@ -202,7 +202,7 @@
+ 	done
+ 
+ 	# create symlinks below share/pixmaps to keep the backward compatibility
+-	pixmapsdir=$OODESTDIR/usr/share/pixmaps
++	pixmapsdir=$DATADIR/pixmaps
+ 	mkdir -p $pixmapsdir
+ 	cd $OODESTDIR/$icondir/48x48/apps
+ 	for icon in ooo-*.png ; do

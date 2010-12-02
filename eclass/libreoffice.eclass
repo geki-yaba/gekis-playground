@@ -131,8 +131,8 @@ CDEPEND="${SDEPEND}
 		dev-java/commons-logging:0
 		dev-java/tomcat-servlet-api:2.4 )
 	  app-text/hunspell
-	  app-text/libwpd
-	  app-text/libwps
+	>=app-text/libwpd-0.9.0
+	>=app-text/libwps-0.2.0
 	  app-text/poppler[xpdf-headers]
 	  dev-libs/boost[program_options,thread]
 	  dev-libs/expat
@@ -145,7 +145,7 @@ CDEPEND="${SDEPEND}
 	  media-libs/fontconfig
 	  media-libs/freetype:2
 	  media-libs/libpng
-	  media-libs/libwpg
+	>=media-libs/libwpg-0.2.0
 	  media-libs/vigra
 	  net-misc/curl
 	>=sys-libs/db-4.7
