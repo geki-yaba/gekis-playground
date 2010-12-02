@@ -5,13 +5,13 @@
  
  # no man-page so ...
 -if test "z$VENDORNAME" != "zDebian" -a "z$VENDORNAME" != "zMandriva"; then
-+if test "z$VENDORNAME" != "zDebian" -a "z$VENDORNAME" != "zMandriva" -a "z$VENDORNAME" != "zGentoo Foundation"; then
++if test "z$VENDORNAME" != "zDebian" -a "z$VENDORNAME" != "zMandriva" -a "z$VENDORNAME" != "zGentoo"; then
      install_script $TOOLSDIR/bin/ooconfig $PREFIX/bin/ooconfig
      install_script $OOBUILDDIR/ootool$BINSUFFIX $PREFIX/bin/ootool$BINSUFFIX
  fi
  
 -if test "z$VENDORNAME" = "zMandriva"; then
-+if test "z$VENDORNAME" = "zMandriva" -o "z$VENDORNAME" = "zGentoo Foundation"; then
++if test "z$VENDORNAME" = "zMandriva" -o "z$VENDORNAME" = "zGentoo"; then
      install_script $TOOLSDIR/bin/ooconfig $PREFIX/bin/ooconfig$BINSUFFIX
      install_script $OOBUILDDIR/ootool$BINSUFFIX $PREFIX/bin/ootool$BINSUFFIX
  fi
