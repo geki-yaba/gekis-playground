@@ -15,22 +15,25 @@ WANT_AUTOMAKE="1.9"
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
-inherit autotools bash-completion boost-utils check-reqs confutils db-use \
-	eutils fdo-mime flag-o-matic git java-pkg-opt-2 kde4-base mono multilib \
-	versionator
+inherit autotools bash-completion boost-utils check-reqs confutils db-use eutils \
+	fdo-mime flag-o-matic java-pkg-opt-2 kde4-base mono multilib versionator
+
+if [[ ${PV} == *_pre ]]; then
+	inherit git
+fi
 
 EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_postinst
 
-IUSE="blog cups custom-cflags dbus debug eds gnome graphite gstreamer gtk
-jemalloc junit kde languagetool ldap mono mysql nsplugin odbc odk opengl pam
-python reportbuilder templates webdav wiki"
+IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
+junit kde languagetool ldap mono mysql nsplugin odbc odk opengl pam python
+reportbuilder templates webdav wiki"
 # postgres - system only diff available - no chance to choose! :(
 
 # available languages
 LANGUAGES="af ar as be_BY bg bn br bs ca cs cy da de dz el en en_GB en_ZA eo es
 et fa fi fr ga gl gu he hi hr hu it ja km ko ku lt lv mk ml mr nb ne nl nn nr ns
-or pa pl pt pt_BR ru rw sh sk sl sr ss st sv ta te tg th ti tn tr ts uk ur ve vi
-xh zh_CN zh_TW zu"
+oc or pa pl pt pt_BR ru rw sh sk sl sr ss st sv ta te tg th ti tn tr ts uk ur ve
+vi xh zh_CN zh_TW zu"
 
 for language in ${LANGUAGES}; do
 	IUSE+=" linguas_${language}"
@@ -71,8 +74,6 @@ LIBRE_SRC="http://download.documentfoundation.org/libreoffice/src"
 
 SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 	${GO_SRC}/SRC680/extras-3.1.tar.bz2
-	blog? ( ${GO_SRC}/src/oooblogger-0.1.oxt )
-	languagetool? ( ${GO_SRC}/src/JLanguageTool-1.0.0.tar.bz2 )
 	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
@@ -488,7 +489,6 @@ libreoffice_src_configure() {
 		$(use_enable pam) \
 		$(use_enable odk) \
 		$(use_with templates sun-templates) \
-		$(use_with blog oooblogger) \
 		$(use_with languagetool) \
 		--with-additional-sections="KDE4Experimental" \
 		|| die "configure failed"
@@ -546,13 +546,13 @@ libreoffice_pkg_postinst() {
 	# info
 	elog " To start OpenOffice.org, run:"
 	elog
-	elog " $ ooffice"
+	elog " $ ooffice-libre"
 	elog
 	elog "__________________________________________________________________"
 	elog " Also, for individual components, you can use any of:"
 	elog
-	elog " oobase, oocalc, oodraw, oofromtemplate,"
-	elog " ooimpress, oomath, ooweb or oowriter"
+	elog " oobase-libre, oocalc-libre, oodraw-libre, oofromtemplate-libre,"
+	elog " ooimpress-libre, oomath-libre, ooweb-libre or oowriter-libre"
 	elog
 	elog "__________________________________________________________________"
 	elog " Some parts have to be installed via Extension Manager now"
@@ -561,11 +561,13 @@ libreoffice_pkg_postinst() {
 	elog " - presentation console"
 	elog " - presentation minimizer"
 	elog " - presentation ui"
+	use java && use languagetool && \
+		elog " - JLanguageTool"
 	use java && use reportbuilder && \
 		elog " - report builder"
 	use java && use wiki && \
 		elog " - wiki publisher"
-	use mysql && elog " - MySQL (native) database connector (beta stadium!)"
+	use mysql && elog " - MySQL (native) database connector"
 	elog " ... more may come"
 	elog
 	elog " from /usr/$(get_libdir)/${PN}/share/extension/install/"
