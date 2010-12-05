@@ -14,7 +14,7 @@ LICENSE="bsd"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-IUSE="debug profiling statistics"
+IUSE="debug profile stats"
 
 DEPEND=""
 RDEPEND=""
@@ -31,8 +31,8 @@ src_configure() {
 	# configure
 	econf \
 		$(use_enable debug) \
-		$(use_enable profiling prof) \
-		$(use_enable statistics stats) \
+		$(use_enable profile prof) \
+		$(use_enable stats) \
 		|| die "configure failed"
 }
 

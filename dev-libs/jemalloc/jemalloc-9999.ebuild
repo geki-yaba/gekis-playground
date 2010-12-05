@@ -6,6 +6,8 @@ EAPI="2"
 
 EGIT_REPO_URI="git://canonware.com/jemalloc.git"
 EGIT_BRANCH="dev"
+# eclass/git feature: if not equal use EGIT_COMMIT, which defaults to master
+EGIT_COMMIT="${EGIT_BRANCH}"
 
 inherit autotools eutils flag-o-matic git
 
@@ -17,7 +19,7 @@ LICENSE="bsd"
 SLOT="0"
 KEYWORDS=""
 
-IUSE="debug profiling statistics"
+IUSE="debug profile stats"
 
 DEPEND=""
 RDEPEND=""
@@ -40,8 +42,8 @@ src_configure() {
 	# configure
 	econf \
 		$(use_enable debug) \
-		$(use_enable profiling prof) \
-		$(use_enable statistics stats) \
+		$(use_enable profile prof) \
+		$(use_enable stats) \
 		|| die "configure failed"
 }
 
