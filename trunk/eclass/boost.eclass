@@ -13,15 +13,12 @@ inherit check-reqs flag-o-matic multilib python toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
 
-LICENSE="Boost-1.0"
-SLOT="$(get_version_component_range 1-2)"
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
-
 MAJOR_PV="$(replace_all_version_separators _ ${SLOT})"
 BJAM="bjam-${MAJOR_PV}"
 
 BOOST_LIB="${PN/boost-}"
 BOOST_P="boost_$(replace_all_version_separators _)"
+BOOST_PN="${PN/-/_}"
 BOOST_PATCHSET="gentoo-boost.tar.bz2"
 BOOST_PATCHDIR="${WORKDIR}/patches"
 
@@ -30,10 +27,13 @@ HOMEPAGE="http://www.boost.org/"
 SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
 	http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
+LICENSE="Boost-1.0"
+SLOT="$(get_version_component_range 1-2)"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 IUSE="debug doc static test"
 
-# build threaded libraries?
-if [[ ${BOOST_LIB} != thread ]] ; then
+# build threaded libraries? argh, clean ...
+if [[ ${BOOST_LIB} != thread ]] && [[ ${BOOST_LIB} != mpi ]] ; then
 	IUSE+=" +threads"
 fi
 
@@ -172,7 +172,7 @@ __EOF__
 	# for more infomration.
 
 	options="${BOOST_OPTIONAL_OPTIONS}"
-	if [ ${CATEGORY} == dev-libs ] ; then
+	if [[ ${CATEGORY} == dev-libs ]] ; then
 		options+=" --with-${BOOST_LIB}"
 	fi
 
@@ -197,52 +197,43 @@ __EOF__
 }
 
 boost_src_compile() {
-	threading="single"
-	if [[ ${BOOST_LIB} != thread ]] && use threads ; then
-		threading+=",multi"
-	fi
-
 	einfo "Using the following command to build: "
-	einfo "${BJAM} ${jobs} -q -d+2 gentoorelease ${options} threading=${threading} ${link_opts} runtime-link=shared"
+	einfo "${BJAM} ${jobs} -q -d+2 gentoorelease ${options} threading=$(_boost_threading) ${link_opts} runtime-link=shared"
 
 	${BJAM} ${jobs} -q -d+2 gentoorelease ${options} \
-		threading=${threading} ${link_opts} runtime-link=shared \
+		threading=$(_boost_threading) ${link_opts} runtime-link=shared \
 		|| die "building boost failed"
 
 	# ... and do the whole thing one more time to get the debug libs
 	if use debug ; then
 		einfo "Using the following command to build: "
-		einfo "${BJAM} ${jobs} -q -d+2 gentoodebug ${options} threading=${threading} ${link_opts} runtime-link=shared --buildid=debug"
+		einfo "${BJAM} ${jobs} -q -d+2 gentoodebug ${options} threading=$(_boost_threading) ${link_opts} runtime-link=shared --buildid=debug"
 
 		${BJAM} ${jobs} -q -d+2 gentoodebug ${options} \
-			threading=${threading} ${link_opts} runtime-link=shared \
+			threading=$(_boost_threading) ${link_opts} runtime-link=shared \
 			--buildid=debug \
 			|| die "building boost failed"
 	fi
 }
 
 boost_src_install() {
-	if [[ ${BOOST_LIB} != thread ]] && use threads ; then
-		threading+=",multi"
-	fi
-
 	pushd "libs/${BOOST_LIB}/build"
 
 	einfo "Using the following command to install: "
-	einfo "${BJAM} -q -d+2 gentoorelease ${options} threading=${threading} ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" install"
+	einfo "${BJAM} -q -d+2 gentoorelease ${options} threading=$(_boost_threading) ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" install"
 
 	${BJAM} -q -d+2 gentoorelease ${options} \
-		threading=${threading} ${link_opts} runtime-link=shared \
+		threading=$(_boost_threading) ${link_opts} runtime-link=shared \
 		--includedir="${D}/usr/include" \
 		--libdir="${D}/usr/$(get_libdir)" \
 		install || die "install failed for options '${options}'"
 
 	if use debug ; then
 		einfo "Using the following command to install: "
-		einfo "${BJAM} -q -d+2 gentoodebug ${options} threading=${threading} ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" --buildid=debug"
+		einfo "${BJAM} -q -d+2 gentoodebug ${options} threading=$(_boost_threading) ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" --buildid=debug"
 
 		${BJAM} -q -d+2 gentoodebug ${options} \
-			threading=${threading} ${link_opts} runtime-link=shared \
+			threading=$(_boost_threading) ${link_opts} runtime-link=shared \
 			--includedir="${D}/usr/include" \
 			--libdir="${D}/usr/$(get_libdir)" \
 			--buildid=debug \
@@ -291,7 +282,7 @@ boost_src_install() {
 	# FIXME: build against installed boost libraries
 	# libraries may have additional libraries with funny names; catch them
 	for f in $(find ! -type d) ; do
-		[[ ${f} =~ ${PN/-/_} ]] && continue
+		[[ ${f} =~ ${BOOST_PN} ]] && continue
 
 		local found=
 		for lib in ${BOOST_ADDITIONAL_LIBS} ; do
@@ -307,51 +298,19 @@ boost_src_install() {
 
 	# The threading libs obviously always gets the "-mt" (multithreading) tag
 	# some packages seem to have a problem with it. Creating symlinks...
-	if [[ ${BOOST_LIB} == thread ]] ; then
-		thread_libs="libboost_thread-mt-${MAJOR_PV}$(get_libname)"
-		if use static ; then
-			thread_libs+=" libboost_thread-mt-${MAJOR_PV}.a"
-		fi
-
-		for lib in ${thread_libs} ; do
-			dosym ${lib} "/usr/$(get_libdir)/$(sed -e 's/-mt//' <<< ${lib})" || die
-		done
-	fi
-
 	# The same goes for the mpi libs
-	if [[ ${BOOST_LIB} == mpi ]] ; then
-		mpi_libs="libboost_mpi-mt-${MAJOR_PV}$(get_libname)"
-		if use static ; then
-			mpi_libs+=" libboost_mpi-mt-${MAJOR_PV}.a"
+	if ! _boost_has_non_mt_lib ; then
+		local libs="lib${BOOST_PN}-mt-${MAJOR_PV}$(get_libname)"
+		use static && libs+=" lib${BOOST_PN}-mt-${MAJOR_PV}.a"
+
+		if use debug ; then
+			libs+=" lib${BOOST_PN}-mt-${MAJOR_PV}-debug$(get_libname)"
+			use static && libs+=" lib${BOOST_PN}-mt-${MAJOR_PV}-debug.a"
 		fi
 
-		for lib in ${mpi_libs} ; do
+		for lib in ${libs} ; do
 			dosym ${lib} "/usr/$(get_libdir)/$(sed -e 's/-mt//' <<< ${lib})" || die
 		done
-	fi
-
-	if use debug ; then
-		if [[ ${BOOST_LIB} == thread ]] ; then
-			thread_debug_libs="libboost_thread-mt-${MAJOR_PV}-debug$(get_libname)"
-			if use static ; then
-				thread_debug_libs+=" libboost_thread-mt-${MAJOR_PV}-debug.a"
-			fi
-
-			for lib in ${thread_debug_libs} ; do
-				dosym ${lib} "/usr/$(get_libdir)/$(sed -e 's/-mt//' <<< ${lib})" || die
-			done
-		fi
-
-		if [[ ${BOOST_LIB} == mpi ]] ; then
-			mpi_debug_libs="libboost_mpi-mt-${MAJOR_PV}-debug$(get_libname)"
-			if use static ; then
-				mpi_debug_libs+=" libboost_mpi-mt-${MAJOR_PV}-debug.a"
-			fi
-
-			for lib in ${mpi_debug_libs} ; do
-				dosym ${lib} "/usr/$(get_libdir)/$(sed -e 's/-mt//' <<< ${lib})" || die
-			done
-		fi
 	fi
 
 	# Create a subdirectory with completely unversioned symlinks
@@ -416,7 +375,7 @@ boost_src_test() {
 
 	local path="${S}"
 
-	if [ ${CATEGORY} == dev-libs ] ; then
+	if [[ ${CATEGORY} == dev-libs ]] ; then
 		path+="/libs/${BOOST_LIB}/test"
 	else
 		path+="/status"
@@ -453,4 +412,20 @@ __EOF__
 
 	# And do some cosmetic fixes :)
 	sed -e 's|http://www.boost.org/boost.png|boost.png|' -i *.html || die
+}
+
+_boost_has_non_mt_lib() {
+	# has only mt version => fail
+	[[ ${BOOST_LIB} == thread ]] && return 1
+	[[ ${BOOST_LIB} == mpi ]] && return 1
+	return 0
+}
+
+_boost_threading() {
+	local threading="single"
+	if _boost_has_non_mt_lib && use threads ; then
+		threading+=",multi"
+	fi
+
+	echo ${threading}
 }
