@@ -4,14 +4,8 @@
 
 inherit libreoffice
 
-# config
-MY_PV="$(get_version_component_range 1-2)"
-
 # keywords
 KEYWORDS=""
-
-# source
-SRC_URI+=" mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )"
 
 # root
 S="${WORKDIR}/${PN}"
@@ -20,4 +14,4 @@ S="${WORKDIR}/${PN}"
 CLONE_DIR="${S}/clone"
 
 # exclude patches
-EPATCH_EXCLUDE="$(for f in "${FILESDIR}"/32_*; do basename $f; done)"
+EPATCH_EXCLUDE="$(for f in "${FILESDIR}"/33_*; do basename $f; done)"

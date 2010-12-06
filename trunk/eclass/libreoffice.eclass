@@ -68,12 +68,16 @@ SLOT="0"
 LICENSE="LGPL-3"
 RESTRICT="binchecks mirror"
 
+# config
+MY_PV="$(get_version_component_range 1-2)"
+
 # paths
 GO_SRC="http://download.go-oo.org"
 LIBRE_SRC="http://download.documentfoundation.org/libreoffice/src"
 
 SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 	${GO_SRC}/SRC680/extras-3.1.tar.bz2
+	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
 	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
@@ -304,12 +308,19 @@ libreoffice_src_prepare() {
 
 	# extensions
 	echo "--with-extension-integration" >> ${CONFFILE}
+	# not completely added yet
 	echo "--enable-ext-pdfimport" >> ${CONFFILE}
 	echo "--enable-ext-presenter-console" >> ${CONFFILE}
 	echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
 	echo "--enable-ext-presenter-ui" >> ${CONFFILE}
+	echo "--enable-pdfimport" >> ${CONFFILE}
+	echo "--enable-presenter-console" >> ${CONFFILE}
+	echo "--enable-presenter-minimizer" >> ${CONFFILE}
+	echo "--enable-presenter-ui" >> ${CONFFILE}
 	use java && use reportbuilder && echo "--enable-ext-report-builder" >> ${CONFFILE}
 	use java && use wiki && echo "--enable-ext-wiki-publisher" >> ${CONFFILE}
+	use java && use reportbuilder && echo "--enable-report-builder" >> ${CONFFILE}
+	use java && use wiki && echo "--enable-wiki-publisher" >> ${CONFFILE}
 
 	# internal
 	echo "--disable-binfilter" >> ${CONFFILE}
@@ -332,6 +343,7 @@ libreoffice_src_prepare() {
 
 	# mysql
 	echo "$(use_enable mysql mysql-connector)" >> ${CONFFILE}
+	echo "$(use_enable mysql ext-mysql-connector)" >> ${CONFFILE}
 	echo "$(use_with mysql system-mysql)" >> ${CONFFILE}
 	echo "$(use_with mysql system-mysql-cppconn)" >> ${CONFFILE}
 

@@ -6,17 +6,12 @@ inherit libreoffice
 
 # config
 MY_P="${PN}-build-${PV}"
-MY_PV="3.3"
 
 # keywords
 KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux"
 
 # source
-SRC_URI+=" ${LIBRE_SRC}/${MY_P}.tar.gz
-	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )"
+SRC_URI+=" ${LIBRE_SRC}/${MY_P}.tar.gz"
 
 # root
 S="${WORKDIR}/${MY_P}"
-
-# exclude patches
-EPATCH_EXCLUDE="$(for f in "${FILESDIR}"/33_*; do basename $f; done)"
