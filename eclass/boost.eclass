@@ -66,16 +66,15 @@ boost_pkg_setup() {
 
 	if use debug ; then
 		ewarn "The debug USE-flag means that a second set of the boost libraries"
-		ewarn "will be built containing debug-symbols. You'll be able to select them"
-		ewarn "using the boost-eselect module. But even though the optimization flags"
-		ewarn "you might have set are not stripped, there will be a performance"
-		ewarn "penalty and linking other packages against the debug version"
-		ewarn "of boost is _not_ recommended."
+		ewarn "will be built containing debug-symbols. But even though the optimization"
+		ewarn "flags you might have set are not stripped, there will be a performance"
+		ewarn "penalty and linking other packages against the debug version of boost"
+		ewarn "is _not_ recommended."
 	fi
 }
 
 boost_src_unpack() {
-	local cmd targets=
+	local cmd targets=""
 	for depend in ${DEPEND} ${CATEGORY}/${PN}:${SLOT} ; do
 		# no headers
 		[[ ${depend} == dev-libs/boost-headers:${SLOT} ]] && continue
@@ -162,82 +161,42 @@ ${mpi}
 __EOF__
 
 	# Maintainer information:
-	# The debug-symbols=none and optimization=none
-	# are not official upstream flags but a Gentoo
-	# specific patch to make sure that all our
-	# CXXFLAGS/LDFLAGS are being respected.
-	# Using optimization=off would for example add
-	# "-O0" and override "-O2" set by the user.
-	# Please take a look at the boost-build ebuild
-	# for more infomration.
-
-	options="${BOOST_OPTIONAL_OPTIONS}"
-	if [[ ${CATEGORY} == dev-libs ]] ; then
-		options+=" --with-${BOOST_LIB}"
-	fi
-
-	# https://svn.boost.org/trac/boost/attachment/ticket/2597/add-disable-long-double.patch
-	if use sparc || use mips || use hppa || use arm || use x86-fbsd || use sh; then
-		options+=" --disable-long-double"
-	fi
-
-	options+=" pch=off --user-config=\"${S}/user-config.jam\" \
-		--boost-build=/usr/share/boost-build-${MAJOR_PV} --prefix=\"${D}/usr\" \
-		--layout=versioned"
-
-	link_opts="link=shared"
-	library_targets="*$(get_libname)"
-	if use static ; then
-		link_opts+=",static"
-		library_targets+=" *.a"
-	#there is no dynamically linked version of libboost_test_exec_monitor
-	elif [[ ${BOOST_LIB} == test ]] ; then
-		library_targets+=" libboost_test_exec_monitor*.a"
-	fi
+	# The debug-symbols=none and optimization=none are not official upstream
+	# flags but a Gentoo specific patch to make sure that all our CXXFLAGS
+	# and LDFLAGS are being respected. Using optimization=off would for example
+	# add "-O0" and override "-O2" set by the user.
 }
 
 boost_src_compile() {
-	einfo "Using the following command to build: "
-	einfo "${BJAM} ${jobs} -q -d+2 gentoorelease ${options} threading=$(_boost_threading) ${link_opts} runtime-link=shared"
+	local cmd
+	local options="$(_boost_options)"
+	local link_opts="$(_boost_link_options)"
+	local threading="$(_boost_threading)"
 
-	${BJAM} ${jobs} -q -d+2 gentoorelease ${options} \
-		threading=$(_boost_threading) ${link_opts} runtime-link=shared \
-		|| die "building boost failed"
+	cmd="${BJAM} ${jobs} -q -d+2 gentoorelease ${options} threading=${threading} ${link_opts} runtime-link=shared"
+	echo ${cmd}; ${cmd} || die "building boost failed for options: ${options}"
 
 	# ... and do the whole thing one more time to get the debug libs
 	if use debug ; then
-		einfo "Using the following command to build: "
-		einfo "${BJAM} ${jobs} -q -d+2 gentoodebug ${options} threading=$(_boost_threading) ${link_opts} runtime-link=shared --buildid=debug"
-
-		${BJAM} ${jobs} -q -d+2 gentoodebug ${options} \
-			threading=$(_boost_threading) ${link_opts} runtime-link=shared \
-			--buildid=debug \
-			|| die "building boost failed"
+		cmd="${BJAM} ${jobs} -q -d+2 gentoodebug ${options} threading=${threading} ${link_opts} runtime-link=shared --buildid=debug"
+		echo ${cmd}; ${cmd} || die "building boost failed for options: ${options}"
 	fi
 }
 
 boost_src_install() {
+	local cmd
+	local options="$(_boost_options)"
+	local link_opts="$(_boost_link_options)"
+	local library_targets="$(_boost_library_targets)"
+	local threading="$(_boost_threading)"
+
 	pushd "libs/${BOOST_LIB}/build"
-
-	einfo "Using the following command to install: "
-	einfo "${BJAM} -q -d+2 gentoorelease ${options} threading=$(_boost_threading) ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" install"
-
-	${BJAM} -q -d+2 gentoorelease ${options} \
-		threading=$(_boost_threading) ${link_opts} runtime-link=shared \
-		--includedir="${D}/usr/include" \
-		--libdir="${D}/usr/$(get_libdir)" \
-		install || die "install failed for options '${options}'"
+	cmd="${BJAM} -q -d+2 gentoorelease ${options} threading=${threading} ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" install"
+	echo ${cmd}; ${cmd} || die "install failed for options: ${options}"
 
 	if use debug ; then
-		einfo "Using the following command to install: "
-		einfo "${BJAM} -q -d+2 gentoodebug ${options} threading=$(_boost_threading) ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" --buildid=debug"
-
-		${BJAM} -q -d+2 gentoodebug ${options} \
-			threading=$(_boost_threading) ${link_opts} runtime-link=shared \
-			--includedir="${D}/usr/include" \
-			--libdir="${D}/usr/$(get_libdir)" \
-			--buildid=debug \
-			install || die "install failed for options '${options}'"
+		cmd="${BJAM} -q -d+2 gentoodebug ${options} threading=${threading} ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" --buildid=debug"
+		echo ${cmd}; ${cmd} || die "install failed for options: ${options}"
 	fi
 
 	popd
@@ -297,7 +256,7 @@ boost_src_install() {
 	done
 
 	# The threading libs obviously always gets the "-mt" (multithreading) tag
-	# some packages seem to have a problem with it. Creating symlinks...
+	# some packages seem to have a problem with it. Creating symlinks ...
 	# The same goes for the mpi libs
 	if ! _boost_has_non_mt_lib ; then
 		local libs="lib${BOOST_PN}-mt-${MAJOR_PV}$(get_libname)"
@@ -314,7 +273,6 @@ boost_src_install() {
 	fi
 
 	# Create a subdirectory with completely unversioned symlinks
-	# and store the names in the profiles-file for eselect
 	dodir /usr/$(get_libdir)/boost-${MAJOR_PV} || die
 
 	for f in $(ls -1 ${library_targets} | grep -v debug) ; do
@@ -331,10 +289,10 @@ boost_src_install() {
 
 	[[ ${BOOST_LIB} == python ]] && python_need_rebuild
 
-	# boost's build system truely sucks for not having a destdir.  Because for
-	# this reason we are forced to build with a prefix that includes the
+	# boost's build system truely sucks for not having a destdir.  Because of
+	# this we are forced to build with a prefix that includes the
 	# DESTROOT, dynamic libraries on Darwin end messed up, referencing the
-	# DESTROOT instread of the actual EPREFIX.  There is no way out of here
+	# DESTROOT instead of the actual EPREFIX.  There is no way out of here
 	# but to do it the dirty way of manually setting the right install_names.
 	[[ -z ${ED+set} ]] && local ED=${D%/}${EPREFIX}/
 
@@ -365,13 +323,12 @@ boost_src_install() {
 }
 
 boost_src_test() {
-	cd "${S}/tools/regression/build" || die
-	einfo "Using the following command to build test helpers: "
-	einfo "${BJAM} -q -d+2 gentoorelease ${options} process_jam_log compiler_status"
+	local cmd
+	local options="$(_boost_options)"
 
-	${BJAM} -q -d+2 gentoorelease ${options} \
-		process_jam_log compiler_status \
-		|| die "building regression test helpers failed"
+	cd "${S}/tools/regression/build" || die
+	cmd="${BJAM} -q -d+2 gentoorelease ${options} process_jam_log compiler_status"
+	echo ${cmd}; ${cmd} || die "building regression test helpers failed"
 
 	local path="${S}"
 
@@ -387,12 +344,9 @@ boost_src_test() {
 	# but adapted to our needs.
 
 	# Run the tests & write them into a file for postprocessing
-	einfo "Using the following command to test: "
-	einfo "${BJAM} ${options} --dump-tests"
-
 	# Some of the test-checks seem to rely on regexps
-	LC_ALL="C" \
-	${BJAM} ${options} --dump-tests 2>&1 | tee regress.log || die
+	cmd="${BJAM} ${options} --dump-tests"
+	echo ${cmd}; LC_ALL="C" ${cmd} 2>&1 | tee regress.log || die
 
 	# Postprocessing
 	"${S}/tools/regression/build/bin/gcc-$(gcc-version)/gentoorelease/pch-off/process_jam_log" \
@@ -419,6 +373,45 @@ _boost_has_non_mt_lib() {
 	[[ ${BOOST_LIB} == thread ]] && return 1
 	[[ ${BOOST_LIB} == mpi ]] && return 1
 	return 0
+}
+
+_boost_options() {
+	local options="${BOOST_OPTIONAL_OPTIONS}"
+	if [[ ${CATEGORY} == dev-libs ]] ; then
+		options+=" --with-${BOOST_LIB}"
+	fi
+
+	# https://svn.boost.org/trac/boost/attachment/ticket/2597/add-disable-long-double.patch
+	if use sparc || use mips || use hppa || use arm || use x86-fbsd || use sh; then
+		options+=" --disable-long-double"
+	fi
+
+	options+=" pch=off --user-config=\"${S}/user-config.jam\" \
+		--boost-build=/usr/share/boost-build-${MAJOR_PV} --prefix=\"${D}/usr\" \
+		--layout=versioned"
+
+	echo ${options}
+}
+
+_boost_link_options() {
+	local link_opts="link=shared"
+	if use static ; then
+		link_opts+=",static"
+	fi
+
+	echo ${link_opts}
+}
+
+_boost_library_targets() {
+	local library_targets="*$(get_libname)"
+	# there is no dynamically linked version of libboost_test_exec_monitor
+	if [[ ${BOOST_LIB} == test ]] ; then
+		library_targets+=" libboost_test_exec_monitor*.a"
+	elif use static ; then
+		library_targets+=" *.a"
+	fi
+
+	echo ${library_targets}
 }
 
 _boost_threading() {
