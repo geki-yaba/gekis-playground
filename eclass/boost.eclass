@@ -90,20 +90,23 @@ boost_src_unpack() {
 	done
 
 	# generic data
-	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2"
-	cmd+=" --exclude=${BOOST_P}/boost --exclude=${BOOST_P}/doc"
-	cmd+=" --exclude=${BOOST_P}/tools --exclude=${BOOST_P}/libs"
-	_boost_execute "${cmd}" || die
+	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2 --exclude=${BOOST_P}/boost"
+	cmd+=" --exclude=${BOOST_P}/doc --exclude=${BOOST_P}/libs"
 
 	# libraries necessary to build test tools
 	if use test ; then
-		targets+=" ${BOOST_P}/tools/regression"
 		for library in filesystem system test detail ; do
 			if ! [[ ${targets} =~ /${library} ]] ; then
 				targets+=" ${BOOST_P}/libs/${library}"
 			fi
 		done
+	# exclude tools otherwise
+	else
+		cmd+=" --exclude=${BOOST_P}/tools"
 	fi
+
+	# extract generic data
+	_boost_execute "${cmd}" || die
 
 	# libraries to build
 	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2 ${targets}"
@@ -117,6 +120,15 @@ boost_src_prepare() {
 	EPATCH_SUFFIX="diff" \
 	EPATCH_FORCE="yes" \
 	epatch "${BOOST_PATCHDIR}"
+
+	# boost-1.45
+	if [[ ${SLOT} == 1.45 ]] && use test ; then
+		local jam="${S}/libs/${BOOST_LIB}/test/Jamfile.v2"
+
+		if ! grep -s -q "import testing" "${jam}" ; then
+			sed -e "s:project:import testing ;\n\0:" -i "${jam}"
+		fi
+	fi
 }
 
 boost_src_configure() {
