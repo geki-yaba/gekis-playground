@@ -93,10 +93,11 @@ boost_src_unpack() {
 	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2"
 	cmd+=" --exclude=${BOOST_P}/boost --exclude=${BOOST_P}/doc"
 	cmd+=" --exclude=${BOOST_P}/tools --exclude=${BOOST_P}/libs"
-	echo ${cmd}; ${cmd} || die
+	_boost_execute "${cmd}" || die
 
 	# libraries necessary to build test tools
 	if use test ; then
+		targets+=" ${BOOST_P}/tools/regression"
 		for library in filesystem system test detail ; do
 			if ! [[ ${targets} =~ /${library} ]] ; then
 				targets+=" ${BOOST_P}/libs/${library}"
@@ -106,7 +107,7 @@ boost_src_unpack() {
 
 	# libraries to build
 	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2 ${targets}"
-	echo ${cmd}; ${cmd} || die
+	_boost_execute "${cmd}" || die
 
 	# unpack generic boost patches
 	unpack "${BOOST_PATCHSET}"
@@ -173,13 +174,14 @@ boost_src_compile() {
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
-	cmd="${BJAM} ${jobs} -q -d+2 gentoorelease ${options} threading=${threading} ${link_opts} runtime-link=shared"
-	echo ${cmd}; ${cmd} || die "building boost failed for options: ${options}"
+	cmd="${BJAM} ${jobs} -q -d+2 gentoorelease threading=${threading}"
+	cmd+=" ${link_opts} runtime-link=shared ${options}"
+	_boost_execute "${cmd}" || die "build failed for options: ${options}"
 
 	# ... and do the whole thing one more time to get the debug libs
 	if use debug ; then
-		cmd="${BJAM} ${jobs} -q -d+2 gentoodebug ${options} threading=${threading} ${link_opts} runtime-link=shared --buildid=debug"
-		echo ${cmd}; ${cmd} || die "building boost failed for options: ${options}"
+		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
+		_boost_execute "${cmd}" || die "build failed for options: ${options}"
 	fi
 }
 
@@ -190,16 +192,19 @@ boost_src_install() {
 	local library_targets="$(_boost_library_targets)"
 	local threading="$(_boost_threading)"
 
-	pushd "libs/${BOOST_LIB}/build"
-	cmd="${BJAM} -q -d+2 gentoorelease ${options} threading=${threading} ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" install"
-	echo ${cmd}; ${cmd} || die "install failed for options: ${options}"
+	pushd "libs/${BOOST_LIB}/build" >/dev/null
+
+	cmd="${BJAM} -q -d+2 gentoorelease threading=${threading} ${link_opts}"
+	cmd+=" runtime-link=shared --includedir=${D}/usr/include"
+	cmd+=" --libdir=${D}/usr/$(get_libdir) ${options} install"
+	_boost_execute "${cmd}" || die "install failed for options: ${options}"
 
 	if use debug ; then
-		cmd="${BJAM} -q -d+2 gentoodebug ${options} threading=${threading} ${link_opts} runtime-link=shared --includedir=\"${D}/usr/include\" --libdir=\"${D}/usr/$(get_libdir)\" --buildid=debug"
-		echo ${cmd}; ${cmd} || die "install failed for options: ${options}"
+		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
+		_boost_execute "${cmd}" || die "install failed for options: ${options}"
 	fi
 
-	popd
+	popd >/dev/null
 
 	[[ ${BOOST_LIB} == python ]] || rm -rf "${D}/usr/include/boost-${MAJOR_PV}/boost"/python* || die
 
@@ -323,49 +328,59 @@ boost_src_install() {
 }
 
 boost_src_test() {
-	local cmd
-	local options="$(_boost_options)"
+	if use test ; then
+		local cmd
+		local options="$(_boost_options)"
 
-	cd "${S}/tools/regression/build" || die
-	cmd="${BJAM} -q -d+2 gentoorelease ${options} process_jam_log compiler_status"
-	echo ${cmd}; ${cmd} || die "building regression test helpers failed"
+		cd "${S}/tools/regression/build" || die
+		cmd="${BJAM} -q -d+2 gentoorelease ${options} process_jam_log compiler_status"
+		_boost_execute "${cmd}" || die "build of regression test helpers failed"
 
-	local path="${S}"
+		local path="${S}"
 
-	if [[ ${CATEGORY} == dev-libs ]] ; then
-		path+="/libs/${BOOST_LIB}/test"
-	else
-		path+="/status"
-	fi
+		if [[ ${CATEGORY} == dev-libs ]] ; then
+			path+="/libs/${BOOST_LIB}/test"
+		else
+			path+="/status"
+		fi
 
-	cd "${path}" || die
+		cd "${path}" || die
 
-	# The following is largely taken from tools/regression/run_tests.sh,
-	# but adapted to our needs.
+		# The following is largely taken from tools/regression/run_tests.sh,
+		# but adapted to our needs.
 
-	# Run the tests & write them into a file for postprocessing
-	# Some of the test-checks seem to rely on regexps
-	cmd="${BJAM} ${options} --dump-tests"
-	echo ${cmd}; LC_ALL="C" ${cmd} 2>&1 | tee regress.log || die
+		# Run the tests & write them into a file for postprocessing
+		# Some of the test-checks seem to rely on regexps
+		cmd="${BJAM} ${options} --dump-tests"
+		echo ${cmd}; LC_ALL="C" ${cmd} 2>&1 | tee regress.log || die
 
-	# Postprocessing
-	"${S}/tools/regression/build/bin/gcc-$(gcc-version)/gentoorelease/pch-off/process_jam_log" \
-		--v2 <regress.log
+		# Postprocessing
+		"${S}/tools/regression/build/bin/gcc-$(gcc-version)/gentoorelease/pch-off/process_jam_log" --v2 <regress.log
 
-	#[[ -n $? ]] && die "Postprocessing the build log failed"
+		#[[ -n $? ]] && die "Postprocessing the build log failed"
 
-	cat > comment.html <<- __EOF__
+		cat > comment.html <<- __EOF__
 <p>Tests are run on a <a href="http://www.gentoo.org/">Gentoo</a> system.</p>
 __EOF__
 
-	# Generate the build log html summary page
-	"${S}/tools/regression/build/bin/gcc-$(gcc-version)/gentoorelease/pch-off/compiler_status" \
-		--v2 --comment comment.html "${S}" cs-$(uname).html cs-$(uname)-links.html
+		# Generate the build log html summary page
+		"${S}/tools/regression/build/bin/gcc-$(gcc-version)/gentoorelease/pch-off/compiler_status" \
+			--v2 --comment comment.html "${S}" cs-$(uname).html cs-$(uname)-links.html
 
-	[[ -n $? ]] && die "Generating the build log html summary page failed"
+		[[ -n $? ]] && die "Generating the build log html summary page failed"
 
-	# And do some cosmetic fixes :)
-	sed -e 's|http://www.boost.org/boost.png|boost.png|' -i *.html || die
+		# And do some cosmetic fixes :)
+		sed -e 's|http://www.boost.org/boost.png|boost.png|' -i *.html || die
+	else
+		einfo "Enable useflag[test] to actually run tests!"
+	fi
+}
+
+_boost_execute() {
+	# pretty print
+	einfo "${@//--/\n\t--}"
+	${@}
+	return ${?}
 }
 
 _boost_has_non_mt_lib() {
@@ -377,18 +392,17 @@ _boost_has_non_mt_lib() {
 
 _boost_options() {
 	local options="${BOOST_OPTIONAL_OPTIONS}"
-	if [[ ${CATEGORY} == dev-libs ]] ; then
-		options+=" --with-${BOOST_LIB}"
-	fi
-
 	# https://svn.boost.org/trac/boost/attachment/ticket/2597/add-disable-long-double.patch
 	if use sparc || use mips || use hppa || use arm || use x86-fbsd || use sh; then
 		options+=" --disable-long-double"
 	fi
 
-	options+=" pch=off --user-config=\"${S}/user-config.jam\" \
-		--boost-build=/usr/share/boost-build-${MAJOR_PV} --prefix=\"${D}/usr\" \
-		--layout=versioned"
+	options+=" pch=off --user-config=${S}/user-config.jam --prefix=${D}/usr"
+	options+=" --boost-build=/usr/share/boost-build-${MAJOR_PV} --layout=versioned"
+
+	if [[ ${CATEGORY} == dev-libs ]] ; then
+		options+=" --with-${BOOST_LIB}"
+	fi
 
 	echo ${options}
 }

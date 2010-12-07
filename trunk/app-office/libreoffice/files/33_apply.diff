@@ -53,6 +53,17 @@
  +AC_ARG_ENABLE(python,
  +[  --disable-python         Disable build of Python 2.x UNO API
  +],,)
+@@ -51,8 +51,8 @@
+ --- postprocess/prj/build.lst.orig	2010-01-02 17:25:56.000000000 +0100
+ +++ postprocess/prj/build.lst	2010-01-02 17:26:22.000000000 +0100
+ @@ -1,4 +1,4 @@
+--po      postprocess     ::      accessibility automation basctl bean BINFILTER:binfilter chart2 configmgr CRASHREP:crashrep cui dbaccess desktop dtrans embeddedobj embedserv EPM:epm eventattacher extensions extras fileaccess filter forms fpicker helpcontent2 hwpfilter io JAVAINSTALLER2:javainstaller2 lingucomponent MATHMLDTD:MathMLDTD ODK:odk officecfg package padmin psprint_config remotebridges sc scaddins sccomp scp2 scripting sd setup_native slideshow starmath sw sysui testtools ucb UnoControls unoxml ure wizards xmerge xmlsecurity MORE_FONTS:more_fonts AGFA_MONOTYPE_FONTS:agfa_monotype_fonts DICTIONARIES:dictionaries OOo:pyuno OOo:readlicense_oo SO:top unodevtools JFREEREPORT:jfreereport REPORTBUILDER:reportbuilder reportdesign CT2N:ct2n LANGUAGETOOL:languagetool SDEXT:sdext SWEXT:swext uui writerfilter oox MYSQLC:mysqlc NLPSOLVER:nlpsolver NULL
+-+po      postprocess     ::      accessibility automation basctl bean BINFILTER:binfilter chart2 configmgr CRASHREP:crashrep cui dbaccess desktop dtrans embeddedobj embedserv EPM:epm eventattacher extensions extras fileaccess filter forms fpicker helpcontent2 hwpfilter io JAVAINSTALLER2:javainstaller2 lingucomponent MATHMLDTD:MathMLDTD ODK:odk officecfg package padmin psprint_config remotebridges sc scaddins sccomp scp2 scripting sd setup_native slideshow starmath sw sysui testtools ucb UnoControls unoxml ure wizards xmerge xmlsecurity MORE_FONTS:more_fonts AGFA_MONOTYPE_FONTS:agfa_monotype_fonts DICTIONARIES:dictionaries PYUNO:pyuno OOo:readlicense_oo SO:top unodevtools JFREEREPORT:jfreereport REPORTBUILDER:reportbuilder reportdesign CT2N:ct2n LANGUAGETOOL:languagetool SDEXT:sdext SWEXT:swext uui writerfilter oox MYSQLC:mysqlc NLPSOLVER:nlpsolver NULL
++-po      postprocess     ::      accessibility automation basctl bean BINFILTER:binfilter chart2 configmgr CRASHREP:crashrep cui dbaccess desktop dtrans embeddedobj embedserv EPM:epm eventattacher extensions extras fileaccess filter forms fpicker helpcontent2 hwpfilter io JAVAINSTALLER2:javainstaller2 lingucomponent MATHMLDTD:MathMLDTD ODK:odk officecfg package padmin psprint_config remotebridges sc scaddins sccomp scp2 scripting sd setup_native slideshow starmath sw sysui testtools ucb UnoControls unoxml ure wizards xmerge xmlsecurity MORE_FONTS:more_fonts AGFA_MONOTYPE_FONTS:agfa_monotype_fonts DICTIONARIES:dictionaries OOo:pyuno OOo:readlicense_oo SO:top unodevtools JFREEREPORT:jfreereport REPORTBUILDER:reportbuilder reportdesign CT2N:ct2n NLPSOLVER:nlpsolver LANGUAGETOOL:languagetool SDEXT:sdext SWEXT:swext uui writerfilter oox MYSQLC:mysqlc NLPSOLVER:nlpsolver NULL
+++po      postprocess     ::      accessibility automation basctl bean BINFILTER:binfilter chart2 configmgr CRASHREP:crashrep cui dbaccess desktop dtrans embeddedobj embedserv EPM:epm eventattacher extensions extras fileaccess filter forms fpicker helpcontent2 hwpfilter io JAVAINSTALLER2:javainstaller2 lingucomponent MATHMLDTD:MathMLDTD ODK:odk officecfg package padmin psprint_config remotebridges sc scaddins sccomp scp2 scripting sd setup_native slideshow starmath sw sysui testtools ucb UnoControls unoxml ure wizards xmerge xmlsecurity MORE_FONTS:more_fonts AGFA_MONOTYPE_FONTS:agfa_monotype_fonts DICTIONARIES:dictionaries PYUNO:pyuno OOo:readlicense_oo SO:top unodevtools JFREEREPORT:jfreereport REPORTBUILDER:reportbuilder reportdesign CT2N:ct2n NLPSOLVER:nlpsolver LANGUAGETOOL:languagetool SDEXT:sdext SWEXT:swext uui writerfilter oox MYSQLC:mysqlc NLPSOLVER:nlpsolver NULL
+  po	postprocess			    	usr1	-	all	po_mkout NULL
+  po	postprocess\checkxml		nmake	-	all	po_checkxml NULL
+  po	postprocess\packconfig		nmake	-	all	po_packconfig po_checkxml NULL
 @@ -163,20 +163,18 @@
  +#endif
  --- scp2/source/python/module_python_mailmerge.scp.orig	2010-01-02 17:44:38.000000000 +0100
@@ -78,6 +89,26 @@
  +#endif
  --- scp2/source/ooo/makefile.mk.orig	2010-01-02 17:47:45.000000000 +0100
  +++ scp2/source/ooo/makefile.mk	2010-01-02 17:48:19.000000000 +0100
+@@ -192,8 +190,8 @@
+  .ENDIF
+ +.ENDIF
+  
+- .IF "$(ENABLE_SVCTAGS)" == "YES"
+- SCPDEFS+=-DENABLE_SVCTAGS
++ .IF "$(SYSTEM_LIBTEXTCAT)" == "YES"
++ SCPDEFS+=-DSYSTEM_LIBTEXTCAT
+ --- scp2/source/ooo/common_brand.scp.orig	2010-01-02 17:48:26.000000000 +0100
+ +++ scp2/source/ooo/common_brand.scp	2010-01-02 17:49:41.000000000 +0100
+ @@ -1373,7 +1373,7 @@
+@@ -239,7 +237,7 @@
+ +.ENDIF
+  
+  xxxx:
+-     echo $(PERL) -w $(SOLARENV)$/bin$/gen_update_info.pl --buildid $(BUILD) --arch "$(RTL_ARCH)" --os "$(RTL_OS)" --lstfile $(PRJ)$/util$/openoffice.lst --product OpenOffice --languages $(subst,$(@:s/_/ /:1)_, $(@:b)) $(PRJ)$/util$/update.xml
++     echo $(PERL) -w $(SOLARENV)$/bin$/gen_update_info.pl --buildid $(BUILD) --arch "$(RTL_ARCH)" --os "$(RTL_OS)" --lstfile $(PRJ)$/util$/openoffice.lst --product LibreOffice --languages $(subst,$(@:s/_/ /:1)_, $(@:b)) $(PRJ)$/util$/update.xml
+ @@ -365,12 +367,14 @@
+  .ENDIF			# "$(alllangiso)"!=""
+  .ENDIF
 @@ -250,8 +248,8 @@
   .ENDIF			# "$(LOCALPYFILES)"!=""
   
