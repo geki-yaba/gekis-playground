@@ -40,13 +40,12 @@ boost-tools_src_configure() {
 }
 
 boost-tools_src_compile() {
+	local cmd
+	local options="$(_boost_options)"
+
 	cd "${S}/tools"
-
-	einfo "Using the following command to build the tools:"
-	einfo "${BJAM} ${jobs} -q -d+2 gentoorelease ${options}"
-
-	${BJAM} ${jobs} -q -d+2 gentoorelease ${options} \
-		|| die "building tools failed"
+	cmd="${BJAM} ${jobs} -q -d+2 gentoorelease ${options}"
+	_boost_execute "${cmd}" || die "building tools failed"
 }
 
 boost-tools_src_install() {
