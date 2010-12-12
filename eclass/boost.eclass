@@ -117,18 +117,12 @@ boost_src_unpack() {
 }
 
 boost_src_prepare() {
-	EPATCH_SUFFIX="diff" \
-	EPATCH_FORCE="yes" \
+	EPATCH_SUFFIX="diff"
+	EPATCH_FORCE="yes"
 	epatch "${BOOST_PATCHDIR}"
 
-	# boost-1.45
-	if [[ ${SLOT} == 1.45 ]] && use test ; then
-		local jam="${S}/libs/${BOOST_LIB}/test/Jamfile.v2"
-
-		if ! grep -s -q "import testing" "${jam}" ; then
-			sed -e "s:project:import testing ;\n\0:" -i "${jam}"
-		fi
-	fi
+	# fix tests
+	_boost_fix_jamtest
 }
 
 boost_src_configure() {
@@ -447,4 +441,22 @@ _boost_threading() {
 	fi
 
 	echo ${threading}
+}
+
+_boost_fix_jamtest() {
+	# boost-1.45
+	if [[ ${SLOT} == 1.45 ]] && use test ; then
+		local libraries="${S}/libs/${BOOST_LIB}"
+		if [[ ${CATEGORY} != dev-libs ]] ; then
+			libraries="$(find "${S}"/lib/ -type d -name test)"
+		fi
+
+		for library in ${libraries} ; do
+			local jam="${library}/Jamfile.v2"
+
+			if [ -f ${jam} ] && ! grep -s -q "import testing" "${jam}" ; then
+				sed -e "s:project:import testing ;\n\0:" -i "${jam}"
+			fi
+		done
+	fi
 }
