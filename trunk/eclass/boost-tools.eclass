@@ -45,7 +45,7 @@ boost-tools_src_compile() {
 
 	cd "${S}/tools"
 	cmd="${BJAM} ${jobs} -q -d+2 gentoorelease ${options}"
-	_boost_execute "${cmd}" || die "building tools failed"
+	_boost_execute "${cmd}" || die "build of tools failed"
 }
 
 boost-tools_src_install() {
