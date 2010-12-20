@@ -1,0 +1,20 @@
+--- distro-configs/CommonLinux.conf.in	2006-11-04 23:51:23.000000000 +0100
++++ distro-configs/CommonLinux.conf.in	2006-11-04 23:51:43.000000000 +0100
+@@ -1,17 +1,12 @@
+ --disable-epm
+---with-openldap
+ --with-build-version=\"libreoffice-build @OOO_BUILDVERSION@\"
+ --without-fonts
+ --with-system-jpeg
+ --with-system-libxml
+---with-system-mozilla
+---with-system-openssl
+ --with-system-python
+ --with-system-stdlibs
+ --with-system-zlib
+ --with-system-poppler
+ --with-unix-wrapper=ooffice@OOO_BINSUFFIX@
+---enable-evolution2
+---enable-dbus
+ --with-alloc=system
+ @CAIRO_CONFIGURE_FLAG@
