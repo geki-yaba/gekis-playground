@@ -1,0 +1,19 @@
+--- libs/python/build/Jamfile.v2	2010-12-20 16:31:02.992006424 +0100
++++ libs/python/build/Jamfile.v2	2010-12-20 16:29:58.480006424 +0100
+@@ -141,11 +141,13 @@
+ 
+ }
+ 
+-lib_boost_python ;
+-boost-install boost_python ;
+-
+ if $(py3-version)
+ {
+     lib_boost_python yes ;
+     boost-install boost_python3 ;
+ }
++else
++{
++    lib_boost_python ;
++    boost-install boost_python ;
++}
