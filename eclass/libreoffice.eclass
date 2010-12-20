@@ -208,8 +208,8 @@ libreoffice_pkg_setup() {
 
 	# space
 	CHECKREQS_MEMORY="512"
-	use debug && CHECKREQS_DISK_BUILD="14000" \
-		|| CHECKREQS_DISK_BUILD="7000"
+	use debug && CHECKREQS_DISK_BUILD="16000" \
+		|| CHECKREQS_DISK_BUILD="8000"
 	use debug && CHECKREQS_DISK_USR="1024" \
 		|| CHECKREQS_DISK_USR="512"
 	check_reqs
