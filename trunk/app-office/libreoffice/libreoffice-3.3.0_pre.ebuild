@@ -14,4 +14,4 @@ S="${WORKDIR}/${PN}"
 CLONE_DIR="${S}/clone"
 
 # exclude patches
-EPATCH_EXCLUDE="$(for f in "${FILESDIR}"/33_*; do basename $f; done)"
+EPATCH_EXCLUDE="33_*"
