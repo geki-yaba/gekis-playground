@@ -16,7 +16,8 @@
 -ibm-j9vm.diff, hmth
 +#ibm-j9vm.diff, hmth
  # system db check
- system-db-check.diff, i#65979, hmth
+-system-db-check.diff, i#65979, hmth
++#system-db-check.diff, i#65979, hmth
  # User ~/.ooo3 as user dir
 -scp2-user-config-ooo3.diff, pmladek
 +#scp2-user-config-ooo3.diff, pmladek
