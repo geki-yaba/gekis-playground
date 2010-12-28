@@ -119,14 +119,14 @@ CDEPEND="${SDEPEND}
 	java? ( dev-java/bsh
 		dev-java/lucene:2.9[analyzers] )
 	jemalloc? ( dev-libs/jemalloc )
-	kde? ( <x11-libs/qt-core-4.7
-		 <x11-libs/qt-gui-4.7
-		>=kde-base/kdelibs-4.4
-		>=kde-base/kstyles-4.4 )
+	kde? ( x11-libs/qt-core
+		x11-libs/qt-gui
+		kde-base/kdelibs
+		kde-base/kstyles )
 	ldap? ( net-nds/openldap )
 	nsplugin? ( net-libs/xulrunner:1.9 )
-	mono? ( >=dev-lang/mono-2.4 )
-	mysql? ( >=dev-db/mysql-connector-c++-1.1.0_pre814 )
+	mono? ( dev-lang/mono )
+	mysql? ( >=dev-db/mysql-connector-c++-1.1.0 )
 	opengl? ( virtual/opengl virtual/glu )
 	python? ( dev-lang/python:2.7[threads,xml] )
 	webdav? ( net-libs/neon )
