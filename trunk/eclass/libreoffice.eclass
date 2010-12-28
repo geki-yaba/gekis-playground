@@ -158,6 +158,7 @@ CDEPEND="${SDEPEND}
 	  x11-libs/cairo[svg]
 	  x11-libs/libXaw
 	  x11-libs/libXinerama
+	  x11-libs/libXrandr
 	  x11-libs/libXtst
 	  x11-libs/startup-notification
 	  virtual/jpeg"
