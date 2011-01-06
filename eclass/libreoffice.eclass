@@ -14,6 +14,7 @@ WANT_AUTOMAKE="1.9"
 
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
+EPATCH_EXCLUDE="hotfix-*"
 
 inherit autotools bash-completion boost-utils check-reqs confutils db-use eutils \
 	fdo-mime flag-o-matic java-pkg-opt-2 kde4-base mono multilib versionator
@@ -279,6 +280,9 @@ libreoffice_src_unpack() {
 	else
 		unpack "${MY_P}.tar.gz"
 	fi
+
+	# copy hotfixes
+	cp -v "${FILESDIR}"/hotfixes-* "${S}/patches/hotfixes"
 }
 
 libreoffice_src_prepare() {
