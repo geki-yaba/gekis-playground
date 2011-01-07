@@ -1,0 +1,11 @@
+--- configure.in.orig	2011-01-06 22:12:26.364006716 +0100
++++ configure.in	2011-01-06 22:12:47.344007667 +0100
+@@ -4365,7 +4365,7 @@
+ }
+     ], [AC_MSG_RESULT([yes])], [AC_MSG_ERROR([no. you need at least db 4.1])])
+     save_LIBS="$LIBS"
+-    for dbver in '' -5.1 5.1 -5.0 5.0 -5 5 -4.8 4.8 -4.7 4.7 -4 4; do
++    for dbver in -5.1 5.1 -5.0 5.0 -5 5 -4.8 4.8 -4.7 4.7 -4 4 ''; do
+         AC_CHECK_LIB(db$dbver, db_create, [ DB_LIB="db$dbver"; DB_CPPLIB="db_cxx$dbver"; LIBS="-ldb$dbver $LIBS"; break ])
+     done
+     AC_CHECK_FUNC(db_create, [], [ AC_MSG_ERROR([db not installed or functional]) ])

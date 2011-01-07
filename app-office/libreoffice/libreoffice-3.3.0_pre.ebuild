@@ -14,4 +14,4 @@ S="${WORKDIR}/${PN}"
 CLONE_DIR="${S}/clone"
 
 # exclude patches
-EPATCH_EXCLUDE+=" 33_*"
+EPATCH_EXCLUDE="33_*"

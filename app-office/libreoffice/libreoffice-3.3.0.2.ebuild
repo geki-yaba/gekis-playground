@@ -17,4 +17,4 @@ SRC_URI+=" ${LIBRE_SRC}/${MY_P}.tar.gz"
 S="${WORKDIR}/${MY_P}"
 
 # exclude patches
-EPATCH_EXCLUDE+=" pre_*"
+EPATCH_EXCLUDE="pre_*"

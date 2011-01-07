@@ -1,0 +1,23 @@
+--- configure.in
++++ configure.in
+@@ -4312,12 +4312,16 @@
+        else return 1;
+ }
+     ], [AC_MSG_RESULT([yes])], [AC_MSG_ERROR([no. you need at least db 4.1])])
+-    DB_LIB=
++    save_LIBS="$LIBS"
+     for dbver in -5.1 5.1 -5.0 5.0 -5 5 -4.8 4.8 -4.7 4.7 -4 4 ''; do
+-        AC_CHECK_LIB(db$dbver, dbopen, [ DB_LIB="db$dbver"; DB_CPPLIB="db_cxx$dbver"; break; ] ,
+-            AC_CHECK_LIB(db$dbver, __db185_open, [ DB_LIB="db$dbver"; DB_CPPLIB="db_cxx$dbver"; break; ]
+-            )
+-        )
++        AC_CHECK_LIB(db$dbver, db_create, [ DB_LIB="db$dbver"; DB_CPPLIB="db_cxx$dbver"; LIBS="-ldb$dbver $LIBS"; break ])
+     done
+-    if test -z "$DB_LIB" ; then 
+-        AC_MSG_ERROR([db not installed or functional])
+-    fi
++    AC_CHECK_FUNC(db_create, [], [ AC_MSG_ERROR([db not installed or functional]) ])
++    LIBS="$save_LIBS"
+     SCPDEFS="$SCPDEFS -DSYSTEM_DB"
+ else
+     AC_MSG_RESULT([internal])
