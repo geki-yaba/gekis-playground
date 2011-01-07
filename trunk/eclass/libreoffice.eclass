@@ -14,7 +14,6 @@ WANT_AUTOMAKE="1.9"
 
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
-EPATCH_EXCLUDE="hotfix-*"
 
 inherit autotools bash-completion boost-utils check-reqs confutils db-use eutils \
 	fdo-mime flag-o-matic java-pkg-opt-2 kde4-base mono multilib versionator
@@ -258,8 +257,12 @@ libreoffice_pkg_setup() {
 }
 
 libreoffice_src_unpack() {
+	local hotfixes="${MY_PV}"
+
 	# layered clone/build process - fun! :)
 	if [[ ${PV} == *_pre ]]; then
+		hotfixes="pre"
+
 		local root="git://anongit.freedesktop.org/${PN}"
 		EGIT_BRANCH="${PN}-$(replace_all_version_separators - ${MY_PV})"
 		# eclass/git feature: if not equal use EGIT_COMMIT, which defaults to master
@@ -282,7 +285,7 @@ libreoffice_src_unpack() {
 	fi
 
 	# copy hotfixes
-	cp -v "${FILESDIR}"/hotfixes-* "${S}/patches/hotfixes"
+	cp -v "${FILESDIR}/${hotfixes}"/hotfix-* "${S}/patches/hotfixes"
 }
 
 libreoffice_src_prepare() {
