@@ -515,12 +515,6 @@ libreoffice_src_configure() {
 }
 
 libreoffice_src_compile() {
-	# download 3rd party software
-	# - no more bundled within OOo tarballs
-	# - other phases just delete it again, wtf!
-	# - tell me, how to do better, please ...
-	./download_external_sources.sh
-
 	# build
 	make || _libreoffice_die "make failed"
 }

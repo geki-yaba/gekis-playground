@@ -41,6 +41,7 @@ src_configure() {
 
 	# configure
 	econf \
+		--with-jemalloc-prefix=j \
 		$(use_enable debug) \
 		$(use_enable profile prof) \
 		$(use_enable stats) \
@@ -52,6 +53,9 @@ src_install() {
 
 	# install
 	make DESTDIR="${D}" install
+
+	# rename pproff to prevent collision
+	mv "${D}"/usr/bin/pprof "${D}"/usr/bin/jpprof
 }
 
 git_path_fix() {

@@ -1,11 +1,14 @@
 --- patches/dev300/apply.orig	2010-11-09 18:38:34.956004724 +0100
 +++ patches/dev300/apply	2010-11-09 19:01:20.240004578 +0100
-@@ -179,7 +179,7 @@
+@@ -179,9 +179,9 @@
  [ BuildBits ]
  
  # Upgraded internal ICU to 4.2.1
 -icu-4.2.1.diff, cbosdo
 +#icu-4.2.1.diff, cbosdo
+ # pass $ORIGIN correctly to RPATH
+-icu-4.2.1-rpath.diff. pmladek
++#icu-4.2.1-rpath.diff. pmladek
  
  [ TemporaryHacks ]
  
