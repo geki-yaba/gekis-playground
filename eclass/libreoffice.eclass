@@ -532,7 +532,7 @@ libreoffice_src_install() {
 		"${ED}/usr/$(get_libdir)/${PN}/ure/share/java"/*.jar
 
 	# move bash-completion from /etc to /usr/share/bash-completion. bug 226061
-	local name="ooffice-libre"
+	local name="libreoffice-libre"
 	dobashcompletion "${ED}"/etc/bash_completion.d/${name}.sh ${name}
 	rm -rf "${ED}"/etc/bash_completion.d/ || die "rm failed"
 }
@@ -560,13 +560,13 @@ libreoffice_pkg_postinst() {
 	# info
 	elog " To start OpenOffice.org, run:"
 	elog
-	elog " $ ooffice-libre"
+	elog " $ libreoffice-libre"
 	elog
 	elog "__________________________________________________________________"
 	elog " Also, for individual components, you can use any of:"
 	elog
-	elog " oobase-libre, oocalc-libre, oodraw-libre, oofromtemplate-libre,"
-	elog " ooimpress-libre, oomath-libre, ooweb-libre or oowriter-libre"
+	elog " lobase-libre, localc-libre, lodraw-libre, lofromtemplate-libre,"
+	elog " loimpress-libre, lomath-libre, loweb-libre or lowriter-libre"
 	elog
 	elog "__________________________________________________________________"
 	elog " Some parts have to be installed via Extension Manager now"
@@ -589,8 +589,8 @@ libreoffice_pkg_postinst() {
 	elog " Either with the GUI ..."
 	elog " or with the 'unopkg' commandline-tool."
 	elog
-	elog " ex.:	# unopkg add /usr/$(get_libdir)/${PN}/share/extension/install/<extension>.oxt"
-	elog "		# unopkg remove <Identifier>"
+	elog " ex.:	# unopkg-libre add /usr/$(get_libdir)/${PN}/share/extension/install/<extension>.oxt"
+	elog "		# unopkg-libre remove <Identifier>"
 	elog
 	elog " To get the Identifier check the list of installed extensions."
 	elog
