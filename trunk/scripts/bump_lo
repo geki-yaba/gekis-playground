@@ -1,0 +1,169 @@
+#!/bin/bash
+
+# parameters
+EOLD=$1
+ENEW=$2
+TYPE=$3
+EREM=$4
+
+# variables
+ECLASS_DIR=eclass
+ECLASS="${ECLASS_DIR}/libreoffice.eclass"
+LIST=ooo.lst
+TAG=$(basename $ENEW .ebuild)
+
+# functions
+die()
+{
+	echo "error: ${@}"
+
+	if [ -n ${TYPE} ]
+	then
+		case ${TYPE} in
+			svn) clean_svn
+				;;
+			*)	;;
+		esac
+	fi
+
+	exit 1
+}
+
+warn()
+{
+	echo "warning: ${@}"
+}
+
+help()
+{
+	local path="app-office/libreoffice"
+	cat << EOH
+  Usage: $0 ${path}/<old_ebuild> ${path}/<new_ebuild> [<type>] [<remove old>]
+
+  Where <type> could be:
+    svn   - subversion
+    git   - git (not implemented)
+
+  Set <remove old> to anything to remove old ebuild
+EOH
+
+	die
+}
+
+fetch_list ()
+{
+	# from "download_external_sources.sh"
+	wget http://cgit.freedesktop.org/libreoffice/bootstrap/plain/ooo.lst?id=${TAG} -O ${LIST}
+	sed -e /seamonkey/d -i ${LIST}
+
+	return 0
+}
+
+filter_list()
+{
+	if [ ! -f "$LIST" ]
+	then
+		die "filter_list() - File $LIST does not exists"
+	fi
+
+	for package in $(egrep -v "^http|\.txt|\.html|core.zip" $LIST | cut -c 34- | cut -d "." -f 1 | sed -r -e "s/([A-Za-z]+)[0-9_-].*/\1/")
+	do
+		if egrep -q -s -i -c "^[^#].*\/$package" $ECLASS
+		then
+			echo "Dependency found: $package"
+			sed -e /-$package/d -i $LIST
+		else
+			echo "Dependency NOT found: $package"
+		fi
+	done
+
+	return 0
+}
+
+clean_svn()
+{
+	svn revert "${ENEW}"
+	rm -f "${ENEW}"
+}
+
+bump_svn()
+{
+	if [ -n "${EREM}" ]
+	then
+		svn mv "${EOLD}" "${ENEW}"
+	else
+		svn cp "${EOLD}" "${ENEW}"
+	fi
+	
+	sed /ADDONS_SRC/d -i "${ENEW}"
+}
+
+bump_ebuild()
+{
+	[ -f "$ENEW" ] && rm -f "$ENEW"
+	if [ -z "$EOLD" -o -z "$ENEW" -o -z "$LIST" ]
+	then
+		die "bump_ebuild() - missing parameters: bump_ebuild <old> <new> <list>)"
+	fi
+
+	if [ -n "${TYPE}" ]
+	then
+		case ${TYPE} in
+			svn) bump_svn
+				;;
+			*) help
+				;;
+		esac
+	else
+		grep -v "ADDONS_SRC" $EOLD >$ENEW
+
+		if [ -n "${EREM}" ]
+		then
+			rm -f "${EOLD}"
+		fi
+	fi
+
+	while read LINE
+	do
+		if [ $(echo "$LINE" |grep -c "^http") -gt 0 ]
+		then
+			SERVER="$LINE"
+		else
+			echo "ADDONS_SRC+=\" ${SERVER}/${LINE}\"" >> $ENEW
+		fi
+	done < $LIST
+
+	echo "SRC_URI+=\" \${ADDONS_SRC}\"" >> $ENEW
+}
+
+# checks
+if [ -z "$EOLD" -o -z "$ENEW" ]
+then
+	help
+fi
+
+if [ ! -f "${ECLASS}" ]
+then
+	die "Eclass file does not exists: ${ECLASS}"
+fi
+
+if [ ! -f "$EOLD" ]
+then
+	die "Ebuild file does not exists: $EOLD"
+fi
+
+if [ -f "$ENEW" ]
+then
+	warn "Removing previous ebuild: $ENEW"
+fi
+
+# bumping
+echo "TAG: $TAG"
+echo
+
+fetch_list
+filter_list
+bump_ebuild
+
+# cleanup
+rm -f $LIST
