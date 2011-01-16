@@ -413,7 +413,6 @@ libreoffice_src_prepare() {
 
 		# wiki extension
 		if use wiki; then
-			echo "--with-system-apache-commons" >> ${CONFFILE}
 			echo "--with-system-servlet-api" >> ${CONFFILE}
 			echo "--with-commons-codec-jar=$(java-pkg_getjar \
 				commons-codec commons-codec.jar)" >> ${CONFFILE}
@@ -429,6 +428,7 @@ libreoffice_src_prepare() {
 		if use reportbuilder || use wiki; then
 			echo "--with-commons-logging-jar=$(java-pkg_getjar \
 				commons-logging commons-logging.jar)" >> ${CONFFILE}
+			echo "--with-system-apache-commons" >> ${CONFFILE}
 		fi
 
 		# junit:4
