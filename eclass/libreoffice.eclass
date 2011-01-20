@@ -554,7 +554,7 @@ libreoffice_pkg_postinst() {
 		$(java-config --classpath=jdbc-mysql 2>/dev/null) >/dev/null
 
 	# bash-completion postinst
-	BASHCOMPLETION_NAME=ooffice \
+	BASHCOMPLETION_NAME="libreoffice-libre" \
 	bash-completion_pkg_postinst
 
 	# info
@@ -594,7 +594,7 @@ libreoffice_pkg_postinst() {
 	elog
 	elog " To get the Identifier check the list of installed extensions."
 	elog
-	elog "		# unopkg list"
+	elog "		# unopkg-libre list"
 }
 
 _libreoffice_pax_fix() {
