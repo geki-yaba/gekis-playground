@@ -44,7 +44,7 @@ help()
     svn   - subversion
     git   - git (not implemented)
 
-  Set <remove old> to anything to remove old ebuild
+  Set <remove old> non-void to remove old ebuild
 EOH
 
 	die
@@ -144,12 +144,12 @@ fi
 
 if [ ! -f "${ECLASS}" ]
 then
-	die "Eclass file does not exists: ${ECLASS}"
+	die "Eclass file does not exist: ${ECLASS}"
 fi
 
 if [ ! -f "$EOLD" ]
 then
-	die "Ebuild file does not exists: $EOLD"
+	die "Ebuild file does not exist: $EOLD"
 fi
 
 if [ -f "$ENEW" ]
