@@ -521,7 +521,7 @@ libreoffice_src_compile() {
 
 libreoffice_src_install() {
 	# install
-	make DESTDIR="${D}" install || _libreoffice_die "install failed"
+	make DESTDIR="${ED}" install || _libreoffice_die "install failed"
 
 	# access
 	use prefix || chown -RP root:0 "${ED}"
