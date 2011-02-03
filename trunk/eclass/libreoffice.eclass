@@ -16,7 +16,7 @@ KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
 inherit autotools bash-completion boost-utils check-reqs confutils db-use eutils \
-	fdo-mime flag-o-matic java-pkg-opt-2 kde4-base mono multilib versionator
+	fdo-mime flag-o-matic java-pkg-opt-2 kde4-base mono multilib pax-utils versionator
 
 if [[ ${PV} == *_pre ]]; then
 	inherit git
@@ -598,10 +598,8 @@ libreoffice_pkg_postinst() {
 }
 
 _libreoffice_pax_fix() {
-	if [ -x ${EPREFIX}/sbin/chpax ] || [ -x ${EPREFIX}/sbin/paxctl ]; then
-		local bin="${EPREFIX}/usr/$(get_libdir)/${PN}/program/soffice.bin"
-		[ -e ${bin} ] && scanelf -Xxzm ${bin}
-	fi
+	local bin="${EPREFIX}/usr/$(get_libdir)/${PN}/program/soffice.bin"
+	pax-mark -m "${bin}"
 }
 
 _libreoffice_custom-cflags_message() {
