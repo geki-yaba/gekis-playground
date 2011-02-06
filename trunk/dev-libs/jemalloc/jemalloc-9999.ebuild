@@ -55,7 +55,7 @@ src_install() {
 	make DESTDIR="${D}" install
 
 	# rename pproff to prevent collision
-	mv "${D}"/usr/bin/pprof "${D}"/usr/bin/jpprof
+	mv -v "${D}"/usr/bin/pprof "${D}"/usr/bin/jpprof
 }
 
 git_path_fix() {
