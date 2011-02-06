@@ -1,4 +1,4 @@
-# Copyright 1999-2010 Gentoo Foundation
+# Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -7,11 +7,11 @@
 # Purpose: Selectively build/install boost libraries
 #
 
-EAPI="2"
+EAPI="4"
 
 inherit check-reqs flag-o-matic multilib python toolchain-funcs versionator
 
-EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
 
 MAJOR_PV="$(replace_all_version_separators _ ${SLOT})"
 BJAM="bjam-${MAJOR_PV}"
@@ -44,6 +44,13 @@ DEPEND="${RDEPEND}
 
 S="${WORKDIR}/${BOOST_P}"
 
+boost_pkg_pretend() {
+	if use test ; then
+		CHECKREQS_DISK_BUILD="15120"
+		check_reqs
+	fi
+}
+
 boost_pkg_setup() {
 	# use regular expression to read last job count or default to 1 :D
 	jobs="$(echo "${MAKEOPTS}" | sed -r -e \
@@ -51,9 +58,6 @@ boost_pkg_setup() {
 	jobs="-j${jobs:=1}"
 
 	if use test ; then
-		CHECKREQS_DISK_BUILD="1024"
-		check_reqs
-
 		ewarn "The tests may take several hours on a recent machine"
 		ewarn "but they will not fail (unless something weird happens ;-)"
 		ewarn "This is because the tests depend on the used compiler/-version"
@@ -201,8 +205,8 @@ boost_src_install() {
 	pushd "libs/${BOOST_LIB}/build" >/dev/null
 
 	cmd="${BJAM} -q -d+2 gentoorelease threading=${threading} ${link_opts}"
-	cmd+=" runtime-link=shared --includedir=${D}/usr/include"
-	cmd+=" --libdir=${D}/usr/$(get_libdir) ${options} install"
+	cmd+=" runtime-link=shared --includedir=${ED}/usr/include"
+	cmd+=" --libdir=${ED}/usr/$(get_libdir) ${options} install"
 	_boost_execute "${cmd}" || die "install failed for options: ${options}"
 
 	if use debug ; then
@@ -212,23 +216,23 @@ boost_src_install() {
 
 	popd >/dev/null
 
-	[[ ${BOOST_LIB} == python ]] || rm -rf "${D}/usr/include/boost-${MAJOR_PV}/boost"/python* || die
+	[[ ${BOOST_LIB} == python ]] || rm -rf "${ED}/usr/include/boost-${MAJOR_PV}/boost"/python* || die
 
 	# Move the mpi.so to the right place and make sure it's slotted
 	if [[ ${BOOST_LIB} == mpi ]] && [[ -n "${PYVER}" ]]; then
-		exeinto "$(python_get_sitedir)/boost_${MAJOR_PV}" || die
-		doexe "${D}/usr/$(get_libdir)/mpi.so" || die
-		touch "${D}$(python_get_sitedir)/boost_${MAJOR_PV}/__init__.py" || die
-		rm -f "${D}/usr/$(get_libdir)/mpi.so" || die
+		exeinto "$(python_get_sitedir)/boost_${MAJOR_PV}"
+		doexe "${ED}/usr/$(get_libdir)/mpi.so"
+		touch "${ED}$(python_get_sitedir)/boost_${MAJOR_PV}/__init__.py" || die
+		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
 	fi
 
 	# install tests
 	cd "${S}/libs/${BOOST_LIB}/test" || die
 
 	if [ -f regress.log ] ; then
-		docinto status || die
-		dohtml *.html "${S}"/boost.png || die
-		dodoc regress.log || die
+		docinto status
+		dohtml *.html "${S}"/boost.png
+		dodoc regress.log
 	fi
 
 	# install docs
@@ -237,17 +241,17 @@ boost_src_install() {
 		find libs/${BOOST_LIB}/* -iname "test" -or -iname "src" | xargs rm -rf
 
 		insinto /usr/share/doc/${PF}/html
-		doins -r libs/${BOOST_LIB} || die
+		doins -r libs/${BOOST_LIB}
 
 		# avoid broken links
 		insinto /usr/share/doc/${PF}
-		doins LICENSE_1_0.txt || die
+		doins LICENSE_1_0.txt
 
-		dosym /usr/share/doc/${PF}/html/${BOOST_LIB}/doc/index.html \
+		ln -s /usr/share/doc/${PF}/html/${BOOST_LIB}/doc/index.html \
 			/usr/share/doc/${PF}/index.htm
 	fi
 
-	cd "${D}/usr/$(get_libdir)" || die
+	cd "${ED}/usr/$(get_libdir)" || die
 
 	# FIXME: build against installed boost libraries
 	# libraries may have additional libraries with funny names; catch them
@@ -279,22 +283,22 @@ boost_src_install() {
 		fi
 
 		for lib in ${libs} ; do
-			dosym ${lib} "/usr/$(get_libdir)/$(sed -e 's/-mt//' <<< ${lib})" || die
+			ln -s ${lib} "/usr/$(get_libdir)/$(sed -e 's/-mt//' <<< ${lib})" || die
 		done
 	fi
 
 	# Create a subdirectory with completely unversioned symlinks
-	dodir /usr/$(get_libdir)/boost-${MAJOR_PV} || die
+	dodir /usr/$(get_libdir)/boost-${MAJOR_PV}
 
 	for f in $(ls -1 ${library_targets} | grep -v debug) ; do
-		dosym ../${f} /usr/$(get_libdir)/boost-${MAJOR_PV}/${f/-${MAJOR_PV}} || die
+		ln -s ../${f} /usr/$(get_libdir)/boost-${MAJOR_PV}/${f/-${MAJOR_PV}} || die
 	done
 
 	if use debug ; then
-		dodir /usr/$(get_libdir)/boost-${MAJOR_PV}-debug || die
+		dodir /usr/$(get_libdir)/boost-${MAJOR_PV}-debug
 
 		for f in $(ls -1 ${library_targets} | grep debug) ; do
-			dosym ../${f} /usr/$(get_libdir)/boost-${MAJOR_PV}-debug/${f/-${MAJOR_PV}-debug} || die
+			ln -s ../${f} /usr/$(get_libdir)/boost-${MAJOR_PV}-debug/${f/-${MAJOR_PV}-debug} || die
 		done
 	fi
 
@@ -313,7 +317,7 @@ boost_src_install() {
 			if [[ -f ${d} ]] ; then
 				# fix the "soname"
 				ebegin "  correcting install_name of ${d#${ED}}"
-				install_name_tool -id "/${d#${D}}" "${d}"
+				install_name_tool -id "/${d#${ED}}" "${d}"
 				eend $?
 				# fix references to other libs
 				refs=$(otool -XL "${d}" | \
@@ -403,14 +407,14 @@ _boost_options() {
 		options+=" --disable-long-double"
 	fi
 
-	options+=" pch=off --user-config=${S}/user-config.jam --prefix=${D}/usr"
+	options+=" pch=off --user-config=${S}/user-config.jam --prefix=${ED}/usr"
 	options+=" --boost-build=/usr/share/boost-build-${MAJOR_PV} --layout=versioned"
 
 	if [[ ${CATEGORY} == dev-libs ]] ; then
 		options+=" --with-${BOOST_LIB}"
 	fi
 
-	echo ${options}
+	echo -n ${options}
 }
 
 _boost_link_options() {
@@ -419,7 +423,7 @@ _boost_link_options() {
 		link_opts+=",static"
 	fi
 
-	echo ${link_opts}
+	echo -n ${link_opts}
 }
 
 _boost_library_targets() {
@@ -431,7 +435,7 @@ _boost_library_targets() {
 		library_targets+=" *.a"
 	fi
 
-	echo ${library_targets}
+	echo -n ${library_targets}
 }
 
 _boost_threading() {
@@ -440,7 +444,7 @@ _boost_threading() {
 		threading+=",multi"
 	fi
 
-	echo ${threading}
+	echo -n ${threading}
 }
 
 _boost_fix_jamtest() {

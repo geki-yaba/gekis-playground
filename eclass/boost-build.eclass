@@ -1,17 +1,17 @@
-# Copyright 1999-2010 Gentoo Foundation
+# Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-util/boost-build/boost-build-1.42.0.ebuild,v 1.1 2010/03/03 12:32:08 djc Exp $
+# $Header: $
 
 #
 # Author: Hanno Meyer-Thurow <h.mth@web.de>
 # Purpose: Selectively build/install boost build
 #
 
-EAPI="2"
+EAPI="4"
 
 inherit flag-o-matic toolchain-funcs versionator
 
-EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_compile src_install src_test
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_compile src_install src_test
 
 MY_PV="$(replace_all_version_separators _)"
 MAJOR_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))"
@@ -32,10 +32,12 @@ RDEPEND="${DEPEND}"
 
 S="${WORKDIR}/boost_${MY_PV}/tools"
 
-boost-build_pkg_setup() {
-	ewarn "Compilation of boost-build is known to break if {C,LD}FLAGS contain"
+boost-build_pkg_pretend() {
+	ewarn "Compilation of ${PN} is known to break if {C,LD}FLAGS contain"
 	ewarn "extra white space (bug 293652)"
+}
 
+boost-build_pkg_setup() {
 	# set jam root
 	if [[ ${SLOT} > 1.44 ]] ; then
 		BOOST_JAM="${S}/build/v2/engine"
@@ -106,7 +108,7 @@ boost-build_src_install() {
 	cd "${S}/build/v2"
 	insinto /usr/share/boost-build-${MAJOR_PV}
 	doins -r boost-build.jam bootstrap.jam build-system.jam site-config.jam user-config.jam \
-		build kernel options tools util || die
+		build kernel options tools util
 
 	dodoc changes.txt hacking.txt release_procedure.txt \
 		notes/build_dir_option.txt notes/relative_source_paths.txt

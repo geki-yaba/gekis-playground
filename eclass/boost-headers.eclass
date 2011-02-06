@@ -7,11 +7,11 @@
 # Purpose: Install boost headers
 #
 
-EAPI="2"
+EAPI="4"
 
 inherit eutils multilib versionator
 
-EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install
+EXPORT_FUNCTIONS pkg_pretend src_unpack src_prepare src_configure src_compile src_install
 
 MY_P="boost_$(replace_all_version_separators _)"
 LIB="${PN/boost-}"
@@ -33,7 +33,7 @@ PDEPEND="~dev-libs/boost-${PV}"
 
 S="${WORKDIR}/${MY_P}"
 
-boost-headers_pkg_setup() {
+boost-headers_pkg_pretend() {
 	local err=
 
 	ls -1 /usr/$(get_libdir)/libboost_* | grep -v boost_*_*
@@ -61,6 +61,10 @@ boost-headers_src_prepare() {
 	if [[ ${VER} < 1.44 ]] ; then
 		# bug 291660
 		epatch "${FILESDIR}/boost-1.42.0-parameter-needs-python.patch"
+	fi
+
+	if [[ ${VER} > 1.44 ]] ; then
+		epatch "${FILESDIR}/boost-1.45.0-lambda_bind.patch"
 	fi
 }
 

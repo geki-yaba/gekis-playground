@@ -1,8 +1,8 @@
-# Copyright 1999-2010 Gentoo Foundation
+# Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-java/lucene/lucene-2.9.1-r1.ebuild,v 1.1 2010/03/14 07:20:33 ali_bush Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-java/lucene/lucene-2.9.4.ebuild,v 1.2 2011/01/31 21:19:52 grobian Exp $
 
-EAPI="2"
+EAPI="3"
 JAVA_PKG_IUSE="doc source test"
 JAVA_PKG_BSFIX_ALL="no"
 JAVA_PKG_BSFIX_NAME="build.xml common-build.xml"
@@ -21,11 +21,14 @@ IUSE="analyzers"
 DEPEND=">=virtual/jdk-1.5
 	dev-java/ant-nodeps:0
 	dev-java/javacc:0
-	test? ( dev-java/ant-junit =dev-java/junit-3* )"
+	test? ( dev-java/ant-junit dev-java/junit:0 )"
+# junit is needed for compilation because tests are compiled for javacc target even when not requested
 RDEPEND=">=virtual/jdk-1.5"
 
 java_prepare() {
 	sed -i -e '/-Xmax/ d' common-build.xml
+	find -name "*.jar" -type f | xargs rm -v
+	java-pkg_jar-from --build-only --into lib junit junit.jar junit-3.8.2.jar
 }
 
 src_compile() {
@@ -34,7 +37,7 @@ src_compile() {
 	# doesn't use it - it's to fool the <available> test, first time
 	# it's useful not to have ignoresystemclasses=true...
 	ANT_TASKS="ant-nodeps javacc" eant \
-		-Djavacc.home=/usr/share/javacc/lib javacc
+		-Djavacc.home="${EPREFIX}"/usr/share/javacc/lib javacc
 	ANT_TASKS="none" eant -Dversion=${PV} jar-core jar-demo $(use_doc javadocs-core javadocs-demo)
 
 	if use analyzers; then
@@ -54,13 +57,6 @@ src_install() {
 	java-pkg_newjar build/${PN}-core-${PV}.jar ${PN}-core.jar
 	java-pkg_newjar build/${PN}-demos-${PV}.jar ${PN}-demos.jar
 
-	if use doc; then
-		dohtml -r docs/* || die
-		# for the core and demo subdirs
-		java-pkg_dohtml -r build/docs/api
-	fi
-	use source && java-pkg_dosrc src/java/org
-
 	if use analyzers; then
 		# build/contrib/analyzers/{common,smartcn}/classes/java/
 		cd "${S}/build/contrib/analyzers" \
@@ -79,4 +75,11 @@ src_install() {
 		#use source && java-pkg_dosrc \
 		#	"${S}/contrib/analyzers"/{common,smartcn}/src/java/org
 	fi
+
+	if use doc; then
+		dohtml -r docs/* || die
+		# for the core and demo subdirs
+		java-pkg_dohtml -r build/docs/api
+	fi
+	use source && java-pkg_dosrc src/java/org
 }
