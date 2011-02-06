@@ -5,7 +5,7 @@
 #
 # Licensed under the GNU General Public License, v2
 #
-# $Header: /var/cvsroot/gentoo-x86/eclass/java-osgi.eclass,v 1.4 2008/01/14 16:48:38 elvanor Exp $
+# $Header: $
 
 # -----------------------------------------------------------------------------
 # @eclass-begin

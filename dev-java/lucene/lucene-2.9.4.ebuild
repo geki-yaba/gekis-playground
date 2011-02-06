@@ -1,6 +1,6 @@
 # Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-java/lucene/lucene-2.9.4.ebuild,v 1.2 2011/01/31 21:19:52 grobian Exp $
+# $Header: $
 
 EAPI="3"
 JAVA_PKG_IUSE="doc source test"
