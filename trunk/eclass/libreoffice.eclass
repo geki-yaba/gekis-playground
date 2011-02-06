@@ -1,4 +1,4 @@
-# Copyright 1999-2010 Gentoo Foundation
+# Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -7,7 +7,7 @@
 # Purpose: unified build of libreoffice
 #
 
-EAPI="3"
+EAPI="4"
 
 WANT_AUTOCONF="2.5"
 WANT_AUTOMAKE="1.9"
@@ -15,17 +15,17 @@ WANT_AUTOMAKE="1.9"
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
-inherit autotools bash-completion boost-utils check-reqs confutils db-use eutils \
-	fdo-mime flag-o-matic java-pkg-opt-2 kde4-base mono multilib pax-utils versionator
+inherit autotools bash-completion boost-utils check-reqs db-use eutils fdo-mime \
+	flag-o-matic java-pkg-opt-2 kde4-base mono multilib pax-utils versionator
 
 if [[ ${PV} == *_pre ]]; then
 	inherit git
 fi
 
-EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_postinst
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_postinst
 
 IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
-junit kde languagetool ldap mono mysql nsplugin odbc odk opengl pam python
+junit kde languagetool ldap mono mysql nsplugin odbc odk opengl python
 reportbuilder templates webdav wiki"
 # postgres - system only diff available - no chance to choose! :(
 
@@ -126,9 +126,10 @@ CDEPEND="${SDEPEND}
 	ldap? ( net-nds/openldap )
 	nsplugin? ( net-libs/xulrunner:1.9 )
 	mono? ( dev-lang/mono )
-	mysql? ( >=dev-db/mysql-connector-c++-1.1.0 )
+	mysql? ( dev-db/mysql-connector-c++:1.1.0 )
 	opengl? ( virtual/opengl virtual/glu )
 	python? ( dev-lang/python:2.7[threads,xml] )
+	reportbuilder? ( dev-java/commons-logging:0 )
 	webdav? ( net-libs/neon )
 	wiki? ( dev-java/commons-codec:0
 		dev-java/commons-httpclient:3
@@ -169,11 +170,9 @@ RDEPEND="${CDEPEND}
 DEPEND="${CDEPEND}
 	!dev-util/dmake
 	java? ( >=virtual/jdk-1.5
-		dev-java/ant-core
-		junit? ( dev-java/junit:4 ) )
+		dev-java/ant-core )
+	junit? ( dev-java/junit:4 )
 	odbc? ( dev-db/unixODBC )
-	pam? ( sys-libs/pam
-		sys-apps/shadow[pam] )
 	app-arch/unzip
 	app-arch/zip
 	dev-lang/perl
@@ -193,16 +192,17 @@ DEPEND="${CDEPEND}
 	x11-proto/xineramaproto
 	x11-proto/xproto"
 
+REQUIRED_USE="!python? ( java ) junit? ( java ) languagetool? ( java ) reportbuilder? ( java ) wiki? ( java ) gnome? ( gtk ) nsplugin? ( gtk )"
+
 PROVIDE="virtual/ooo"
 
-libreoffice_pkg_setup() {
+libreoffice_pkg_pretend() {
 	local err=
 
 	# welcome
 	elog
 	eerror "This ${PN} version is experimental."
 	eerror "Things could just break."
-	elog
 
 	# custom-cflags
 	_libreoffice_custom-cflags_message
@@ -215,27 +215,20 @@ libreoffice_pkg_setup() {
 		|| CHECKREQS_DISK_USR="512"
 	check_reqs
 
-	[ ${err} ] && die "bad luck"
-
-	# java
-	java-pkg-opt-2_pkg_setup
-
 	if ! use java; then
+		ewarn
 		ewarn "You are building with java-support disabled, this results in some"
-		ewarn "of the OpenOffice.org functionality being disabled."
+		ewarn "of the LibreOffice functionality being disabled."
 		ewarn "If something you need does not work for you, rebuild with"
 		ewarn "java in your USE-flags."
-		ewarn
 	fi
 
-	# check useflags dependencies
-	confutils_use_depend_all !python java
-	confutils_use_depend_all junit java
-	confutils_use_depend_all languagetool java
-	confutils_use_depend_all reportbuilder java
-	confutils_use_depend_all wiki java
-	confutils_use_depend_all gnome gtk
-	confutils_use_depend_all nsplugin gtk
+	[ ${err} ] && die "bad luck"
+}
+
+libreoffice_pkg_setup() {
+	# java
+	java-pkg-opt-2_pkg_setup
 
 	# lang setup
 	strip-linguas ${LANGUAGES}
@@ -506,12 +499,11 @@ libreoffice_src_configure() {
 		$(use_enable !debug strip) \
 		$(use_with java) \
 		$(use_enable mono) \
-		$(use_enable pam) \
 		$(use_enable odk) \
 		$(use_with templates sun-templates) \
 		$(use_with languagetool) \
 		--with-additional-sections="KDE4Experimental" \
-		|| die "configure failed"
+		|| _libreoffice_die "configure failed"
 }
 
 libreoffice_src_compile() {

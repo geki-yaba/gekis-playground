@@ -8,11 +8,11 @@
 #          - Wrap boost eclass
 #
 
-EAPI="2"
+EAPI="4"
 
 inherit boost
 
-EXPORT_FUNCTIONS pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
 
 DESCRIPTION="boost.org tools"
 HOMEPAGE="http://www.boost.org/"
@@ -22,6 +22,10 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
 LICENSE="Boost-1.0"
 SLOT="$(get_version_component_range 1-2)"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
+
+boost-tools_pkg_pretend() {
+	boost_pkg_pretend
+}
 
 boost-tools_pkg_setup() {
 	boost_pkg_setup
@@ -53,9 +57,9 @@ boost-tools_src_install() {
 	cd "${S}/status" || die
 
 	if [ -f regress.log ] ; then
-		docinto status || die
-		dohtml *.html "${S}"/boost.png || die
-		dodoc regress.log || die
+		docinto status
+		dohtml *.html "${S}"/boost.png
+		dodoc regress.log
 	fi
 
 	# install docs
@@ -65,34 +69,34 @@ boost-tools_src_install() {
 
 		dohtml -A pdf,txt,cpp,hpp \
 			*.{htm,html,png,css} \
-			-r doc more people wiki || die
+			-r doc
 
 		dohtml -A pdf,txt \
-			-r tools || die
+			-r tools
 
 		insinto /usr/share/doc/${PF}/html
-		doins -r libs || die
+		doins -r libs
 
 		# To avoid broken links
 		insinto /usr/share/doc/${PF}/html
-		doins LICENSE_1_0.txt || die
+		doins LICENSE_1_0.txt
 	fi
 
 	# install tools
 	cd "${S}/dist/bin" || die
 
 	for b in * ; do
-		newbin "${b}" "${b}-${MAJOR_PV}" || die
+		newbin "${b}" "${b}-${MAJOR_PV}"
 	done
 
 	cd "${S}/dist" || die
 
 	# install boostbook
-	insinto /usr/share || die
-	doins -r share/boostbook || die
+	insinto /usr/share
+	doins -r share/boostbook
 
 	# Append version postfix for slotting
-	mv "${D}/usr/share/boostbook" "${D}/usr/share/boostbook-${MAJOR_PV}" || die
+	mv "${ED}/usr/share/boostbook" "${D}/usr/share/boostbook-${MAJOR_PV}" || die
 }
 
 boost-tools_src_test() {
