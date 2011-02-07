@@ -9,7 +9,8 @@
 
 EAPI="4"
 
-inherit check-reqs flag-o-matic multilib python toolchain-funcs versionator
+#inherit check-reqs flag-o-matic multilib python toolchain-funcs versionator
+inherit check-reqs flag-o-matic multilib toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
 
@@ -156,7 +157,7 @@ boost_src_configure() {
 
 	[[ ${BOOST_LIB} == mpi ]] && mpi="using mpi ;"
 	[[ ${BOOST_LIB} == graph_parallel ]] && mpi="using mpi ;"
-	[[ ${BOOST_LIB} == python ]] && pystring="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
+#	[[ ${BOOST_LIB} == python ]] && pystring="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
 
 	cat > "${S}/user-config.jam" << __EOF__
 
@@ -216,15 +217,15 @@ boost_src_install() {
 
 	popd >/dev/null
 
-	[[ ${BOOST_LIB} == python ]] || rm -rf "${ED}/usr/include/boost-${MAJOR_PV}/boost"/python* || die
+#	[[ ${BOOST_LIB} == python ]] || rm -rf "${ED}/usr/include/boost-${MAJOR_PV}/boost"/python* || die
 
 	# Move the mpi.so to the right place and make sure it's slotted
-	if [[ ${BOOST_LIB} == mpi ]] && [[ -n "${PYVER}" ]]; then
-		exeinto "$(python_get_sitedir)/boost_${MAJOR_PV}"
-		doexe "${ED}/usr/$(get_libdir)/mpi.so"
-		touch "${ED}$(python_get_sitedir)/boost_${MAJOR_PV}/__init__.py" || die
-		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
-	fi
+#	if [[ ${BOOST_LIB} == mpi ]] && [[ -n "${PYVER}" ]]; then
+#		exeinto "$(python_get_sitedir)/boost_${MAJOR_PV}"
+#		doexe "${ED}/usr/$(get_libdir)/mpi.so"
+#		touch "${ED}$(python_get_sitedir)/boost_${MAJOR_PV}/__init__.py" || die
+#		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
+#	fi
 
 	# install tests
 	cd "${S}/libs/${BOOST_LIB}/test" || die
@@ -302,7 +303,7 @@ boost_src_install() {
 		done
 	fi
 
-	[[ ${BOOST_LIB} == python ]] && python_need_rebuild
+#	[[ ${BOOST_LIB} == python ]] && python_need_rebuild
 
 	# boost's build system truely sucks for not having a destdir.  Because of
 	# this we are forced to build with a prefix that includes the
