@@ -19,7 +19,7 @@ src_unpack() {
 }
 
 src_configure() {
-	use python && pystring="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
+#	use python && pystring="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
 
 	boost_src_configure
 }
