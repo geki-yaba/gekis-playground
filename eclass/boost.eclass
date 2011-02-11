@@ -303,7 +303,7 @@ boost_src_install() {
 		done
 	fi
 
-#	[[ ${BOOST_LIB} == python ]] && python_need_rebuild
+#	[[ ${BOOST_LIB} == mpi ]] && use python && python_need_rebuild
 
 	# boost's build system truely sucks for not having a destdir.  Because of
 	# this we are forced to build with a prefix that includes the
