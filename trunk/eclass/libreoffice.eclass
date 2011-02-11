@@ -338,6 +338,7 @@ libreoffice_src_prepare() {
 	echo "$(use_with ldap openldap)" >> ${CONFFILE}
 	echo "$(use_with odbc system-odbc-headers)" >> ${CONFFILE}
 	echo "$(use_enable opengl)" >> ${CONFFILE}
+	echo "$(use_with opengl system-mesa-headers)" >> ${CONFFILE}
 	echo "$(use_enable python)" >> ${CONFFILE}
 	echo "$(use_enable webdav neon)" >> ${CONFFILE}
 	echo "$(use_with webdav system-neon)" >> ${CONFFILE}
