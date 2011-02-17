@@ -1,6 +1,6 @@
---- bin/package-ooo	2008-10-07 08:50:49.000000000 -0500
-+++ bin/package-ooo	2008-11-11 14:47:21.000000000 -0600
-@@ -115,8 +115,8 @@
+--- bin/package-ooo.orig	2011-02-17 20:34:54.444013589 +0100
++++ bin/package-ooo	2011-02-17 20:40:16.092013581 +0100
+@@ -126,10 +126,10 @@
  fi
  
  # create bash completion
@@ -8,10 +8,13 @@
 -$TOOLSDIR/bin/generate-bash-completion --binsuffix="$BINSUFFIX" $TOOLSDIR/bin/bash-completion.in $OODESTDIR/etc/bash_completion.d/libreoffice${BINSUFFIX}.sh
 +mkdir -p $SYSCONFDIR/bash_completion.d
 +$TOOLSDIR/bin/generate-bash-completion --binsuffix="$BINSUFFIX" $TOOLSDIR/bin/bash-completion.in $SYSCONFDIR/bash_completion.d/libreoffice${BINSUFFIX}.sh
+ if test "$COMPAT_OOWRAPPERS" = "YES" ; then
+-    $TOOLSDIR/bin/generate-bash-completion --compat-oowrappers --binsuffix="$BINSUFFIX"  $TOOLSDIR/bin/bash-completion.in $OODESTDIR/etc/bash_completion.d/ooffice${BINSUFFIX}.sh
++    $TOOLSDIR/bin/generate-bash-completion --compat-oowrappers --binsuffix="$BINSUFFIX"  $TOOLSDIR/bin/bash-completion.in $SYSCONFDIR/bash_completion.d/ooffice${BINSUFFIX}.sh
+ fi
  
  if test "z$VENDORNAME" != "zRedHat"; then
- 	mkdir -p $MANDIR/man1
-@@ -176,11 +176,11 @@
+@@ -190,11 +190,11 @@
          # Icons and menu stuff is handled in actions.py
          ;;
    *)
@@ -25,21 +28,21 @@
  	    add_version=
  	    test "z$VENDORNAME" = "zNovell" -a "z$BINSUFFIX" != "z" && add_version=" ($VERSION)" || :
  	    sed -e "s|\(^Name.*\)\$|\1$add_version|
-@@ -188,7 +188,7 @@
+@@ -202,7 +202,7 @@
  	done
  
  	# icons
 -	icondir=$PREFIXBASE/share/icons/hicolor
 +	icondir=$DATADIRBASE/icons/hicolor
  	for size in 16x16 22x22 24x24 32x32 48x48 scalable ; do
- 	    mkdir -p $OODESTDIR/$icondir/$size/apps
+ 	    mkdir -p $OODESTDIR$icondir/$size/apps
  	    cd $TOOLSDIR/desktop/$size/
-@@ -202,7 +202,7 @@
+@@ -216,7 +216,7 @@
  	done
  
  	# create symlinks below share/pixmaps to keep the backward compatibility
 -	pixmapsdir=$PREFIX/share/pixmaps
 +	pixmapsdir=$DATADIR/pixmaps
  	mkdir -p $pixmapsdir
- 	cd $OODESTDIR/$icondir/48x48/apps
+ 	cd $OODESTDIR$icondir/48x48/apps
  	for icon in ooo-*.png ; do

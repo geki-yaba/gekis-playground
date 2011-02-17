@@ -1,0 +1,25 @@
+--- patches/dev300/disable-python.diff.orig	2011-02-17 21:01:05.384013590 +0100
++++ patches/dev300/disable-python.diff	2011-02-17 21:04:17.172013979 +0100
+@@ -46,8 +46,8 @@
+  ToFile( "OPENSSL_LIBS",      "@OPENSSL_LIBS@",     "e" );
+ +ToFile( "DISABLE_PYTHON",    "@DISABLE_PYTHON@",   "e" );
+  ToFile( "SYSTEM_PYTHON",     "@SYSTEM_PYTHON@",    "e" );
++ ToFile( "PYTHON",            "@PYTHON@",           "e" );
+  ToFile( "PYTHON_CFLAGS",     "@PYTHON_CFLAGS@",    "e" );
+- ToFile( "PYTHON_LIBS",       "@PYTHON_LIBS@",      "e" );
+ --- postprocess/prj/build.lst.orig	2010-01-02 17:25:56.000000000 +0100
+ +++ postprocess/prj/build.lst	2010-01-02 17:26:22.000000000 +0100
+ @@ -1,4 +1,4 @@
+@@ -231,9 +231,9 @@
+      $(BIN)$/uno.py \
+  	$(BIN)$/unohelper.py \
+ @@ -79,6 +80,7 @@
+- 	$(BIN)$/pythonscript.py \
+- 	$(BIN)$/officehelper.py \
+- 	$(BIN)$/mailmerge.py
++     $(BIN)$/pythonscript.py \
++     $(BIN)$/officehelper.py \
++     $(BIN)$/mailmerge.py
+ +.ENDIF
+  
+  xxxx:
