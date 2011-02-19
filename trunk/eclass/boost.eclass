@@ -9,7 +9,6 @@
 
 EAPI="4"
 
-#inherit check-reqs flag-o-matic multilib python toolchain-funcs versionator
 inherit check-reqs flag-o-matic multilib toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
@@ -217,10 +216,8 @@ boost_src_install() {
 
 	popd >/dev/null
 
-#	[[ ${BOOST_LIB} == python ]] || rm -rf "${ED}/usr/include/boost-${MAJOR_PV}/boost"/python* || die
-
 	# Move the mpi.so to the right place and make sure it's slotted
-#	if [[ ${BOOST_LIB} == mpi ]] && [[ -n "${PYVER}" ]]; then
+#	if [[ ${BOOST_LIB} == mpi ]] && use python; then
 #		exeinto "$(python_get_sitedir)/boost_${MAJOR_PV}"
 #		doexe "${ED}/usr/$(get_libdir)/mpi.so"
 #		touch "${ED}$(python_get_sitedir)/boost_${MAJOR_PV}/__init__.py" || die

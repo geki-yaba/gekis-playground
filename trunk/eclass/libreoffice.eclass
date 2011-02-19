@@ -7,16 +7,24 @@
 # Purpose: unified build of libreoffice
 #
 
+#
+# TODO: waiting for eclass/python EAPI=4 :D
+#
+
 EAPI="4"
 
 WANT_AUTOCONF="2.5"
 WANT_AUTOMAKE="1.9"
+
+#PYTHON_DEPEND="python? 2:2.6"
+#PYTHON_USE_WITH="threads,xml"
 
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
 inherit autotools bash-completion boost-utils check-reqs db-use eutils fdo-mime \
 	flag-o-matic java-pkg-opt-2 kde4-base mono multilib pax-utils versionator
+# inherit python
 
 if [[ ${PV} == *_pre ]]; then
 	inherit git
@@ -244,6 +252,12 @@ libreoffice_pkg_setup() {
 	else
 		LINGUAS_OOO="en-US ${LINGUAS//_/-}"
 	fi
+
+	# python
+#	if use python; then
+#		python_set_active_version 2
+#		python_pkg_setup
+#	fi
 
 	# kde
 	use kde && kde4-base_pkg_setup

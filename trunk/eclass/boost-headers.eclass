@@ -58,14 +58,7 @@ boost-headers_src_unpack() {
 }
 
 boost-headers_src_prepare() {
-	if [[ ${VER} < 1.44 ]] ; then
-		# bug 291660
-		epatch "${FILESDIR}/boost-1.42.0-parameter-needs-python.patch"
-	fi
-
-	if [[ ${VER} > 1.44 ]] ; then
-		epatch "${FILESDIR}/boost-1.45.0-lambda_bind.patch"
-	fi
+	epatch "${FILESDIR}/boost-1.45.0-lambda_bind.patch"
 }
 
 boost-headers_src_configure() { :; }

@@ -7,8 +7,15 @@
 # Purpose: Selectively build/install boost build
 #
 
+#
+# TODO: waiting for eclass/python EAPI=4 :D
+#
+
 EAPI="4"
 
+#PYTHON_DEPEND="python? *"
+
+#inherit flag-o-matic python toolchain-funcs versionator
 inherit flag-o-matic toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_compile src_install src_test
@@ -27,8 +34,8 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86
 
 IUSE="examples python"
 
-DEPEND="python? ( dev-lang/python )"
-RDEPEND="${DEPEND}"
+DEPEND=""
+RDEPEND=""
 
 S="${WORKDIR}/boost_${MY_PV}/tools"
 
@@ -39,20 +46,15 @@ boost-build_pkg_pretend() {
 
 boost-build_pkg_setup() {
 	# set jam root
-	if [[ ${SLOT} > 1.44 ]] ; then
-		BOOST_JAM="${S}/build/v2/engine"
-	else
-		BOOST_JAM="${S}/jam"
-	fi
+	BOOST_JAM="${S}/build/v2/engine"
+
+#	use python && python_pkg_setup
 }
 
 boost-build_src_unpack() {
 	local cmd
 	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2"
 	cmd+=" boost_${MY_PV}/tools/build/v2"
-
-	# old jam versions
-	[[ ${SLOT} < 1.45 ]] && cmd+=" boost_${MY_PV}/tools/jam"
 
 	# extract
 	echo ${cmd}; ${cmd} || die
