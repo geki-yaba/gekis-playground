@@ -236,20 +236,25 @@ boost_src_install() {
 	# install docs
 	cd "${S}"
 	if use doc ; then
+		local docdir="/usr/share/doc/${PF}"
 		find libs/${BOOST_LIB}/* -iname "test" -or -iname "src" | xargs rm -rf
 
-		insinto /usr/share/doc/${PF}/html
+		insinto ${docdir}/html
 		doins -r libs/${BOOST_LIB}
 
 		# avoid broken links
-		insinto /usr/share/doc/${PF}
+		insinto ${docdir}
 		doins LICENSE_1_0.txt
 
-		ln -s /usr/share/doc/${PF}/html/${BOOST_LIB}/doc/index.html \
-			/usr/share/doc/${PF}/index.htm
+		ln -s "${ED}"/${docdir}/html/${BOOST_LIB}/doc/index.html \
+			"${ED}"/${docdir}/index.htm
 	fi
 
 	cd "${ED}/usr/$(get_libdir)" || die
+
+	# paths
+	local path="/usr/$(get_libdir)/boost"
+	local dbgver="${MAJOR_PV}-debug"
 
 	# FIXME: build against installed boost libraries
 	# libraries may have additional libraries with funny names; catch them
@@ -276,27 +281,33 @@ boost_src_install() {
 		use static && libs+=" lib${BOOST_PN}-mt-${MAJOR_PV}.a"
 
 		if use debug ; then
-			libs+=" lib${BOOST_PN}-mt-${MAJOR_PV}-debug$(get_libname)"
-			use static && libs+=" lib${BOOST_PN}-mt-${MAJOR_PV}-debug.a"
+			libs+=" lib${BOOST_PN}-mt-${dbgver}$(get_libname)"
+			use static && libs+=" lib${BOOST_PN}-mt-${dbgver}.a"
 		fi
 
 		for lib in ${libs} ; do
-			ln -s ${lib} "/usr/$(get_libdir)/$(sed -e 's/-mt//' <<< ${lib})" || die
+			ln -s ${lib} \
+				"${ED}"/usr/$(get_libdir)/"$(sed -e 's/-mt//' <<< ${lib})" \
+				|| die
 		done
 	fi
 
 	# Create a subdirectory with completely unversioned symlinks
-	dodir /usr/$(get_libdir)/boost-${MAJOR_PV}
+	dodir ${path}-${MAJOR_PV}
 
 	for f in $(ls -1 ${library_targets} | grep -v debug) ; do
-		ln -s ../${f} /usr/$(get_libdir)/boost-${MAJOR_PV}/${f/-${MAJOR_PV}} || die
+		ln -s ../${f} \
+			"${ED}"/${path}-${MAJOR_PV}/${f/-${MAJOR_PV}} \
+			|| die
 	done
 
 	if use debug ; then
-		dodir /usr/$(get_libdir)/boost-${MAJOR_PV}-debug
+		dodir ${path}-${dbgver}
 
 		for f in $(ls -1 ${library_targets} | grep debug) ; do
-			ln -s ../${f} /usr/$(get_libdir)/boost-${MAJOR_PV}-debug/${f/-${MAJOR_PV}-debug} || die
+			ln -s ../${f} \
+				"${ED}"/${path}-${dbgver}/${f/-${dbgver}} \
+				|| die
 		done
 	fi
 
