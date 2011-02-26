@@ -7,7 +7,7 @@ EAPI="2"
 inherit cmake-utils eutils flag-o-matic
 
 DEBIAN_URI="mirror://debian/pool/main/${PN:0:1}/${PN}"
-DEBIAN_SRC="${PN}_${PV}-1.debian.tar.gz"
+DEBIAN_SRC="${PN}_${PV}-2.debian.tar.gz"
 
 DESCRIPTION="MySQL database connector for C++ (mimics JDBC 4.0 API)"
 HOMEPAGE="http://forge.mysql.com/wiki/Connector_C++"
