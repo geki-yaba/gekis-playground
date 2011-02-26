@@ -89,11 +89,13 @@ SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
-MODULES="artwork base bootstrap calc components extensions extras filters help
-impress libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing
-ure writer l10n"
+MODULES="artwork base calc components extensions extras filters help impress
+libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
+writer l10n"
 
 if [[ ${PV} != *_pre ]]; then
+	SRC_URI+=" ${LIBRE_SRC}/${PN}-bootstrap-${PV}.tar.bz2"
+
 	for module in ${MODULES}; do
 		SRC_URI+=" ${LIBRE_SRC}/${PN}-${module}-${PV}.tar.bz2"
 	done
@@ -264,20 +266,16 @@ libreoffice_pkg_setup() {
 }
 
 libreoffice_src_unpack() {
-	local hotfixes="${MY_PV}"
-
 	# layered clone/build process - fun! :)
 	if [[ ${PV} == *_pre ]]; then
-		hotfixes="pre"
-
 		local root="git://anongit.freedesktop.org/${PN}"
-		EGIT_BRANCH="${PN}-$(replace_all_version_separators - ${MY_PV})"
+		EGIT_BRANCH="${EGIT_BRANCH:-${PN}-$(replace_all_version_separators - ${MY_PV})}"
 		# eclass/git feature: if not equal use EGIT_COMMIT, which defaults to master
 		EGIT_COMMIT="${EGIT_BRANCH}"
 
 		# unpack build tools
-		EGIT_PROJECT="${PN}/build"
-		EGIT_REPO_URI="${root}/build"
+		EGIT_PROJECT="${PN}/bootstrap"
+		EGIT_REPO_URI="${root}/bootstrap"
 		git_src_unpack
 
 		# unpack modules
@@ -287,24 +285,102 @@ libreoffice_src_unpack() {
 			EGIT_REPO_URI="${root}/${module}"
 			git_src_unpack
 		done
+
+		# move source into tree
+		S="${WORKDIR}/${PN}/bootstrap"
+		mv "${CLONE_DIR}"/*/* "${S}"
 	else
 		unpack "${MY_P}.tar.gz"
-	fi
 
-	# copy hotfixes
-	cp -v "${FILESDIR}/${hotfixes}"/hotfix-* "${S}/patches/hotfixes"
+		# copy hotfixes
+		cp -v "${FILESDIR}/${MY_PV}"/hotfix-* "${S}/patches/hotfixes"
+	fi
 }
 
 libreoffice_src_prepare() {
+	# gentoo
+	local CONFFILE="${S}/distro-configs/GentooUnstable.conf"
+
 	# specifics not for upstream
 	EPATCH_SUFFIX="diff"
 	EPATCH_FORCE="yes"
-	epatch "${FILESDIR}"
 
-	# gentoo
-	local CONFFILE="${S}/distro-configs/GentooUnstable.conf.in"
-	cp -dP ${S}/distro-configs/Gentoo.conf.in ${CONFFILE}
-	echo "--with-build-version=\\\"geki built ${PV} (unsupported)\\\"" >> ${CONFFILE}
+	if [[ ${PV} != *_pre ]]; then
+		epatch "${FILESDIR}"
+
+		# create distro config
+		CONFFILE+=".in"
+		cp -dP ${S}/distro-configs/Gentoo.conf.in ${CONFFILE}
+		echo "--with-build-version=\\\"geki built ${PV} (unsupported)\\\"" >> ${CONFFILE}
+	else
+		epatch "${FILESDIR}/pre"
+
+		# create distro config
+		echo "--prefix="${EPREFIX}"/usr" >> ${CONFFILE}
+		echo "--sysconfdir="${EPREFIX}"/etc" >> ${CONFFILE}
+		echo "--libdir="${EPREFIX}"/usr/$(get_libdir)" >> ${CONFFILE}
+		echo "--mandir="${EPREFIX}"/usr/share/man" >> ${CONFFILE}
+		echo "--disable-fontooo" >> ${CONFFILE}
+		echo "--disable-qadevooo" >> ${CONFFILE}
+		echo "--enable-neon" >> ${CONFFILE}
+		echo "--enable-xrender-link" >> ${CONFFILE}
+		echo "--with-external-dict-dir=/usr/share/myspell" >> ${CONFFILE}
+		echo "--with-external-hyph-dir=/usr/share/myspell" >> ${CONFFILE}
+		echo "--with-external-thes-dir=/usr/share/myspell" >> ${CONFFILE}
+		echo "--with-system-boost" >> ${CONFFILE}
+		echo "--with-system-curl" >> ${CONFFILE}
+		echo "--with-system-db" >> ${CONFFILE}
+		echo "--with-system-dicts" >> ${CONFFILE}
+		echo "--with-system-expat" >> ${CONFFILE}
+		echo "--with-system-hunspell" >> ${CONFFILE}
+		echo "--with-system-icu" >> ${CONFFILE}
+		echo "--with-system-libxslt" >> ${CONFFILE}
+		echo "--with-system-neon" >> ${CONFFILE}
+		echo "--with-system-openssl" >> ${CONFFILE}
+		echo "--with-system-vigra" >> ${CONFFILE}
+		echo "--with-system-xrender" >> ${CONFFILE}
+		echo "--without-myspell-dicts" >> ${CONFFILE}
+		echo "--without-stlport" >> ${CONFFILE}
+		echo "--with-system-zlib" >> ${CONFFILE}
+		echo "--with-vendor=\"Gentoo Foundation\"" >> ${CONFFILE}
+		echo "--with-build-version=\"geki built ${PV} (unsupported)\"" >> ${CONFFILE}
+		echo "--with-split" >> ${CONFFILE}
+		echo "--with-docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${CONFFILE}
+		echo "--with-lang=\"${LINGUAS_OOO}\"" >> ${CONFFILE}
+		echo "--with-arch=${ARCH}" >> ${CONFFILE}
+		echo "--with-arch-flags=\"${CXXFLAGS}\"" >> ${CONFFILE}
+		echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
+		echo "--with-binsuffix=-libre" >> ${CONFFILE}
+		echo "--with-installed-ooo-dirname=${PN}" >> ${CONFFILE}
+		echo "--with-srcdir=${DISTDIR}" >> ${CONFFILE}
+		echo "--disable-post-install-scripts" >> ${CONFFILE}
+		echo "--with-system-hunspell" >> ${CONFFILE}
+		echo "--with-system-libwpd" >> ${CONFFILE}
+		echo "--with-system-libwpg" >> ${CONFFILE}
+		echo "--with-system-libwps" >> ${CONFFILE}
+		echo "--enable-extensions" >> ${CONFFILE}
+		echo "--enable-cairo" >> ${CONFFILE}
+		echo "--with-system-cairo" >> ${CONFFILE}
+		echo "--disable-access" >> ${CONFFILE}
+		echo "--disable-kde" >> ${CONFFILE}
+		echo "--disable-layout" >> ${CONFFILE}
+		echo "$(use_enable gtk)" >> ${CONFFILE}
+		echo "$(use_enable kde kde4)" >> ${CONFFILE}
+		echo "$(use_enable !debug strip)" >> ${CONFFILE}
+		echo "$(use_with java)" >> ${CONFFILE}
+		echo "$(use_enable mono)" >> ${CONFFILE}
+		echo "$(use_enable odk)" >> ${CONFFILE}
+		echo "$(use_with templates sun-templates)" >> ${CONFFILE}
+		echo "$(use_with languagetool)" >> ${CONFFILE}
+		echo "--disable-crashdump" >> ${CONFFILE}
+		echo "--disable-epm" >> ${CONFFILE}
+		echo "--disable-unix-qstart" >> ${CONFFILE}
+		echo "--disable-dependency-tracking" >> ${CONFFILE}
+		echo "--disable-zenity" >> ${CONFFILE}
+		echo "--disable-fetch-external" >> ${CONFFILE}
+		echo "--with-external-tar=\"${DISTDIR}\"" >> ${CONFFILE}
+		echo "--with-libmysql-path=/usr/$(get_libdir)/mysql" >> ${CONFFILE}
+	fi
 
 	# gentooexperimental defaults
 	echo "--without-afms" >> ${CONFFILE}
@@ -472,53 +548,49 @@ libreoffice_src_configure() {
 	use kde && export KDE4DIR="${KDEDIR}"
 	use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
 
-	local config=""
-
-	# git config
-	if [[ ${PV} == *_pre ]]; then
-		config+="--with-git=${CLONE_DIR}"
-	else
-		config+="--without-git --with-source-version=${PV}"
-	fi
-
 	cd ${S}
-	./configure ${config} \
-		--prefix="${EPREFIX}"/usr \
-		--sysconfdir="${EPREFIX}"/etc \
-		--libdir="${EPREFIX}"/usr/$(get_libdir) \
-		--mandir="${EPREFIX}"/usr/share/man \
-		--with-split \
-		--with-distro="GentooUnstable" \
-		--with-docdir="${EPREFIX}"/usr/share/doc/${PF} \
-		--with-drink="cold blood" \
-		--with-lang="${LINGUAS_OOO}" \
-		--with-arch="${ARCH}" \
-		--with-arch-flags="${CXXFLAGS}" \
-		--with-num-cpus="$(grep -s -c ^processor /proc/cpuinfo)" \
-		--with-binsuffix="-libre" \
-		--with-installed-ooo-dirname=${PN} \
-		--with-srcdir="${DISTDIR}" \
-		--disable-post-install-scripts \
-		--with-system-hunspell \
-		--with-system-libwpd \
-		--with-system-libwpg \
-		--with-system-libwps \
-		--enable-extensions \
-		--enable-cairo \
-		--with-system-cairo \
-		--disable-access \
-		--disable-kde \
-		--disable-layout \
-		$(use_enable gtk) \
-		$(use_enable kde kde4) \
-		$(use_enable !debug strip) \
-		$(use_with java) \
-		$(use_enable mono) \
-		$(use_enable odk) \
-		$(use_with templates sun-templates) \
-		$(use_with languagetool) \
-		--with-additional-sections="KDE4Experimental" \
-		|| _libreoffice_die "configure failed"
+	if [[ ${PV} == *_pre ]]; then
+		./autogen.sh --with-distro="GentooUnstable"
+	else
+		./configure --without-git \
+			--with-source-version=${PV} \
+			--prefix="${EPREFIX}"/usr \
+			--sysconfdir="${EPREFIX}"/etc \
+			--libdir="${EPREFIX}"/usr/$(get_libdir) \
+			--mandir="${EPREFIX}"/usr/share/man \
+			--with-split \
+			--with-distro="GentooUnstable" \
+			--with-docdir="${EPREFIX}"/usr/share/doc/${PF} \
+			--with-drink="cold blood" \
+			--with-lang="${LINGUAS_OOO}" \
+			--with-arch="${ARCH}" \
+			--with-arch-flags="${CXXFLAGS}" \
+			--with-num-cpus="$(grep -s -c ^processor /proc/cpuinfo)" \
+			--with-binsuffix="-libre" \
+			--with-installed-ooo-dirname=${PN} \
+			--with-srcdir="${DISTDIR}" \
+			--disable-post-install-scripts \
+			--with-system-hunspell \
+			--with-system-libwpd \
+			--with-system-libwpg \
+			--with-system-libwps \
+			--enable-extensions \
+			--enable-cairo \
+			--with-system-cairo \
+			--disable-access \
+			--disable-kde \
+			--disable-layout \
+			$(use_enable gtk) \
+			$(use_enable kde kde4) \
+			$(use_enable !debug strip) \
+			$(use_with java) \
+			$(use_enable mono) \
+			$(use_enable odk) \
+			$(use_with templates sun-templates) \
+			$(use_with languagetool) \
+			--with-additional-sections="KDE4Experimental" \
+			|| _libreoffice_die "configure failed"
+	fi
 }
 
 libreoffice_src_compile() {
@@ -533,15 +605,27 @@ libreoffice_src_install() {
 	# access
 	use prefix || chown -RP root:0 "${ED}"
 
-	# record java libraries
-	use java && java-pkg_regjar \
-		"${ED}/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/classes"/*.jar \
-		"${ED}/usr/$(get_libdir)/${PN}/ure/share/java"/*.jar
+	if [[ ${PV} == *_pre ]]; then
+		# install desktop files
+		domenu "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
 
-	# move bash-completion from /etc to /usr/share/bash-completion. bug 226061
-	local name="libreoffice-libre"
-	dobashcompletion "${ED}"/etc/bash_completion.d/${name}.sh ${name}
-	rm -rf "${ED}"/etc/bash_completion.d/ || die "rm failed"
+		# install wrapper
+		newexe "${S}"/sysui/*.pro/misc/libreoffice/openoffice.sh libreoffice
+
+		sed -e "s:/opt:/usr/$(get_libdir):" \
+			-i "${ED}"/usr/bin/libreoffice \
+			|| _libreoffice_die "wrapper failed"
+	else
+		# record java libraries
+		use java && java-pkg_regjar \
+			"${ED}/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/classes"/*.jar \
+			"${ED}/usr/$(get_libdir)/${PN}/ure/share/java"/*.jar
+
+		# move bash-completion from /etc to /usr/share/bash-completion. bug 226061
+		local name="libreoffice-libre"
+		dobashcompletion "${ED}"/etc/bash_completion.d/${name}.sh ${name}
+		rm -rf "${ED}"/etc/bash_completion.d/ || die "rm failed"
+	fi
 }
 
 libreoffice_pkg_postinst() {
@@ -555,14 +639,16 @@ libreoffice_pkg_postinst() {
 	# kde4
 	use kde && kde4-base_pkg_postinst
 
-	# record jdbc-mysql java library to classpath if possible
-	# - for a happy user experience
-	"${EPREFIX}"/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/java-set-classpath \
-		$(java-config --classpath=jdbc-mysql 2>/dev/null) >/dev/null
+	if [[ ${PV} != *_pre ]]; then
+		# record jdbc-mysql java library to classpath if possible
+		# - for a happy user experience
+		"${EPREFIX}"/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/java-set-classpath \
+			$(java-config --classpath=jdbc-mysql 2>/dev/null) >/dev/null
 
-	# bash-completion postinst
-	BASHCOMPLETION_NAME="libreoffice-libre" \
-	bash-completion_pkg_postinst
+		# bash-completion postinst
+		BASHCOMPLETION_NAME="libreoffice-libre" \
+		bash-completion_pkg_postinst
+	fi
 
 	# info
 	elog " To start OpenOffice.org, run:"

@@ -1,0 +1,15 @@
+--- autogen.sh.orig	2011-02-22 22:42:01.752014048 +0100
++++ autogen.sh	2011-02-22 22:48:26.816013659 +0100
+@@ -54,11 +54,8 @@
+ if test "z${distro_name}" != "z" ; then
+     cumul=""
+     if test -f "./distro-configs/${distro_name}.conf" ; then
+-        IFS=$'
+-'
+         for opt in $(cat distro-configs/${distro_name}.conf) ; do cumul="$cumul $opt" ; done ;
+-        unset IFS
+-        conf_args=$(requote "$@" | sed -e "s/'--with-distro=[^']*'/$cumul/")
++        conf_args="$conf_args $cumul"
+     else
+         echo "Warning: there is no pre-set configuration for ${distro_name}, ignoring --with-distro=${distro_name}"
+     fi
