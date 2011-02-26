@@ -16,9 +16,6 @@ SRC_URI+=" ${LIBRE_SRC}/${MY_P}.tar.gz"
 # root
 S="${WORKDIR}/${MY_P}"
 
-# exclude patches
-EPATCH_EXCLUDE="pre_*"
-
 # addons
 ADDONS_SRC+=" http://hg.services.openoffice.org/binaries/09357cc74975b01714e00c5899ea1881-pixman-0.12.0.tar.gz"
 ADDONS_SRC+=" http://hg.services.openoffice.org/binaries/128cfc86ed5953e57fe0f5ae98b62c2e-libtextcat-2.2.tar.gz"
