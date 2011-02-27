@@ -308,6 +308,11 @@ libreoffice_src_prepare() {
 	if [[ ${PV} != *_pre ]]; then
 		epatch "${FILESDIR}"
 
+		#fix desktop files bug #352955
+		sed -e "s/Exec=oo/Exec=lo/g" \
+			-i "${S}"/desktop/*.desktop.in.in \
+			|| _libreoffice_die "could not fix desktop files"
+
 		# create distro config
 		CONFFILE+=".in"
 		cp -dP ${S}/distro-configs/Gentoo.conf.in ${CONFFILE}
