@@ -1,6 +1,6 @@
 --- officecfg/util/makefile.mk 
 +++ officecfg/util/makefile.mk 
-@@ -41,7 +41,6 @@
+@@ -37,7 +37,6 @@
  
  $(MISC)$/$(TARGET)_delzip :
      -$(RM) $(BIN)$/registry_{$(alllangiso)}.zip	

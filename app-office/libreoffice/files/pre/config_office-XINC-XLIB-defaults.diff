@@ -1,6 +1,6 @@
 --- configure.in.orig	2009-02-20 15:35:35.000000000 +0100
 +++ configure.in	2009-02-20 15:37:24.000000000 +0100
-@@ -4536,20 +4536,9 @@
+@@ -5302,20 +5302,11 @@
  if test -z "$x_libraries"; then
     x_libraries="no_x_libraries"
  fi
@@ -9,6 +9,8 @@
 -else
 -   XINC="$x_includes"
 -fi
++# do NOT add compiler default include/library path
++# http://openoffice.org/bugzilla/show_bug.cgi?id=65976
 +XINC="$x_includes"
 +XLIB="$x_libraries"
  AC_SUBST(XINC)
@@ -23,7 +25,7 @@
  AC_SUBST(XLIB)
  AC_SUBST(XAU_LIBS)
  
-@@ -6200,6 +6189,9 @@
+@@ -7419,6 +7412,9 @@
     XINERAMA_LINK=dynamic
     AC_MSG_RESULT([yes])
  elif test "$_os" = "Linux" -o "$_os" = "FreeBSD"; then
