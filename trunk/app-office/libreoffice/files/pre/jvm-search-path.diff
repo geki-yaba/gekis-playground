@@ -17,7 +17,7 @@
  AC_ARG_WITH(ant-home,
      AS_HELP_STRING([--with-ant-home],
          [If you have installed Jakarta Ant on your system, please supply the path here.
-@@ -7479,6 +7489,26 @@
+@@ -7485,6 +7495,26 @@
  AC_SUBST(XINERAMA_LINK)
  
  dnl ===================================================================
@@ -46,7 +46,7 @@
  
 --- set_soenv.in.orig	2009-04-06 15:36:07.000000000 +0200
 +++ set_soenv.in	2009-04-06 15:40:31.000000000 +0200
-@@ -1773,6 +1773,7 @@
+@@ -1775,6 +1775,7 @@
     ToFile( "JAVAIFLAGS",      "@JAVAIFLAGS@",    "e" );
     ToFile( "JAVACOMPILER",    PathFormat("@JAVACOMPILER@"), "e" );
     ToFile( "JAVADOC",         PathFormat("@JAVADOC@"), "e" );

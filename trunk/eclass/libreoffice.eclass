@@ -289,6 +289,9 @@ libreoffice_src_unpack() {
 		# move source into tree
 		S="${WORKDIR}/${PN}/bootstrap"
 		mv "${CLONE_DIR}"/*/* "${S}"
+
+		# no need to download external sources
+		touch "${S}"/src.downloaded
 	else
 		unpack "${MY_P}.tar.gz"
 

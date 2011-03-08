@@ -40,7 +40,7 @@
  dnl Check for system berkley db
 --- set_soenv.in.orig	2010-01-02 15:50:06.000000000 +0100
 +++ set_soenv.in	2010-01-02 16:46:20.000000000 +0100
-@@ -1856,6 +1856,7 @@
+@@ -1858,6 +1858,7 @@
  ToFile( "SYSTEM_OPENSSL",    "@SYSTEM_OPENSSL@",   "e" );
  ToFile( "OPENSSL_CFLAGS",    "@OPENSSL_CFLAGS@",   "e" );
  ToFile( "OPENSSL_LIBS",      "@OPENSSL_LIBS@",     "e" );
