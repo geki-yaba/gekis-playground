@@ -1,37 +1,13 @@
---- configure.in.orig	2009-02-20 15:35:35.000000000 +0100
-+++ configure.in	2009-02-20 15:37:24.000000000 +0100
-@@ -5302,20 +5302,11 @@
- if test -z "$x_libraries"; then
-    x_libraries="no_x_libraries"
- fi
--if test "$x_includes" = "default_x_includes"; then
--   XINC="/usr/include"
--else
--   XINC="$x_includes"
--fi
-+# do NOT add compiler default include/library path
-+# http://openoffice.org/bugzilla/show_bug.cgi?id=65976
-+XINC="$x_includes"
-+XLIB="$x_libraries"
- AC_SUBST(XINC)
--if test "$x_libraries" = "default_x_libraries"; then
--   XLIB=`$PKG_CONFIG --variable=libdir x11`
--   if test "x$XLIB" = x; then
--         XLIB="/usr/lib"
--   fi
--else
--   XLIB="$x_libraries"
--fi
- AC_SUBST(XLIB)
- AC_SUBST(XAU_LIBS)
- 
-@@ -7419,6 +7412,9 @@
-    XINERAMA_LINK=dynamic
-    AC_MSG_RESULT([yes])
- elif test "$_os" = "Linux" -o "$_os" = "FreeBSD"; then
-+   if test "$x_libraries" = "default_x_libraries"; then
-+      XLIB="/usr/lib"
-+   fi
-    if test -e "$XLIB/libXinerama.so" -a -e "$XLIB/libXinerama.a"; then
-       # we have both versions, let the user decide but use the dynamic one
-       # per default
+--- set_soenv.in.orig	2011-03-08 19:54:01.220014359 +0100
++++ set_soenv.in	2011-03-08 19:56:14.296014359 +0100
+@@ -1460,7 +1460,9 @@
+ 	}
+     #The tail, if needed
+     if ($platform =~ m/linux|freebsd|netbsd|aix|openbsd|dragonfly/)
+-    {  $SOLARINC  .= $I.$XINC;
++    {  if ( $XINC ne "/usr/include" ) {
++            $SOLARINC  .= $I.$XINC;
++       }
+     }
+ }
+ elsif ($platform =~ m/cygwin/)
