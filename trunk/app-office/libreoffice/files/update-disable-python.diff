@@ -1,5 +1,5 @@
---- patches/dev300/disable-python.diff.orig	2011-02-17 21:01:05.384013590 +0100
-+++ patches/dev300/disable-python.diff	2011-02-17 21:04:17.172013979 +0100
+--- patches/dev300/disable-python.diff.orig	2011-03-13 17:37:14.520014457 +0100
++++ patches/dev300/disable-python.diff	2011-03-13 17:42:18.560014124 +0100
 @@ -46,8 +46,8 @@
   ToFile( "OPENSSL_LIBS",      "@OPENSSL_LIBS@",     "e" );
  +ToFile( "DISABLE_PYTHON",    "@DISABLE_PYTHON@",   "e" );
@@ -23,3 +23,12 @@
  +.ENDIF
   
   xxxx:
+@@ -244,7 +244,7 @@
+  
+ +.IF "$(DISABLE_PYTHON)" != "TRUE"
+  .IF "$(LOCALPYFILES)"!=""
+- $(foreach,i,$(alllangiso) openoffice_$i{$(PKGFORMAT:^".") .archive} openofficewithjre_$i{$(PKGFORMAT:^".")} openofficedev_$i{$(PKGFORMAT:^".")} broffice_$i{$(PKGFORMAT:^".")} brofficewithjre_$i{$(PKGFORMAT:^".")} brofficedev_$i{$(PKGFORMAT:^".")} sdkoo_$i{$(PKGFORMAT:^".")}) updatepack : $(LOCALPYFILES)
++ $(foreach,i,$(alllangiso) openoffice_$i{$(PKGFORMAT:^".") .archive} openofficewithjre_$i{$(PKGFORMAT:^".")} openofficedev_$i{$(PKGFORMAT:^".")} broffice_$i{$(PKGFORMAT:^".")} brofficewithjre_$i{$(PKGFORMAT:^".")} brofficedev_$i{$(PKGFORMAT:^".")} sdkoo_$i{$(PKGFORMAT:^".")} oxygenoffice_$i{$(PKGFORMAT:^".") .archive} oxygenofficewithjre_$i{$(PKGFORMAT:^".")}) updatepack : $(LOCALPYFILES)
+  .ENDIF			# "$(LOCALPYFILES)"!=""
+  
+  $(BIN)$/%.py : $(SOLARSHAREDBIN)$/pyuno$/%.py
