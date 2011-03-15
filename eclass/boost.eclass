@@ -17,8 +17,9 @@ MAJOR_PV="$(replace_all_version_separators _ ${SLOT})"
 BJAM="bjam-${MAJOR_PV}"
 
 BOOST_LIB="${PN/boost-}"
-BOOST_P="boost_$(replace_all_version_separators _)"
 BOOST_PN="${PN/-/_}"
+BOOST_PV="$(replace_all_version_separators _)"
+BOOST_P="boost_${BOOST_PV}"
 BOOST_PATCHSET="gentoo-boost.tar.bz2"
 BOOST_PATCHDIR="${WORKDIR}/patches"
 
@@ -277,8 +278,8 @@ boost_src_install() {
 	# some packages seem to have a problem with it. Creating symlinks ...
 	# The same goes for the mpi libs
 	if ! _boost_has_non_mt_lib ; then
-		local libs="lib${BOOST_PN}-mt-${MAJOR_PV}$(get_libname)"
-		use static && libs+=" lib${BOOST_PN}-mt-${MAJOR_PV}.a"
+		local libs="lib${BOOST_PN}-mt-${BOOST_PV/_0}$(get_libname)"
+		use static && libs+=" lib${BOOST_PN}-mt-${BOOST_PV/_0}.a"
 
 		if use debug ; then
 			libs+=" lib${BOOST_PN}-mt-${dbgver}$(get_libname)"
@@ -297,7 +298,7 @@ boost_src_install() {
 
 	for f in $(ls -1 ${library_targets} | grep -v debug) ; do
 		ln -s ../${f} \
-			"${ED}"/${path}-${MAJOR_PV}/${f/-${MAJOR_PV}} \
+			"${ED}"/${path}-${MAJOR_PV}/${f/-${BOOST_PV/_0}} \
 			|| die
 	done
 
