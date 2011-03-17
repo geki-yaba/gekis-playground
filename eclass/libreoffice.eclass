@@ -23,14 +23,15 @@ KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
 inherit autotools bash-completion boost-utils check-reqs db-use eutils fdo-mime \
-	flag-o-matic java-pkg-opt-2 kde4-base mono multilib pax-utils versionator
+	flag-o-matic gnome2-utils java-pkg-opt-2 kde4-base mono multilib pax-utils \
+	versionator
 # inherit python
 
 if [[ ${PV} == *_pre ]]; then
 	inherit git
 fi
 
-EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_postinst
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_postrm
 
 IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
 junit kde languagetool ldap mono mysql nsplugin odbc odk opengl python
@@ -203,8 +204,6 @@ DEPEND="${CDEPEND}
 	x11-proto/xproto"
 
 REQUIRED_USE="!python? ( java ) junit? ( java ) languagetool? ( java ) reportbuilder? ( java ) wiki? ( java ) gnome? ( gtk ) nsplugin? ( gtk )"
-
-PROVIDE="virtual/ooo"
 
 libreoffice_pkg_pretend() {
 	local err=
@@ -636,10 +635,15 @@ libreoffice_src_install() {
 	fi
 }
 
+libreoffice_pkg_preinst() {
+	use gnome && gnome2_icon_savelist
+}
+
 libreoffice_pkg_postinst() {
 	# mime data
 	fdo-mime_desktop_database_update
 	fdo-mime_mime_database_update
+	use gnome && gnome2_icon_cache_update
 
 	# hardened
 	_libreoffice_pax_fix
@@ -696,6 +700,12 @@ libreoffice_pkg_postinst() {
 	elog " To get the Identifier check the list of installed extensions."
 	elog
 	elog "		# unopkg-libre list"
+}
+
+libreoffice_pkg_postrm() {
+	# mime data
+	fdo-mime_desktop_database_update
+	use gnome && gnome2_icon_cache_update
 }
 
 _libreoffice_pax_fix() {
