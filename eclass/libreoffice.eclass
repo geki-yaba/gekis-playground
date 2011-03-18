@@ -206,8 +206,6 @@ DEPEND="${CDEPEND}
 REQUIRED_USE="!python? ( java ) junit? ( java ) languagetool? ( java ) reportbuilder? ( java ) wiki? ( java ) gnome? ( gtk ) nsplugin? ( gtk )"
 
 libreoffice_pkg_pretend() {
-	local err=
-
 	# welcome
 	elog
 	eerror "This ${PN} version is experimental."
@@ -231,8 +229,6 @@ libreoffice_pkg_pretend() {
 		ewarn "If something you need does not work for you, rebuild with"
 		ewarn "java in your USE-flags."
 	fi
-
-	[ ${err} ] && die "bad luck"
 }
 
 libreoffice_pkg_setup() {
@@ -310,7 +306,7 @@ libreoffice_src_prepare() {
 	if [[ ${PV} != *_pre ]]; then
 		epatch "${FILESDIR}"
 
-		#fix desktop files bug #352955
+		# fix desktop files bug 352955
 		sed -e "s/Exec=oo/Exec=lo/g" \
 			-i "${S}"/desktop/*.desktop.in.in \
 			|| _libreoffice_die "could not fix desktop files"
