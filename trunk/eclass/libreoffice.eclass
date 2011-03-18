@@ -282,6 +282,7 @@ libreoffice_src_unpack() {
 		done
 
 		# move source into tree
+		# FIXME: symlink; possible to use ./g pull?
 		S="${WORKDIR}/${PN}/bootstrap"
 		mv "${CLONE_DIR}"/*/* "${S}"
 
@@ -303,6 +304,7 @@ libreoffice_src_prepare() {
 	EPATCH_SUFFIX="diff"
 	EPATCH_FORCE="yes"
 
+	# FIXME: add GentooUnstable-VERSION.conf to ${FILESDIR} for defaults
 	if [[ ${PV} != *_pre ]]; then
 		epatch "${FILESDIR}"
 
@@ -533,15 +535,13 @@ libreoffice_src_configure() {
 	# set allowed flags for libreoffice
 	# by default '-g' and the like are allowed which blow up the code
 	# => not sane: bug 345799
-	ALLOWED_FLAGS="-pipe -mcpu -march -mtune"
-	ALLOWED_FLAGS+=" -fstack-protector -fstack-protector-all"
-	ALLOWED_FLAGS+=" -fbounds-checking -fomit-frame-pointer"
-	ALLOWED_FLAGS+=" -W* -w"
 
 	# compiler flags
 	use custom-cflags || strip-flags
+	use debug || filter-flags "-g*"
+
+	# silent miscompiles; LO/OOo adds -O2/1/0 where appropriate
 	filter-flags "-O*"
-	append-flags "-w"
 
 	# linker flags
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
