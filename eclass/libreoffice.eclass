@@ -70,7 +70,7 @@ for template in ${TEMPLATES}; do
 done
 
 DESCRIPTION="LibreOffice - a productivity suite (experimental version)"
-HOMEPAGE="http://www.documentfoundation.org/"
+HOMEPAGE="http://www.libreoffice.org/"
 
 SLOT="0"
 
