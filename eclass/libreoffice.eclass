@@ -9,6 +9,7 @@
 
 #
 # TODO: waiting for eclass/python EAPI=4 :D
+# TODO: waiting for purging 3.3; code-doubling is annoying
 #
 
 EAPI="4"
@@ -211,6 +212,13 @@ libreoffice_pkg_pretend() {
 	eerror "This ${PN} version is experimental."
 	eerror "Things could just break."
 
+	if [[ ${PV} == *_pre ]]; then
+		elog
+		einfo "There are various extensions to ${PN}."
+		einfo "You may check ./configure for '--enable-ext-*'"
+		einfo "and request them here: https://forums.gentoo.org/viewtopic-t-865091.html"
+	fi
+
 	# custom-cflags
 	_libreoffice_custom-cflags_message
 
@@ -223,7 +231,7 @@ libreoffice_pkg_pretend() {
 	check_reqs
 
 	if ! use java; then
-		ewarn
+		elog
 		ewarn "You are building with java-support disabled, this results in some"
 		ewarn "of the LibreOffice functionality being disabled."
 		ewarn "If something you need does not work for you, rebuild with"
@@ -273,7 +281,7 @@ libreoffice_src_unpack() {
 		EGIT_REPO_URI="${root}/bootstrap"
 		git_src_unpack
 
-		# unpack modules
+		# clone modules
 		for module in ${MODULES}; do
 			local S="${CLONE_DIR}/${module}"
 			EGIT_PROJECT="${PN}/${module}"
@@ -327,7 +335,6 @@ libreoffice_src_prepare() {
 		echo "--mandir="${EPREFIX}"/usr/share/man" >> ${CONFFILE}
 		echo "--disable-fontooo" >> ${CONFFILE}
 		echo "--disable-qadevooo" >> ${CONFFILE}
-		echo "--enable-neon" >> ${CONFFILE}
 		echo "--enable-xrender-link" >> ${CONFFILE}
 		echo "--with-external-dict-dir=/usr/share/myspell" >> ${CONFFILE}
 		echo "--with-external-hyph-dir=/usr/share/myspell" >> ${CONFFILE}
@@ -340,7 +347,6 @@ libreoffice_src_prepare() {
 		echo "--with-system-hunspell" >> ${CONFFILE}
 		echo "--with-system-icu" >> ${CONFFILE}
 		echo "--with-system-libxslt" >> ${CONFFILE}
-		echo "--with-system-neon" >> ${CONFFILE}
 		echo "--with-system-openssl" >> ${CONFFILE}
 		echo "--with-system-vigra" >> ${CONFFILE}
 		echo "--with-system-xrender" >> ${CONFFILE}
@@ -397,7 +403,6 @@ libreoffice_src_prepare() {
 	echo "--with-system-openssl" >> ${CONFFILE}
 	echo "--with-system-redland" >> ${CONFFILE}
 #	echo "--with-system-xmlsec" >> ${CONFFILE}
-#	echo "--with-vba-package-format=extn" >> ${CONFFILE}
 	echo "--enable-xrender-link" >> ${CONFFILE}
 	echo "--with-system-xrender-headers" >> ${CONFFILE}
 	echo "--disable-systray" >> ${CONFFILE}
@@ -413,10 +418,10 @@ libreoffice_src_prepare() {
 	echo "--enable-presenter-console" >> ${CONFFILE}
 	echo "--enable-presenter-minimizer" >> ${CONFFILE}
 	echo "--enable-presenter-ui" >> ${CONFFILE}
-	use java && use reportbuilder && echo "--enable-ext-report-builder" >> ${CONFFILE}
-	use java && use wiki && echo "--enable-ext-wiki-publisher" >> ${CONFFILE}
-	use java && use reportbuilder && echo "--enable-report-builder" >> ${CONFFILE}
-	use java && use wiki && echo "--enable-wiki-publisher" >> ${CONFFILE}
+	use reportbuilder && echo "--enable-ext-report-builder" >> ${CONFFILE}
+	use reportbuilder && echo "--enable-report-builder" >> ${CONFFILE}
+	use wiki && echo "--enable-ext-wiki-publisher" >> ${CONFFILE}
+	use wiki && echo "--enable-wiki-publisher" >> ${CONFFILE}
 
 	# internal
 	echo "--disable-binfilter" >> ${CONFFILE}
@@ -473,53 +478,6 @@ libreoffice_src_prepare() {
 			lucene-2.9 lucene-analyzers.jar)" >> ${CONFFILE}
 #		echo "--with-saxon-jar=$(java-pkg_getjar saxon-9 saxon.jar)" >> ${CONFFILE}
 
-		# reportbuilder extension
-#		if use reportbuilder; then
-#			echo "--with-system-jfreereport" >> ${CONFFILE}
-#			echo "--with-sac-jar=$(java-pkg_getjar \
-#				sac sac.jar)" >> ${CONFFILE}
-#			echo "--with-flute-jar=$(java-pkg_getjar \
-#				flute-jfree flute-jfree.jar)" >> ${CONFFILE}
-#			echo "--with-jcommon-jar=$(java-pkg_getjar \
-#				jcommon-1.0 jcommon.jar)" >> ${CONFFILE}
-#			echo "--with-jcommon-serializer-jar=$(java-pkg_getjar \
-#				jcommon-serializer jcommon-serializer.jar)" >> ${CONFFILE}
-#			echo "--with-libfonts-jar=$(java-pkg_getjar \
-#				libfonts libfonts.jar)" >> ${CONFFILE}
-#			echo "--with-libformula-jar=$(java-pkg_getjar \
-#				libformula libformula.jar)" >> ${CONFFILE}
-#			echo "--with-liblayout-jar=$(java-pkg_getjar \
-#				liblayout liblayout.jar)" >> ${CONFFILE}
-#			echo "--with-libloader-jar=$(java-pkg_getjar \
-#				libloader libloader.jar)" >> ${CONFFILE}
-#			echo "--with-librepository-jar=$(java-pkg_getjar \
-#				librepository librepository.jar)" >> ${CONFFILE}
-#			echo "--with-libxml-jar=$(java-pkg_getjar \
-#				libxml libxml.jar)" >> ${CONFFILE}
-#			echo "--with-jfreereport-jar=$(java-pkg_getjar \
-#				jfreereport jfreereport.jar)" >> ${CONFFILE}
-#		fi
-
-		# wiki extension
-		if use wiki; then
-			echo "--with-system-servlet-api" >> ${CONFFILE}
-			echo "--with-commons-codec-jar=$(java-pkg_getjar \
-				commons-codec commons-codec.jar)" >> ${CONFFILE}
-			echo "--with-commons-httpclient-jar=$(java-pkg_getjar \
-				commons-httpclient-3 commons-httpclient.jar)" >> ${CONFFILE}
-			echo "--with-commons-lang-jar=$(java-pkg_getjar \
-				commons-lang-2.1 commons-lang.jar)" >> ${CONFFILE}
-			echo "--with-servlet-api-jar=$(java-pkg_getjar \
-				tomcat-servlet-api-2.4 servlet-api.jar)" >> ${CONFFILE}
-		fi
-
-		# reportbuilder & wiki extension
-		if use reportbuilder || use wiki; then
-			echo "--with-commons-logging-jar=$(java-pkg_getjar \
-				commons-logging commons-logging.jar)" >> ${CONFFILE}
-			echo "--with-system-apache-commons" >> ${CONFFILE}
-		fi
-
 		# junit:4
 		use junit && echo "--with-junit=$(java-pkg_getjar \
 			junit-4 junit.jar)" >> ${CONFFILE}
@@ -528,13 +486,59 @@ libreoffice_src_prepare() {
 	# junit:4
 	use !junit && echo "--without-junit" >> ${CONFFILE}
 
+	# reportbuilder extension
+#	if use reportbuilder; then
+#		echo "--with-system-jfreereport" >> ${CONFFILE}
+#		echo "--with-sac-jar=$(java-pkg_getjar \
+#			sac sac.jar)" >> ${CONFFILE}
+#		echo "--with-flute-jar=$(java-pkg_getjar \
+#			flute-jfree flute-jfree.jar)" >> ${CONFFILE}
+#		echo "--with-jcommon-jar=$(java-pkg_getjar \
+#			jcommon-1.0 jcommon.jar)" >> ${CONFFILE}
+#		echo "--with-jcommon-serializer-jar=$(java-pkg_getjar \
+#			jcommon-serializer jcommon-serializer.jar)" >> ${CONFFILE}
+#		echo "--with-libfonts-jar=$(java-pkg_getjar \
+#			libfonts libfonts.jar)" >> ${CONFFILE}
+#		echo "--with-libformula-jar=$(java-pkg_getjar \
+#			libformula libformula.jar)" >> ${CONFFILE}
+#		echo "--with-liblayout-jar=$(java-pkg_getjar \
+#			liblayout liblayout.jar)" >> ${CONFFILE}
+#		echo "--with-libloader-jar=$(java-pkg_getjar \
+#			libloader libloader.jar)" >> ${CONFFILE}
+#		echo "--with-librepository-jar=$(java-pkg_getjar \
+#			librepository librepository.jar)" >> ${CONFFILE}
+#		echo "--with-libxml-jar=$(java-pkg_getjar \
+#			libxml libxml.jar)" >> ${CONFFILE}
+#		echo "--with-jfreereport-jar=$(java-pkg_getjar \
+#			jfreereport jfreereport.jar)" >> ${CONFFILE}
+#	fi
+
+	# wiki extension
+	if use wiki; then
+		echo "--with-system-servlet-api" >> ${CONFFILE}
+		echo "--with-commons-codec-jar=$(java-pkg_getjar \
+			commons-codec commons-codec.jar)" >> ${CONFFILE}
+		echo "--with-commons-httpclient-jar=$(java-pkg_getjar \
+			commons-httpclient-3 commons-httpclient.jar)" >> ${CONFFILE}
+		echo "--with-commons-lang-jar=$(java-pkg_getjar \
+			commons-lang-2.1 commons-lang.jar)" >> ${CONFFILE}
+		echo "--with-servlet-api-jar=$(java-pkg_getjar \
+			tomcat-servlet-api-2.4 servlet-api.jar)" >> ${CONFFILE}
+	fi
+
+	# reportbuilder & wiki extension
+	if use reportbuilder || use wiki; then
+		echo "--with-commons-logging-jar=$(java-pkg_getjar \
+			commons-logging commons-logging.jar)" >> ${CONFFILE}
+		echo "--with-system-apache-commons" >> ${CONFFILE}
+	fi
+
 	eautoreconf
 }
 
 libreoffice_src_configure() {
 	# set allowed flags for libreoffice
-	# by default '-g' and the like are allowed which blow up the code
-	# => not sane: bug 345799
+	# by default '-g' and the like are allowed which blow up the code: bug 345799
 
 	# compiler flags
 	use custom-cflags || strip-flags
@@ -676,12 +680,9 @@ libreoffice_pkg_postinst() {
 	elog " - presentation console"
 	elog " - presentation minimizer"
 	elog " - presentation ui"
-	use java && use languagetool && \
-		elog " - JLanguageTool"
-	use java && use reportbuilder && \
-		elog " - report builder"
-	use java && use wiki && \
-		elog " - wiki publisher"
+	use languagetool && elog " - JLanguageTool"
+	use reportbuilder && elog " - report builder"
+	use wiki && elog " - wiki publisher"
 	use mysql && elog " - MySQL (native) database connector"
 	elog " ... more may come"
 	elog
@@ -719,7 +720,6 @@ _libreoffice_custom-cflags_message() {
 		eerror
 		eerror "So, you are on your own. Blame yourself if it fails. ;)"
 		eerror "Only reports with a fix, not a workaround, are accepted!"
-		eerror
 	fi
 }
 
