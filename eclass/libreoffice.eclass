@@ -333,9 +333,7 @@ libreoffice_src_prepare() {
 		echo "--sysconfdir="${EPREFIX}"/etc" >> ${CONFFILE}
 		echo "--libdir="${EPREFIX}"/usr/$(get_libdir)" >> ${CONFFILE}
 		echo "--mandir="${EPREFIX}"/usr/share/man" >> ${CONFFILE}
-		echo "--disable-fontooo" >> ${CONFFILE}
-		echo "--disable-qadevooo" >> ${CONFFILE}
-		echo "--enable-xrender-link" >> ${CONFFILE}
+		echo "--docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${CONFFILE}
 		echo "--with-external-dict-dir=/usr/share/myspell" >> ${CONFFILE}
 		echo "--with-external-hyph-dir=/usr/share/myspell" >> ${CONFFILE}
 		echo "--with-external-thes-dir=/usr/share/myspell" >> ${CONFFILE}
@@ -355,34 +353,23 @@ libreoffice_src_prepare() {
 		echo "--with-system-zlib" >> ${CONFFILE}
 		echo "--with-vendor=\"Gentoo Foundation\"" >> ${CONFFILE}
 		echo "--with-build-version=\"geki built ${PV} (unsupported)\"" >> ${CONFFILE}
-		echo "--with-split" >> ${CONFFILE}
-		echo "--with-docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${CONFFILE}
 		echo "--with-lang=\"${LINGUAS_OOO}\"" >> ${CONFFILE}
-		echo "--with-arch=${ARCH}" >> ${CONFFILE}
-		echo "--with-arch-flags=\"${CXXFLAGS}\"" >> ${CONFFILE}
 		echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
-		echo "--with-binsuffix=-libre" >> ${CONFFILE}
-		echo "--with-installed-ooo-dirname=${PN}" >> ${CONFFILE}
-		echo "--with-srcdir=${DISTDIR}" >> ${CONFFILE}
-		echo "--disable-post-install-scripts" >> ${CONFFILE}
 		echo "--with-system-hunspell" >> ${CONFFILE}
 		echo "--with-system-libwpd" >> ${CONFFILE}
 		echo "--with-system-libwpg" >> ${CONFFILE}
 		echo "--with-system-libwps" >> ${CONFFILE}
-		echo "--enable-extensions" >> ${CONFFILE}
 		echo "--enable-cairo" >> ${CONFFILE}
 		echo "--with-system-cairo" >> ${CONFFILE}
-		echo "--disable-access" >> ${CONFFILE}
 		echo "--disable-kde" >> ${CONFFILE}
 		echo "--disable-layout" >> ${CONFFILE}
 		echo "$(use_enable gtk)" >> ${CONFFILE}
 		echo "$(use_enable kde kde4)" >> ${CONFFILE}
-		echo "$(use_enable !debug strip)" >> ${CONFFILE}
+		echo "$(use_enable !debug strip-solver)" >> ${CONFFILE}
 		echo "$(use_with java)" >> ${CONFFILE}
-		echo "$(use_enable mono)" >> ${CONFFILE}
+#		echo "$(use_enable mono)" >> ${CONFFILE}
 		echo "$(use_enable odk)" >> ${CONFFILE}
 		echo "$(use_with templates sun-templates)" >> ${CONFFILE}
-		echo "$(use_with languagetool)" >> ${CONFFILE}
 		echo "--disable-crashdump" >> ${CONFFILE}
 		echo "--disable-epm" >> ${CONFFILE}
 		echo "--disable-unix-qstart" >> ${CONFFILE}
@@ -390,38 +377,51 @@ libreoffice_src_prepare() {
 		echo "--disable-zenity" >> ${CONFFILE}
 		echo "--disable-fetch-external" >> ${CONFFILE}
 		echo "--with-external-tar=\"${DISTDIR}\"" >> ${CONFFILE}
-		echo "--with-libmysql-path=/usr/$(get_libdir)/mysql" >> ${CONFFILE}
 	fi
 
 	# gentooexperimental defaults
 	echo "--without-afms" >> ${CONFFILE}
-	echo "--without-agfa-monotype-fonts" >> ${CONFFILE}
 	echo "--without-fonts" >> ${CONFFILE}
 	echo "--without-ppds" >> ${CONFFILE}
-	echo "--with-linker-hash-style=gnu" >> ${CONFFILE}
 	echo "--with-system-cppunit" >> ${CONFFILE}
 	echo "--with-system-openssl" >> ${CONFFILE}
 	echo "--with-system-redland" >> ${CONFFILE}
 #	echo "--with-system-xmlsec" >> ${CONFFILE}
 	echo "--enable-xrender-link" >> ${CONFFILE}
-	echo "--with-system-xrender-headers" >> ${CONFFILE}
+	if [[ ${PV} != *_pre ]]; then
+		echo "--with-system-xrender-headers" >> ${CONFFILE}
+	fi
 	echo "--disable-systray" >> ${CONFFILE}
 
 	# extensions
 	echo "--with-extension-integration" >> ${CONFFILE}
-	# not completely added yet
-	echo "--enable-ext-pdfimport" >> ${CONFFILE}
-	echo "--enable-ext-presenter-console" >> ${CONFFILE}
-	echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
-	echo "--enable-ext-presenter-ui" >> ${CONFFILE}
-	echo "--enable-pdfimport" >> ${CONFFILE}
-	echo "--enable-presenter-console" >> ${CONFFILE}
-	echo "--enable-presenter-minimizer" >> ${CONFFILE}
-	echo "--enable-presenter-ui" >> ${CONFFILE}
-	use reportbuilder && echo "--enable-ext-report-builder" >> ${CONFFILE}
-	use reportbuilder && echo "--enable-report-builder" >> ${CONFFILE}
-	use wiki && echo "--enable-ext-wiki-publisher" >> ${CONFFILE}
-	use wiki && echo "--enable-wiki-publisher" >> ${CONFFILE}
+	if [[ ${PV} != *_pre ]]; then
+		# not completely added yet
+		echo "--enable-ext-pdfimport" >> ${CONFFILE}
+		echo "--enable-ext-presenter-console" >> ${CONFFILE}
+		echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
+		echo "--enable-ext-presenter-ui" >> ${CONFFILE}
+		echo "--enable-pdfimport" >> ${CONFFILE}
+		echo "--enable-presenter-console" >> ${CONFFILE}
+		echo "--enable-presenter-minimizer" >> ${CONFFILE}
+		echo "--enable-presenter-ui" >> ${CONFFILE}
+		use reportbuilder && echo "--enable-ext-report-builder" >> ${CONFFILE}
+		use reportbuilder && echo "--enable-report-builder" >> ${CONFFILE}
+		use wiki && echo "--enable-ext-wiki-publisher" >> ${CONFFILE}
+		use wiki && echo "--enable-wiki-publisher" >> ${CONFFILE}
+		echo "$(use_enable mysql mysql-connector)" >> ${CONFFILE}
+		echo "$(use_enable mysql ext-mysql-connector)" >> ${CONFFILE}
+	else
+		echo "--enable-ext-pdfimport" >> ${CONFFILE}
+		echo "--enable-ext-presenter-console" >> ${CONFFILE}
+		echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
+		echo "--enable-ext-presenter-ui" >> ${CONFFILE}
+		echo "$(use_enable reportbuilder ext-report-builder)" >> ${CONFFILE}
+		echo "$(use_enable wiki ext-wiki-publisher)" >> ${CONFFILE}
+		echo "$(use_enable mysql ext-mysql-connector)" >> ${CONFFILE}
+		# FIXME: enable-ext
+		echo "$(use_with languagetool)" >> ${CONFFILE}
+	fi
 
 	# internal
 	echo "--disable-binfilter" >> ${CONFFILE}
@@ -436,7 +436,11 @@ libreoffice_src_prepare() {
 	echo "$(use_with graphite system-graphite)" >> ${CONFFILE}
 	echo "$(use_enable ldap)" >> ${CONFFILE}
 	echo "$(use_with ldap openldap)" >> ${CONFFILE}
-	echo "$(use_with odbc system-odbc-headers)" >> ${CONFFILE}
+	if [[ ${PV} != *_pre ]]; then
+		echo "$(use_with odbc system-odbc-headers)" >> ${CONFFILE}
+	else
+		echo "$(use_with odbc system-odbc)" >> ${CONFFILE}
+	fi
 	echo "$(use_enable opengl)" >> ${CONFFILE}
 	echo "$(use_with opengl system-mesa-headers)" >> ${CONFFILE}
 	echo "$(use_enable python)" >> ${CONFFILE}
@@ -444,8 +448,6 @@ libreoffice_src_prepare() {
 	echo "$(use_with webdav system-neon)" >> ${CONFFILE}
 
 	# mysql
-	echo "$(use_enable mysql mysql-connector)" >> ${CONFFILE}
-	echo "$(use_enable mysql ext-mysql-connector)" >> ${CONFFILE}
 	echo "$(use_with mysql system-mysql)" >> ${CONFFILE}
 	echo "$(use_with mysql system-mysql-cppconn)" >> ${CONFFILE}
 
@@ -546,6 +548,9 @@ libreoffice_src_configure() {
 
 	# silent miscompiles; LO/OOo adds -O2/1/0 where appropriate
 	filter-flags "-O*"
+
+	# optimize
+	export ARCH_FLAGS="${CXXFLAGS}"
 
 	# linker flags
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"

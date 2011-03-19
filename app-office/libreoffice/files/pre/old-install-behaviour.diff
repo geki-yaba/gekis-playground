@@ -1,27 +1,20 @@
 --- Makefile.in.orig	2011-02-25 23:01:35.128013555 +0100
 +++ Makefile.in	2011-02-25 23:04:53.404013587 +0100
-@@ -8,12 +8,18 @@
-         build.pl -P@BUILD_NCPUS@ --all -- -P@BUILD_MAX_JOBS@
+@@ -16,11 +16,11 @@
  
  install:
--	@echo "Installing in $${prefix:-/usr/local}..."
-+#	@echo "Installing in $${prefix:-/usr/local}..."
-+#	. ./*[Ee]nv.[Ss]et.sh && \
-+#	ooinstall "$${prefix:-@prefix@}"
-+#	@echo && \
-+#	echo "Installation finished, you can now execute:" && \
-+#	echo "$${prefix:-@prefix@}/program/soffice"
-+	@echo "Installing in $${libdir:-/usr/local/lib}/libreoffice..."
- 	. ./*[Ee]nv.[Ss]et.sh && \
--	ooinstall "$${prefix:-@prefix@}"
-+	ooinstall "$${libdir:-@libdir@}/libreoffice"
- 	@echo && \
+ 	@. ./*[Ee]nv.[Ss]et.sh && \
+-	echo "Installing in $${prefix:-@prefix@}..." && \
+-	ooinstall "$${prefix:-@prefix@}" && \
++	echo "Installing in $${libdir:-@libdir@}/libreoffice..." && \
++	ooinstall "$${libdir:-@libdir@}/libreoffice" && \
+ 	echo "" && \
  	echo "Installation finished, you can now execute:" && \
 -	echo "$${prefix:-@prefix@}/program/soffice"
 +	echo "$${libdir:-@libdir@}/libreoffice/program/soffice"
  
  dev-install:
- 	. ./*[Ee]nv.[Ss]et.sh && \
+ 	@. ./*[Ee]nv.[Ss]et.sh && \
 --- solenv/bin/ooinstall.orig	2011-02-25 23:09:13.484013610 +0100
 +++ solenv/bin/ooinstall	2011-02-25 23:09:43.856013608 +0100
 @@ -67,9 +67,9 @@
