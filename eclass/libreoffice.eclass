@@ -347,7 +347,6 @@ libreoffice_src_prepare() {
 		echo "--with-system-libxslt" >> ${CONFFILE}
 		echo "--with-system-openssl" >> ${CONFFILE}
 		echo "--with-system-vigra" >> ${CONFFILE}
-		echo "--with-system-xrender" >> ${CONFFILE}
 		echo "--without-myspell-dicts" >> ${CONFFILE}
 		echo "--without-stlport" >> ${CONFFILE}
 		echo "--with-system-zlib" >> ${CONFFILE}
@@ -388,9 +387,6 @@ libreoffice_src_prepare() {
 	echo "--with-system-redland" >> ${CONFFILE}
 #	echo "--with-system-xmlsec" >> ${CONFFILE}
 	echo "--enable-xrender-link" >> ${CONFFILE}
-	if [[ ${PV} != *_pre ]]; then
-		echo "--with-system-xrender-headers" >> ${CONFFILE}
-	fi
 	echo "--disable-systray" >> ${CONFFILE}
 
 	# extensions
