@@ -14,7 +14,7 @@ LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-IUSE="debug profile stats"
+IUSE="debug stats"
 
 DEPEND=""
 RDEPEND=""
@@ -22,6 +22,8 @@ RDEPEND=""
 src_prepare() {
 	# strip jemalloc optimization preset
 	epatch "${FILESDIR}/optimization.diff"
+	# do not install pprof
+	epatch "${FILESDIR}/no-pprof.diff"
 
 	# autotooling
 	eautoreconf
@@ -32,7 +34,6 @@ src_configure() {
 	econf \
 		--with-jemalloc-prefix=j \
 		$(use_enable debug) \
-		$(use_enable profile prof) \
 		$(use_enable stats) \
 		|| die "configure failed"
 }
@@ -40,7 +41,4 @@ src_configure() {
 src_install() {
 	# install
 	make DESTDIR="${D}" install
-
-	# rename pproff to prevent collision
-	mv -v "${D}"/usr/bin/pprof "${D}"/usr/bin/jpprof
 }
