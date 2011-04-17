@@ -1,0 +1,52 @@
+--- postprocess/packcomponents/makefile.mk	2011-04-17 20:25:50.770857285 +0200
++++ postprocess/packcomponents/makefile.mk	2011-04-17 20:32:17.190857141 +0200
+@@ -140,7 +140,6 @@
+     placeware \
+     preload \
+     protocolhandler \
+-    pythonloader \
+     res \
+     rpt \
+     rptui \
+@@ -193,6 +192,10 @@
+     xsltfilter \
+     xstor
+ 
++.IF "$(DISABLE_PYTHON)" != "TRUE"
++my_components += pythonloader
++.ENDIF
++
+ .IF "$(OS)" != "WNT" && "$(OS)" != "MACOSX"
+ my_components += splash
+ .ENDIF
+@@ -363,11 +366,17 @@
+ my_components += avmedia.jar
+ .END
+ 
++.IF "$(DISABLE_PYTHON)" != "TRUE"
+ my_ooo_components = mailmerge
++.ENDIF
+ 
+ .INCLUDE: target.mk
+ 
++.IF "$(DISABLE_PYTHON)" != "TRUE"
+ ALLTAR : $(MISC)/services.rdb $(MISC)/ooo-services.rdb
++.ELSE
++ALLTAR : $(MISC)/services.rdb
++.ENDIF
+ 
+ $(MISC)/services.rdb .ERRREMOVE : $(SOLARENV)/bin/packcomponents.xslt \
+         $(MISC)/services.input $(my_components:^"$(SOLARXMLDIR)/":+".component")
+@@ -379,6 +388,7 @@
+         '<list>$(my_components:^"<filename>":+".component</filename>")</list>' \
+         > $@
+ 
++.IF "$(DISABLE_PYTHON)" != "TRUE"
+ $(MISC)/ooo-services.rdb .ERRREMOVE : $(SOLARENV)/bin/packcomponents.xslt \
+         $(MISC)/ooo-services.input \
+         $(my_ooo_components:^"$(SOLARXMLDIR)/":+".component")
+@@ -389,3 +399,4 @@
+     echo '<list>' \
+         '$(my_ooo_components:^"<filename>":+".component</filename>")' \
+         '</list>' > $@
++.ENDIF
