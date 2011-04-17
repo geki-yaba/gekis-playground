@@ -537,6 +537,9 @@ libreoffice_src_configure() {
 libreoffice_src_compile() {
 	# build
 	make || _libreoffice_die "make failed"
+
+	# python
+	use !python && touch "${S}"/solver/300/*.pro/xml/ooo/services.rdb
 }
 
 libreoffice_src_install() {
@@ -549,8 +552,24 @@ libreoffice_src_install() {
 	# install desktop files
 	domenu "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
 
+	cd "${S}"
+
+	# install mime package
+	dodir /usr/share/mime/packages
+	cp sysui/*.pro/misc/libreoffice/openoffice.org.xml \
+		"${ED}"/usr/share/mime/packages/libreoffice.xml
+
+	# install icons
+	local path="${ED}/usr/share"
+	for icon in sysui/desktop/icons/hicolor/*/apps/*.png; do
+		mkdir -p "${path}$(dirname ${icon##sysui\/desktop})"
+		cp "${icon}" "${path}$(dirname ${icon##sysui\/desktop})"
+	done
+
 	# install wrapper
-	newexe "${S}"/sysui/*.pro/misc/libreoffice/openoffice.sh libreoffice
+	# FIXME: exeinto should not be necessary! :D
+	exeinto /usr/bin
+	newexe sysui/*.pro/misc/libreoffice/openoffice.sh libreoffice
 
 	sed -e "s:/opt:/usr/$(get_libdir):" \
 		-i "${ED}"/usr/bin/libreoffice \
@@ -578,7 +597,7 @@ libreoffice_pkg_postinst() {
 #	bash-completion_pkg_postinst
 
 	# info
-	elog " To start OpenOffice.org, run:"
+	elog " To start LibreOffice, run:"
 	elog
 	elog " $ libreoffice"
 	elog
