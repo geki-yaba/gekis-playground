@@ -578,6 +578,9 @@ libreoffice_src_install() {
 	# python
 	use !python && \
 		cp -v "${ED}"/usr/$(get_libdir)/${PN}{/basis3.4,}/program/services.rdb
+
+	# remove fuzz
+	rm "${ED}"/gid_Module_*
 }
 
 libreoffice_pkg_preinst() {
