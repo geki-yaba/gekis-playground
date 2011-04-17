@@ -556,8 +556,8 @@ libreoffice_src_install() {
 
 	# install mime package
 	dodir /usr/share/mime/packages
-	cp sysui/*.pro/misc/libreoffice/openoffice.org.xml \
-		"${ED}"/usr/share/mime/packages/libreoffice.xml
+	cp sysui/*.pro/misc/${PN}/openoffice.org.xml \
+		"${ED}"/usr/share/mime/packages/${PN}.xml
 
 	# install icons
 	local path="${ED}/usr/share"
@@ -569,11 +569,15 @@ libreoffice_src_install() {
 	# install wrapper
 	# FIXME: exeinto should not be necessary! :D
 	exeinto /usr/bin
-	newexe sysui/*.pro/misc/libreoffice/openoffice.sh libreoffice
+	newexe sysui/*.pro/misc/${PN}/openoffice.sh ${PN}
 
 	sed -e "s:/opt:/usr/$(get_libdir):" \
-		-i "${ED}"/usr/bin/libreoffice \
+		-i "${ED}"/usr/bin/${PN} \
 		|| _libreoffice_die "wrapper failed"
+
+	# python
+	use !python && \
+		cp -v "${ED}"/usr/$(get_libdir)/${PN}{/basis3.4,}/program/services.rdb
 }
 
 libreoffice_pkg_preinst() {
