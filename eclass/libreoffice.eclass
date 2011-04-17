@@ -94,11 +94,9 @@ SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 MODULES="artwork base calc components extensions extras filters help impress
 libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
 writer"
-# FIXME: l10n missing for 3.3.99.1
+# FIXME: l10n missing for branch 3.4
 
-if [[ ${PV} == *_pre ]]; then
-	MODULES+=" l10n"
-else
+if [[ ${PV} != *_pre ]]; then
 	SRC_URI+=" ${LIBRE_SRC}/${PN}-bootstrap-${PV}.tar.bz2"
 
 	for module in ${MODULES}; do
@@ -343,9 +341,10 @@ libreoffice_src_prepare() {
 	echo "--without-myspell-dicts" >> ${CONFFILE}
 	echo "--without-stlport" >> ${CONFFILE}
 	echo "--with-system-zlib" >> ${CONFFILE}
-	echo "--with-vendor=\"Gentoo Foundation\"" >> ${CONFFILE}
-	echo "--with-build-version=\"geki built ${PV} (unsupported)\"" >> ${CONFFILE}
-	echo "--with-lang=\"${LINGUAS_OOO}\"" >> ${CONFFILE}
+	echo "--with-vendor=Gentoo Foundation" >> ${CONFFILE}
+	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${CONFFILE}
+# FIXME: l10n missing for branch 3.4
+#	echo "--with-lang=\"${LINGUAS_OOO}\"" >> ${CONFFILE}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
 	echo "--with-system-hunspell" >> ${CONFFILE}
 	echo "--with-system-libwpd" >> ${CONFFILE}
@@ -368,7 +367,7 @@ libreoffice_src_prepare() {
 	echo "--disable-dependency-tracking" >> ${CONFFILE}
 	echo "--disable-zenity" >> ${CONFFILE}
 	echo "--disable-fetch-external" >> ${CONFFILE}
-	echo "--with-external-tar=\"${DISTDIR}\"" >> ${CONFFILE}
+	echo "--with-external-tar=${DISTDIR}" >> ${CONFFILE}
 
 	# gentooexperimental defaults
 	echo "--without-afms" >> ${CONFFILE}
