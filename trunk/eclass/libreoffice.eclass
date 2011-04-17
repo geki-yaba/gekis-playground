@@ -93,9 +93,12 @@ SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 # libreoffice modules
 MODULES="artwork base calc components extensions extras filters help impress
 libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
-writer l10n"
+writer"
+# FIXME: l10n missing for 3.3.99.1
 
-if [[ ${PV} != *_pre ]]; then
+if [[ ${PV} == *_pre ]]; then
+	MODULES+=" l10n"
+else
 	SRC_URI+=" ${LIBRE_SRC}/${PN}-bootstrap-${PV}.tar.bz2"
 
 	for module in ${MODULES}; do
@@ -212,12 +215,10 @@ libreoffice_pkg_pretend() {
 	eerror "This ${PN} version is experimental."
 	eerror "Things could just break."
 
-	if [[ ${PV} == *_pre ]]; then
-		elog
-		einfo "There are various extensions to ${PN}."
-		einfo "You may check ./configure for '--enable-ext-*'"
-		einfo "and request them here: https://forums.gentoo.org/viewtopic-t-865091.html"
-	fi
+	elog
+	einfo "There are various extensions to ${PN}."
+	einfo "You may check ./configure for '--enable-ext-*'"
+	einfo "and request them here: https://forums.gentoo.org/viewtopic-t-865091.html"
 
 	# custom-cflags
 	_libreoffice_custom-cflags_message
@@ -289,19 +290,25 @@ libreoffice_src_unpack() {
 			git_src_unpack
 		done
 
-		# move source into tree
-		# FIXME: symlink; possible to use ./g pull?
+		# reset
 		S="${WORKDIR}/${PN}/bootstrap"
-		mv "${CLONE_DIR}"/*/* "${S}"
-
-		# no need to download external sources
-		touch "${S}"/src.downloaded
 	else
-		unpack "${MY_P}.tar.gz"
+		unpack "${PN}-bootstrap-${PV}.tar.bz2"
 
-		# copy hotfixes
-		cp -v "${FILESDIR}/${MY_PV}"/hotfix-* "${S}/patches/hotfixes"
+		cd "${CLONE_DIR}"
+
+		# unpack modules
+		for module in ${MODULES}; do
+			unpack "${PN}-${module}-${PV}.tar.bz2"
+		done
 	fi
+
+	# move source into tree
+	# FIXME: symlink; possible to use ./g pull?
+	mv -n "${CLONE_DIR}"/*/* "${S}"
+
+	# no need to download external sources
+	touch "${S}"/src.downloaded
 }
 
 libreoffice_src_prepare() {
@@ -311,72 +318,57 @@ libreoffice_src_prepare() {
 	# specifics not for upstream
 	EPATCH_SUFFIX="diff"
 	EPATCH_FORCE="yes"
+	epatch "${FILESDIR}"
 
+	# create distro config
 	# FIXME: add GentooUnstable-VERSION.conf to ${FILESDIR} for defaults
-	if [[ ${PV} != *_pre ]]; then
-		epatch "${FILESDIR}"
-
-		# fix desktop files bug 352955
-		sed -e "s/Exec=oo/Exec=lo/g" \
-			-i "${S}"/desktop/*.desktop.in.in \
-			|| _libreoffice_die "could not fix desktop files"
-
-		# create distro config
-		CONFFILE+=".in"
-		cp -dP ${S}/distro-configs/Gentoo.conf.in ${CONFFILE}
-		echo "--with-build-version=\\\"geki built ${PV} (unsupported)\\\"" >> ${CONFFILE}
-	else
-		epatch "${FILESDIR}/pre"
-
-		# create distro config
-		echo "--prefix="${EPREFIX}"/usr" >> ${CONFFILE}
-		echo "--sysconfdir="${EPREFIX}"/etc" >> ${CONFFILE}
-		echo "--libdir="${EPREFIX}"/usr/$(get_libdir)" >> ${CONFFILE}
-		echo "--mandir="${EPREFIX}"/usr/share/man" >> ${CONFFILE}
-		echo "--docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${CONFFILE}
-		echo "--with-external-dict-dir=/usr/share/myspell" >> ${CONFFILE}
-		echo "--with-external-hyph-dir=/usr/share/myspell" >> ${CONFFILE}
-		echo "--with-external-thes-dir=/usr/share/myspell" >> ${CONFFILE}
-		echo "--with-system-boost" >> ${CONFFILE}
-		echo "--with-system-curl" >> ${CONFFILE}
-		echo "--with-system-db" >> ${CONFFILE}
-		echo "--with-system-dicts" >> ${CONFFILE}
-		echo "--with-system-expat" >> ${CONFFILE}
-		echo "--with-system-hunspell" >> ${CONFFILE}
-		echo "--with-system-icu" >> ${CONFFILE}
-		echo "--with-system-libxslt" >> ${CONFFILE}
-		echo "--with-system-openssl" >> ${CONFFILE}
-		echo "--with-system-vigra" >> ${CONFFILE}
-		echo "--without-myspell-dicts" >> ${CONFFILE}
-		echo "--without-stlport" >> ${CONFFILE}
-		echo "--with-system-zlib" >> ${CONFFILE}
-		echo "--with-vendor=\"Gentoo Foundation\"" >> ${CONFFILE}
-		echo "--with-build-version=\"geki built ${PV} (unsupported)\"" >> ${CONFFILE}
-		echo "--with-lang=\"${LINGUAS_OOO}\"" >> ${CONFFILE}
-		echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
-		echo "--with-system-hunspell" >> ${CONFFILE}
-		echo "--with-system-libwpd" >> ${CONFFILE}
-		echo "--with-system-libwpg" >> ${CONFFILE}
-		echo "--with-system-libwps" >> ${CONFFILE}
-		echo "--enable-cairo" >> ${CONFFILE}
-		echo "--with-system-cairo" >> ${CONFFILE}
-		echo "--disable-kde" >> ${CONFFILE}
-		echo "--disable-layout" >> ${CONFFILE}
-		echo "$(use_enable gtk)" >> ${CONFFILE}
-		echo "$(use_enable kde kde4)" >> ${CONFFILE}
-		echo "$(use_enable !debug strip-solver)" >> ${CONFFILE}
-		echo "$(use_with java)" >> ${CONFFILE}
-#		echo "$(use_enable mono)" >> ${CONFFILE}
-		echo "$(use_enable odk)" >> ${CONFFILE}
-		echo "$(use_with templates sun-templates)" >> ${CONFFILE}
-		echo "--disable-crashdump" >> ${CONFFILE}
-		echo "--disable-epm" >> ${CONFFILE}
-		echo "--disable-unix-qstart" >> ${CONFFILE}
-		echo "--disable-dependency-tracking" >> ${CONFFILE}
-		echo "--disable-zenity" >> ${CONFFILE}
-		echo "--disable-fetch-external" >> ${CONFFILE}
-		echo "--with-external-tar=\"${DISTDIR}\"" >> ${CONFFILE}
-	fi
+	echo "--prefix="${EPREFIX}"/usr" >> ${CONFFILE}
+	echo "--sysconfdir="${EPREFIX}"/etc" >> ${CONFFILE}
+	echo "--libdir="${EPREFIX}"/usr/$(get_libdir)" >> ${CONFFILE}
+	echo "--mandir="${EPREFIX}"/usr/share/man" >> ${CONFFILE}
+	echo "--docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${CONFFILE}
+	echo "--with-external-dict-dir=/usr/share/myspell" >> ${CONFFILE}
+	echo "--with-external-hyph-dir=/usr/share/myspell" >> ${CONFFILE}
+	echo "--with-external-thes-dir=/usr/share/myspell" >> ${CONFFILE}
+	echo "--with-system-boost" >> ${CONFFILE}
+	echo "--with-system-curl" >> ${CONFFILE}
+	echo "--with-system-db" >> ${CONFFILE}
+	echo "--with-system-dicts" >> ${CONFFILE}
+	echo "--with-system-expat" >> ${CONFFILE}
+	echo "--with-system-hunspell" >> ${CONFFILE}
+	echo "--with-system-icu" >> ${CONFFILE}
+	echo "--with-system-libxslt" >> ${CONFFILE}
+	echo "--with-system-openssl" >> ${CONFFILE}
+	echo "--with-system-vigra" >> ${CONFFILE}
+	echo "--without-myspell-dicts" >> ${CONFFILE}
+	echo "--without-stlport" >> ${CONFFILE}
+	echo "--with-system-zlib" >> ${CONFFILE}
+	echo "--with-vendor=\"Gentoo Foundation\"" >> ${CONFFILE}
+	echo "--with-build-version=\"geki built ${PV} (unsupported)\"" >> ${CONFFILE}
+	echo "--with-lang=\"${LINGUAS_OOO}\"" >> ${CONFFILE}
+	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
+	echo "--with-system-hunspell" >> ${CONFFILE}
+	echo "--with-system-libwpd" >> ${CONFFILE}
+	echo "--with-system-libwpg" >> ${CONFFILE}
+	echo "--with-system-libwps" >> ${CONFFILE}
+	echo "--enable-cairo" >> ${CONFFILE}
+	echo "--with-system-cairo" >> ${CONFFILE}
+	echo "--disable-kde" >> ${CONFFILE}
+	echo "--disable-layout" >> ${CONFFILE}
+	echo "$(use_enable gtk)" >> ${CONFFILE}
+	echo "$(use_enable kde kde4)" >> ${CONFFILE}
+	echo "$(use_enable !debug strip-solver)" >> ${CONFFILE}
+	echo "$(use_with java)" >> ${CONFFILE}
+#	echo "$(use_enable mono)" >> ${CONFFILE}
+	echo "$(use_enable odk)" >> ${CONFFILE}
+	echo "$(use_with templates sun-templates)" >> ${CONFFILE}
+	echo "--disable-crashdump" >> ${CONFFILE}
+	echo "--disable-epm" >> ${CONFFILE}
+	echo "--disable-unix-qstart" >> ${CONFFILE}
+	echo "--disable-dependency-tracking" >> ${CONFFILE}
+	echo "--disable-zenity" >> ${CONFFILE}
+	echo "--disable-fetch-external" >> ${CONFFILE}
+	echo "--with-external-tar=\"${DISTDIR}\"" >> ${CONFFILE}
 
 	# gentooexperimental defaults
 	echo "--without-afms" >> ${CONFFILE}
@@ -391,33 +383,14 @@ libreoffice_src_prepare() {
 
 	# extensions
 	echo "--with-extension-integration" >> ${CONFFILE}
-	if [[ ${PV} != *_pre ]]; then
-		# not completely added yet
-		echo "--enable-ext-pdfimport" >> ${CONFFILE}
-		echo "--enable-ext-presenter-console" >> ${CONFFILE}
-		echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
-		echo "--enable-ext-presenter-ui" >> ${CONFFILE}
-		echo "--enable-pdfimport" >> ${CONFFILE}
-		echo "--enable-presenter-console" >> ${CONFFILE}
-		echo "--enable-presenter-minimizer" >> ${CONFFILE}
-		echo "--enable-presenter-ui" >> ${CONFFILE}
-		use reportbuilder && echo "--enable-ext-report-builder" >> ${CONFFILE}
-		use reportbuilder && echo "--enable-report-builder" >> ${CONFFILE}
-		use wiki && echo "--enable-ext-wiki-publisher" >> ${CONFFILE}
-		use wiki && echo "--enable-wiki-publisher" >> ${CONFFILE}
-		echo "$(use_enable mysql mysql-connector)" >> ${CONFFILE}
-		echo "$(use_enable mysql ext-mysql-connector)" >> ${CONFFILE}
-	else
-		echo "--enable-ext-pdfimport" >> ${CONFFILE}
-		echo "--enable-ext-presenter-console" >> ${CONFFILE}
-		echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
-		echo "--enable-ext-presenter-ui" >> ${CONFFILE}
-		echo "$(use_enable reportbuilder ext-report-builder)" >> ${CONFFILE}
-		echo "$(use_enable wiki ext-wiki-publisher)" >> ${CONFFILE}
-		echo "$(use_enable mysql ext-mysql-connector)" >> ${CONFFILE}
-		# FIXME: enable-ext
-		echo "$(use_with languagetool)" >> ${CONFFILE}
-	fi
+	echo "--enable-ext-pdfimport" >> ${CONFFILE}
+	echo "--enable-ext-presenter-console" >> ${CONFFILE}
+	echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
+	echo "$(use_enable reportbuilder ext-report-builder)" >> ${CONFFILE}
+	echo "$(use_enable wiki ext-wiki-publisher)" >> ${CONFFILE}
+	echo "$(use_enable mysql ext-mysql-connector)" >> ${CONFFILE}
+	# FIXME: enable-ext
+	echo "$(use_with languagetool)" >> ${CONFFILE}
 
 	# internal
 	echo "--disable-binfilter" >> ${CONFFILE}
@@ -432,11 +405,7 @@ libreoffice_src_prepare() {
 	echo "$(use_with graphite system-graphite)" >> ${CONFFILE}
 	echo "$(use_enable ldap)" >> ${CONFFILE}
 	echo "$(use_with ldap openldap)" >> ${CONFFILE}
-	if [[ ${PV} != *_pre ]]; then
-		echo "$(use_with odbc system-odbc-headers)" >> ${CONFFILE}
-	else
-		echo "$(use_with odbc system-odbc)" >> ${CONFFILE}
-	fi
+	echo "$(use_with odbc system-odbc)" >> ${CONFFILE}
 	echo "$(use_enable opengl)" >> ${CONFFILE}
 	echo "$(use_with opengl system-mesa-headers)" >> ${CONFFILE}
 	echo "$(use_enable python)" >> ${CONFFILE}
@@ -556,49 +525,14 @@ libreoffice_src_configure() {
 	use kde && export KDE4DIR="${KDEDIR}"
 	use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
 
-	cd ${S}
-	if [[ ${PV} == *_pre ]]; then
-		./autogen.sh --with-distro="GentooUnstable"
-	else
-		./configure --without-git \
-			--with-source-version=${PV} \
-			--prefix="${EPREFIX}"/usr \
-			--sysconfdir="${EPREFIX}"/etc \
-			--libdir="${EPREFIX}"/usr/$(get_libdir) \
-			--mandir="${EPREFIX}"/usr/share/man \
-			--with-split \
-			--with-distro="GentooUnstable" \
-			--with-docdir="${EPREFIX}"/usr/share/doc/${PF} \
-			--with-drink="cold blood" \
-			--with-lang="${LINGUAS_OOO}" \
-			--with-arch="${ARCH}" \
-			--with-arch-flags="${CXXFLAGS}" \
-			--with-num-cpus="$(grep -s -c ^processor /proc/cpuinfo)" \
-			--with-binsuffix="-libre" \
-			--with-installed-ooo-dirname=${PN} \
-			--with-srcdir="${DISTDIR}" \
-			--disable-post-install-scripts \
-			--with-system-hunspell \
-			--with-system-libwpd \
-			--with-system-libwpg \
-			--with-system-libwps \
-			--enable-extensions \
-			--enable-cairo \
-			--with-system-cairo \
-			--disable-access \
-			--disable-kde \
-			--disable-layout \
-			$(use_enable gtk) \
-			$(use_enable kde kde4) \
-			$(use_enable !debug strip) \
-			$(use_with java) \
-			$(use_enable mono) \
-			$(use_enable odk) \
-			$(use_with templates sun-templates) \
-			$(use_with languagetool) \
-			--with-additional-sections="KDE4Experimental" \
-			|| _libreoffice_die "configure failed"
-	fi
+	./autogen.sh --with-distro="GentooUnstable"
+
+	# argh ... upstream?! wtf?!
+	./set_soenv
+
+	# argh ... upstream?! wtf?! the second ...
+	sed /DO_FETCH_TARBALLS=/d
+		-i *Env.Set*
 }
 
 libreoffice_src_compile() {
@@ -613,27 +547,15 @@ libreoffice_src_install() {
 	# access
 	use prefix || chown -RP root:0 "${ED}"
 
-	if [[ ${PV} == *_pre ]]; then
-		# install desktop files
-		domenu "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
+	# install desktop files
+	domenu "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
 
-		# install wrapper
-		newexe "${S}"/sysui/*.pro/misc/libreoffice/openoffice.sh libreoffice
+	# install wrapper
+	newexe "${S}"/sysui/*.pro/misc/libreoffice/openoffice.sh libreoffice
 
-		sed -e "s:/opt:/usr/$(get_libdir):" \
-			-i "${ED}"/usr/bin/libreoffice \
-			|| _libreoffice_die "wrapper failed"
-	else
-		# record java libraries
-		use java && java-pkg_regjar \
-			"${ED}/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/classes"/*.jar \
-			"${ED}/usr/$(get_libdir)/${PN}/ure/share/java"/*.jar
-
-		# move bash-completion from /etc to /usr/share/bash-completion. bug 226061
-		local name="libreoffice-libre"
-		dobashcompletion "${ED}"/etc/bash_completion.d/${name}.sh ${name}
-		rm -rf "${ED}"/etc/bash_completion.d/ || die "rm failed"
-	fi
+	sed -e "s:/opt:/usr/$(get_libdir):" \
+		-i "${ED}"/usr/bin/libreoffice \
+		|| _libreoffice_die "wrapper failed"
 }
 
 libreoffice_pkg_preinst() {
@@ -652,28 +574,21 @@ libreoffice_pkg_postinst() {
 	# kde4
 	use kde && kde4-base_pkg_postinst
 
-	if [[ ${PV} != *_pre ]]; then
-		# record jdbc-mysql java library to classpath if possible
-		# - for a happy user experience
-		"${EPREFIX}"/usr/$(get_libdir)/${PN}/basis${MY_PV}/program/java-set-classpath \
-			$(java-config --classpath=jdbc-mysql 2>/dev/null) >/dev/null
-
-		# bash-completion postinst
-		BASHCOMPLETION_NAME="libreoffice-libre" \
-		bash-completion_pkg_postinst
-	fi
+	# bash-completion postinst
+#	BASHCOMPLETION_NAME="libreoffice-libre" \
+#	bash-completion_pkg_postinst
 
 	# info
 	elog " To start OpenOffice.org, run:"
 	elog
-	elog " $ libreoffice-libre"
+	elog " $ libreoffice"
 	elog
-	elog "__________________________________________________________________"
-	elog " Also, for individual components, you can use any of:"
-	elog
-	elog " lobase-libre, localc-libre, lodraw-libre, lofromtemplate-libre,"
-	elog " loimpress-libre, lomath-libre, loweb-libre or lowriter-libre"
-	elog
+#	elog "__________________________________________________________________"
+#	elog " Also, for individual components, you can use any of:"
+#	elog
+#	elog " lobase-libre, localc-libre, lodraw-libre, lofromtemplate-libre,"
+#	elog " loimpress-libre, lomath-libre, loweb-libre or lowriter-libre"
+#	elog
 	elog "__________________________________________________________________"
 	elog " Some parts have to be installed via Extension Manager now"
 	ewarn " - VBA (VisualBasic-Assistant) support is no longer an extension"

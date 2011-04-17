@@ -8,7 +8,10 @@ inherit libreoffice
 KEYWORDS=""
 
 # root
-S="${WORKDIR}/bootstrap"
+S="${WORKDIR}/${PN}-bootstrap-${PV}"
+
+# unpack sources
+CLONE_DIR="${S}/clone"
 
 # addons
 ADDONS_SRC+=" http://hg.services.openoffice.org/binaries/48a9f787f43a09c0a9b7b00cd1fddbbf-hyphen-2.7.1.tar.gz"
