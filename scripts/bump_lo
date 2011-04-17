@@ -38,16 +38,16 @@ help()
 {
 	local path="app-office/libreoffice"
 	cat << EOH
-  Usage: $0 ${path}/<old_ebuild> ${path}/<new_ebuild> [<type>] [<remove old>]
+  Usage: $0 ${path}/<old_ebuild> ${path}/<new_ebuild> [<type>] [<remove_old>]
 
   Where <type> could be:
     svn   - subversion
     git   - git (not implemented)
 
-  Set <remove old> non-void to remove old ebuild
+  Set <remove_old> non-void to remove old ebuild
 EOH
 
-	die
+	exit 1
 }
 
 fetch_list ()
