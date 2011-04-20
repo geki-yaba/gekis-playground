@@ -40,10 +40,11 @@ reportbuilder templates webdav wiki"
 # postgres - system only diff available - no chance to choose! :(
 
 # available languages
-LANGUAGES="af ar as be_BY bg bn br bs ca cs cy da de dz el en en_GB en_ZA eo es
-et fa fi fr ga gl gu he hi hr hu it ja km ko ku lt lv mk ml mr nb ne nl nn nr ns
-oc or pa pl pt pt_BR ru rw sh sk sl sr ss st sv ta te tg th ti tn tr ts uk ur ve
-vi xh zh_CN zh_TW zu"
+LANGUAGES="af ar as ast be_BY bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
+en en_GB en_ZA eo es et eu fa fi fr ga gd gl gu he hi hr hu id is it ja ka kk km
+kn kok ko ks ku ky lo lt lv mai mk ml mn mni mr ms my nb ne nl nn nr ns oc om or
+pa pap pl ps pt pt_BR ro ru rw sa sat sd sh si sk sl sq sr ss st sv sw_TZ ta te
+tg th ti tn tr ts ug uk ur uz ve vi xh zh_CN zh_TW zu"
 
 for language in ${LANGUAGES}; do
 	IUSE+=" linguas_${language}"
@@ -93,8 +94,7 @@ SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 # libreoffice modules
 MODULES="artwork base calc components extensions extras filters help impress
 libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
-writer"
-# FIXME: l10n missing for branch 3.4
+writer translations"
 
 if [[ ${PV} != *_pre ]]; then
 	SRC_URI+=" ${LIBRE_SRC}/${PN}-bootstrap-${PV}.tar.bz2"
@@ -341,8 +341,7 @@ libreoffice_src_prepare() {
 	echo "--with-system-zlib" >> ${CONFFILE}
 	echo "--with-vendor=Gentoo Foundation" >> ${CONFFILE}
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${CONFFILE}
-# FIXME: l10n missing for branch 3.4
-#	echo "--with-lang=\"${LINGUAS_OOO}\"" >> ${CONFFILE}
+	echo "--with-lang=\"${LINGUAS_OOO}\"" >> ${CONFFILE}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
 	echo "--with-system-hunspell" >> ${CONFFILE}
 	echo "--with-system-libwpd" >> ${CONFFILE}
