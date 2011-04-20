@@ -5,11 +5,9 @@
 EAPI="2"
 
 EGIT_REPO_URI="git://canonware.com/jemalloc.git"
-EGIT_BRANCH="dev"
-# eclass/git feature: if not equal use EGIT_COMMIT, which defaults to master
-EGIT_COMMIT="${EGIT_BRANCH}"
+EGIT_MASTER="dev"
 
-inherit autotools eutils flag-o-matic git
+inherit autotools eutils flag-o-matic git-2
 
 DESCRIPTION="Jemalloc is a general-purpose scalable concurrent allocator"
 HOMEPAGE="http://www.canonware.com/jemalloc/"
@@ -27,8 +25,6 @@ RDEPEND=""
 S="${WORKDIR}"
 
 src_prepare() {
-	git_path_fix
-
 	# strip jemalloc optimization preset
 	epatch "${FILESDIR}/optimization.diff"
 	# do not install pprof
@@ -39,8 +35,6 @@ src_prepare() {
 }
 
 src_configure() {
-	git_path_fix
-
 	# configure
 	econf \
 		--with-jemalloc-prefix=j \
@@ -50,13 +44,6 @@ src_configure() {
 }
 
 src_install() {
-	git_path_fix
-
 	# install
 	make DESTDIR="${D}" install
-}
-
-git_path_fix() {
-	# PN twice
-	cd "${PN}" || die "${PN} path not found! has this been fixed?!"
 }

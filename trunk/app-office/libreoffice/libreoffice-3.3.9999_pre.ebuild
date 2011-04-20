@@ -7,9 +7,6 @@ inherit libreoffice
 # keywords
 KEYWORDS=""
 
-# root
-S="${WORKDIR}/${PN}/bootstrap"
-
 # git clone
 CLONE_DIR="${S}/clone"
 EGIT_BRANCH="libreoffice-3-4"

@@ -9,7 +9,6 @@
 
 #
 # TODO: waiting for eclass/python EAPI=4 :D
-# TODO: waiting for purging 3.3; code-doubling is annoying
 #
 
 EAPI="4"
@@ -29,6 +28,7 @@ inherit autotools bash-completion boost-utils check-reqs db-use eutils fdo-mime 
 # inherit python
 
 if [[ ${PV} == *_pre ]]; then
+	# git-2 just hangs after first unpack?!
 	inherit git
 fi
 
@@ -282,14 +282,11 @@ libreoffice_src_unpack() {
 
 		# clone modules
 		for module in ${MODULES}; do
-			local S="${CLONE_DIR}/${module}"
 			EGIT_PROJECT="${PN}/${module}"
+			EGIT_UNPACK_DIR="${CLONE_DIR}/${module}"
 			EGIT_REPO_URI="${root}/${module}"
 			git_src_unpack
 		done
-
-		# reset
-		S="${WORKDIR}/${PN}/bootstrap"
 	else
 		unpack "${PN}-bootstrap-${PV}.tar.bz2"
 
@@ -306,6 +303,7 @@ libreoffice_src_unpack() {
 	mv -n "${CLONE_DIR}"/*/* "${S}"
 
 	# no need to download external sources
+	# although we set two configure flags already for this ...
 	touch "${S}"/src.downloaded
 }
 
