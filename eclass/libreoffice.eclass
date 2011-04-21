@@ -14,7 +14,7 @@
 EAPI="4"
 
 WANT_AUTOCONF="2.5"
-WANT_AUTOMAKE="1.9"
+WANT_AUTOMAKE="1.11"
 
 #PYTHON_DEPEND="python? 2:2.6"
 #PYTHON_USE_WITH="threads,xml"
@@ -341,7 +341,7 @@ libreoffice_src_prepare() {
 	echo "--with-system-zlib" >> ${CONFFILE}
 	echo "--with-vendor=Gentoo Foundation" >> ${CONFFILE}
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${CONFFILE}
-	echo "--with-lang=\"${LINGUAS_OOO}\"" >> ${CONFFILE}
+	echo "--with-lang=${LINGUAS_OOO}" >> ${CONFFILE}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
 	echo "--with-system-hunspell" >> ${CONFFILE}
 	echo "--with-system-libwpd" >> ${CONFFILE}
@@ -506,6 +506,7 @@ libreoffice_src_configure() {
 	# compiler flags
 	use custom-cflags || strip-flags
 	use debug || filter-flags "-g*"
+	append-flags "-w"
 
 	# silent miscompiles; LO/OOo adds -O2/1/0 where appropriate
 	filter-flags "-O*"
@@ -527,8 +528,7 @@ libreoffice_src_configure() {
 	./set_soenv
 
 	# argh ... upstream?! wtf?! the second ...
-	sed /DO_FETCH_TARBALLS=/d
-		-i *Env.Set*
+	sed /DO_FETCH_TARBALLS=/d -i *Env.Set*
 }
 
 libreoffice_src_compile() {
