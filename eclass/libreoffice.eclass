@@ -94,7 +94,9 @@ SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 # libreoffice modules
 MODULES="artwork base calc components extensions extras filters help impress
 libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
-writer translations"
+writer"
+# FIXME: translations need python-2; too much trouble for now
+# translations
 
 if [[ ${PV} != *_pre ]]; then
 	SRC_URI+=" ${LIBRE_SRC}/${PN}-bootstrap-${PV}.tar.bz2"
@@ -141,7 +143,7 @@ CDEPEND="${SDEPEND}
 	mono? ( dev-lang/mono )
 	mysql? ( dev-db/mysql-connector-c++:1.1.0 )
 	opengl? ( virtual/opengl virtual/glu )
-	python? ( dev-lang/python:2.7[threads,xml] )
+	python? ( dev-lang/python[threads,xml] )
 	reportbuilder? ( dev-java/commons-logging:0 )
 	webdav? ( net-libs/neon )
 	wiki? ( dev-java/commons-codec:0
@@ -257,12 +259,6 @@ libreoffice_pkg_setup() {
 		LINGUAS_OOO="en-US ${LINGUAS//_/-}"
 	fi
 
-	# python
-#	if use python; then
-#		python_set_active_version 2
-#		python_pkg_setup
-#	fi
-
 	# kde
 	use kde && kde4-base_pkg_setup
 }
@@ -341,7 +337,8 @@ libreoffice_src_prepare() {
 	echo "--with-system-zlib" >> ${CONFFILE}
 	echo "--with-vendor=Gentoo Foundation" >> ${CONFFILE}
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${CONFFILE}
-	echo "--with-lang=${LINGUAS_OOO}" >> ${CONFFILE}
+# FIXME: translations need python-2; too much trouble for now
+#	echo "--with-lang=${LINGUAS_OOO}" >> ${CONFFILE}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
 	echo "--with-system-hunspell" >> ${CONFFILE}
 	echo "--with-system-libwpd" >> ${CONFFILE}
@@ -524,19 +521,14 @@ libreoffice_src_configure() {
 
 	./autogen.sh --with-distro="GentooUnstable"
 
-	# argh ... upstream?! wtf?!
-	./set_soenv
-
-	# argh ... upstream?! wtf?! the second ...
+	# no need to download external sources
+	# although we set two configure flags already for this ...
 	sed /DO_FETCH_TARBALLS=/d -i *Env.Set*
 }
 
 libreoffice_src_compile() {
 	# build
 	make || _libreoffice_die "make failed"
-
-	# python
-	use !python && touch "${S}"/solver/300/*.pro/xml/ooo/services.rdb
 }
 
 libreoffice_src_install() {
@@ -574,7 +566,7 @@ libreoffice_src_install() {
 
 	# python
 	use !python && \
-		cp -v "${ED}"/usr/$(get_libdir)/${PN}{/basis3.4,}/program/services.rdb
+		ln -s "${ED}"/usr/$(get_libdir)/${PN}{/basis3.4,}/program/services.rdb
 
 	# remove fuzz
 	rm "${ED}"/gid_Module_*
