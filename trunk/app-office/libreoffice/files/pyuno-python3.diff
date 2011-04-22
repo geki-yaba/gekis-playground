@@ -1,0 +1,2100 @@
+diff --git a/pyuno/demo/biblioaccess.py b/pyuno/demo/biblioaccess.py
+index ac9cf64..59d843a 100644
+--- a/pyuno/demo/biblioaccess.py
++++ b/pyuno/demo/biblioaccess.py
+@@ -1,35 +1,36 @@
+-import uno
++# -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ 
++import uno
+ from com.sun.star.sdb.CommandType import COMMAND
+ 
+ def main():
+-
+     connectionString = "socket,host=localhost,port=2002"
+-    
+-    url = "uno:"+connectionString + ";urp;StarOffice.ComponentContext"
+-    
++
++    url = "uno:" + connectionString + ";urp;StarOffice.ComponentContext"
++
+     localCtx = uno.getComponentContext()
+     localSmgr = localCtx.ServiceManager
+     resolver = localSmgr.createInstanceWithContext(
+         "com.sun.star.bridge.UnoUrlResolver", localCtx)
+-    ctx = resolver.resolve( url )
++    ctx = resolver.resolve(url)
+     smgr = ctx.ServiceManager
+ 
+-    rowset =smgr.createInstanceWithContext( "com.sun.star.sdb.RowSet", ctx )
++    rowset =smgr.createInstanceWithContext("com.sun.star.sdb.RowSet", ctx)
+     rowset.DataSourceName = "Bibliography"
+     rowset.CommandType = COMMAND
+     rowset.Command = "SELECT IDENTIFIER, AUTHOR FROM biblio"
+ 
+     rowset.execute();
+ 
+-    print "Identifier\tAuthor"
++    print("Identifier\tAuthor")
+ 
+-    id = rowset.findColumn( "IDENTIFIER" )
+-    author = rowset.findColumn( "AUTHOR" )
++    id = rowset.findColumn("IDENTIFIER")
++    author = rowset.findColumn("AUTHOR")
+     while rowset.next():
+-        print rowset.getString( id ) + "\t" + repr( rowset.getString( author ) )
+-
++        print(rowset.getString(id) + "\t" + repr(rowset.getString(author)))
+ 
+     rowset.dispose();
+ 
+ main()
++
++# vim:set shiftwidth=4 softtabstop=4 expandtab:
+diff --git a/pyuno/demo/hello_world_comp.py b/pyuno/demo/hello_world_comp.py
+index a9bc488..32f4056 100644
+--- a/pyuno/demo/hello_world_comp.py
++++ b/pyuno/demo/hello_world_comp.py
+@@ -1,3 +1,5 @@
++# -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
++
+ import uno
+ import unohelper
+ 
+@@ -5,36 +7,37 @@ from com.sun.star.task import XJobExecutor
+ 
+ # implement a UNO component by deriving from the standard unohelper.Base class
+ # and from the interface(s) you want to implement.
+-class HelloWorldJob( unohelper.Base, XJobExecutor ):
+-    def __init__( self, ctx ):
++class HelloWorldJob(unohelper.Base, XJobExecutor):
++    def __init__(self, ctx):
+         # store the component context for later use
+         self.ctx = ctx
+-        
+-    def trigger( self, args ):
++
++    def trigger(self, args):
+         # note: args[0] == "HelloWorld", see below config settings
+-    
++
+         # retrieve the desktop object
+         desktop = self.ctx.ServiceManager.createInstanceWithContext(
+-            "com.sun.star.frame.Desktop", self.ctx )
+-	    
++            "com.sun.star.frame.Desktop", self.ctx)
++
+         # get current document model
+         model = desktop.getCurrentComponent()
+ 
+-	# access the document's text property
+-	text = model.Text
++        # access the document's text property
++        text = model.Text
+ 
+-	# create a cursor
+-	cursor = text.createTextCursor()
++        # create a cursor
++        cursor = text.createTextCursor()
+ 
+-	# insert the text into the document
+-	text.insertString( cursor, "Hello World", 0 )
++        # insert the text into the document
++        text.insertString(cursor, "Hello World", 0)
+ 
+ # pythonloader looks for a static g_ImplementationHelper variable
+ g_ImplementationHelper = unohelper.ImplementationHelper()
+ 
+-# 
+ g_ImplementationHelper.addImplementation( \
+-	HelloWorldJob,                        # UNO object class
+-	"org.openoffice.comp.pyuno.demo.HelloWorld", # implemenation name 
+-	("com.sun.star.task.Job",),)          # list of implemented services
+-	                                      # (the only service)
++    HelloWorldJob,                               # UNO object class
++    "org.openoffice.comp.pyuno.demo.HelloWorld", # implemenation name
++    ("com.sun.star.task.Job",),)                 # list of implemented services
++                                                 # (the only service)
++
++# vim:set shiftwidth=4 softtabstop=4 expandtab:
+diff --git a/pyuno/demo/makefile.mk b/pyuno/demo/makefile.mk
+index 7911048..e369c8c 100644
+--- a/pyuno/demo/makefile.mk
++++ b/pyuno/demo/makefile.mk
+@@ -6,27 +6,25 @@ PRJ=..
+ 
+ ROOT=$(MISC)$/pyuno-doc
+ 
+-
+ FILES=\
+-    $(ROOT)$/python-bridge.html 		\
+-    $(ROOT)$/customized_setup.png 		\
+-    $(ROOT)$/mode_component.png 		\
+-    $(ROOT)$/mode_ipc.png			\
+-    $(ROOT)$/modes.sxd			\
+-    $(ROOT)$/optional_components.png       	\
+-    $(ROOT)$/samples$/swriter.py		\
+-    $(ROOT)$/samples$/swritercomp.py	\
+-    $(ROOT)$/samples$/ooextract.py		\
+-    $(ROOT)$/samples$/biblioaccess.py	\
+-    $(ROOT)$/samples$/swritercompclient.py	\
+-    $(ROOT)$/samples$/hello_world_pyuno.zip	
+-
+-
+-
+-$(MISC)$/pyuno-doc.zip : dirs $(FILES) 
++    $(ROOT)$/python-bridge.html \
++    $(ROOT)$/customized_setup.png \
++    $(ROOT)$/mode_component.png \
++    $(ROOT)$/mode_ipc.png \
++    $(ROOT)$/modes.sxd \
++    $(ROOT)$/optional_components.png \
++    $(ROOT)$/samples$/swriter.py \
++    $(ROOT)$/samples$/swritercomp.py \
++    $(ROOT)$/samples$/ooextract.py \
++    $(ROOT)$/samples$/biblioaccess.py \
++    $(ROOT)$/samples$/swritercompclient.py \
++    $(ROOT)$/samples$/hello_world_pyuno.zip
++
++
++$(MISC)$/pyuno-doc.zip : dirs $(FILES)
+     -rm -f $@
+     cd $(MISC) && zip -r pyuno-doc.zip pyuno-doc
+-dirs .PHONY : 
++dirs .PHONY :
+     -mkdir $(ROOT)
+     -mkdir $(ROOT)$/samples
+ 
+diff --git a/pyuno/demo/ooextract.py b/pyuno/demo/ooextract.py
+index 057fa04..74e072f 100644
+--- a/pyuno/demo/ooextract.py
++++ b/pyuno/demo/ooextract.py
+@@ -1,3 +1,5 @@
++# -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
++
+ import getopt,sys
+ import uno
+ from unohelper import Base,systemPathToFileUrl, absolutize
+@@ -8,26 +10,25 @@ from com.sun.star.beans.PropertyState import DIRECT_VALUE
+ from com.sun.star.uno import Exception as UnoException
+ from com.sun.star.io import IOException,XInputStream, XOutputStream
+ 
+-class OutputStream( Base, XOutputStream ):
+-      def __init__( self ):
+-	  self.closed = 0
+-	  
+-      def closeOutput(self):
+-	  self.closed = 1
++class OutputStream(Base, XOutputStream):
++    def __init__(self):
++        self.closed = 0
++
++    def closeOutput(self):
++        self.closed = 1
+ 
+-      def writeBytes( self, seq ):
+-	  sys.stdout.write( seq.value )
++    def writeBytes(self, seq):
++        sys.stdout.write(seq.value)
+ 
+-      def flush( self ):
+-	  pass
+-      
++    def flush(self):
++        pass
+ 
+ def main():
+     retVal = 0
+     doc = None
+ 
+     try:
+-        opts, args = getopt.getopt(sys.argv[1:], "hc:",["help", "connection-string=" , "html"])
++        opts, args = getopt.getopt(sys.argv[1:], "hc:", ["help", "connection-string=", "html"])
+         format = None
+         url = "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext"
+         filterName = "Text (Encoded)"
+@@ -35,61 +36,61 @@ def main():
+             if o in ("-h", "--help"):
+                 usage()
+                 sys.exit()
+-            if o in ("-c", "--connection-string" ):
++            if o in ("-c", "--connection-string"):
+                 url = "uno:" + a + ";urp;StarOffice.ComponentContext"
+             if o == "--html":
+                 filterName = "HTML (StarWriter)"
+-            
+-        print filterName
+-        if not len( args ):
++
++        print(filterName)
++        if not len(args):
+               usage()
+               sys.exit()
+-              
++
+         ctxLocal = uno.getComponentContext()
+         smgrLocal = ctxLocal.ServiceManager
+ 
+         resolver = smgrLocal.createInstanceWithContext(
+-                 "com.sun.star.bridge.UnoUrlResolver", ctxLocal )
+-        ctx = resolver.resolve( url )
++                 "com.sun.star.bridge.UnoUrlResolver", ctxLocal)
++        ctx = resolver.resolve(url)
+         smgr = ctx.ServiceManager
+ 
+-        desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctx )
++        desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctx)
+ 
+-        cwd = systemPathToFileUrl( getcwd() )
++        cwd = systemPathToFileUrl(getcwd())
+         outProps = (
+-            PropertyValue( "FilterName" , 0, filterName , 0 ),
+-            PropertyValue( "OutputStream",0, OutputStream(),0))
+-        inProps = PropertyValue( "Hidden" , 0 , True, 0 ),
++            PropertyValue("FilterName" , 0, filterName, 0),
++            PropertyValue("OutputStream", 0, OutputStream(), 0))
++        inProps = PropertyValue("Hidden", 0 , True, 0),
+         for path in args:
+             try:
+-                fileUrl = uno.absolutize( cwd, systemPathToFileUrl(path) )
+-                doc = desktop.loadComponentFromURL( fileUrl , "_blank", 0,inProps)
++                fileUrl = uno.absolutize(cwd, systemPathToFileUrl(path))
++                doc = desktop.loadComponentFromURL(fileUrl , "_blank", 0, inProps)
+ 
+                 if not doc:
+-                    raise UnoException( "Couldn't open stream for unknown reason", None )
++                    raise UnoException("Could not open stream for unknown reason", None)
+ 
+-                doc.storeToURL("private:stream",outProps)
+-            except IOException, e:
+-                sys.stderr.write( "Error during conversion: " + e.Message + "\n" )
++                doc.storeToURL("private:stream", outProps)
++            except IOException as e:
++                sys.stderr.write("Error during conversion: " + e.Message + "\n")
+                 retVal = 1
+-            except UnoException, e:
+-                sys.stderr.write( "Error ("+repr(e.__class__)+") during conversion:" + e.Message + "\n" )
++            except UnoException as e:
++                sys.stderr.write("Error (" + repr(e.__class__) + ") during conversion: " + e.Message + "\n")
+                 retVal = 1
+             if doc:
+                 doc.dispose()
+ 
+-    except UnoException, e:
+-        sys.stderr.write( "Error ("+repr(e.__class__)+") :" + e.Message + "\n" )
++    except UnoException as e:
++        sys.stderr.write("Error (" + repr(e.__class__) + "): " + e.Message + "\n")
+         retVal = 1
+-    except getopt.GetoptError,e:
+-        sys.stderr.write( str(e) + "\n" )
++    except getopt.GetoptError as e:
++        sys.stderr.write(str(e) + "\n")
+         usage()
+         retVal = 1
+ 
+     sys.exit(retVal)
+-    
++
+ def usage():
+-    sys.stderr.write( "usage: ooextract.py --help |\n"+
++    sys.stderr.write("usage: ooextract.py --help |\n"+
+                   "       [-c <connection-string> | --connection-string=<connection-string>\n"+
+                   "       file1 file2 ...\n"+
+                   "\n" +
+@@ -106,4 +107,6 @@ def usage():
+                   "        Instead of the text filter, the writer html filter is used\n"
+                   )
+ 
+-main()    
++main()
++
++# vim:set shiftwidth=4 softtabstop=4 expandtab:
+diff --git a/pyuno/demo/pyunoenv.tcsh b/pyuno/demo/pyunoenv.tcsh
+index 038cf2d..dbe69d0 100644
+--- a/pyuno/demo/pyunoenv.tcsh
++++ b/pyuno/demo/pyunoenv.tcsh
+@@ -18,13 +18,15 @@ setenv LD_LIBRARY_PATH
+ endif
+ 
+ if( "$PYTHONPATH" != "" ) then
+-	setenv PYTHONPATH $OOOHOME/program:$OOOHOME/program/pydemo:$OOOHOME/program/python/lib:$PYTHONPATH
++    setenv PYTHONPATH $OOOHOME/program:$OOOHOME/program/pydemo:$OOOHOME/program/python/lib:$PYTHONPATH
+ else
+-	setenv PYTHONPATH $OOOHOME/program:$OOOHOME/program/pydemo:$OOOHOME/program/python/lib
++    setenv PYTHONPATH $OOOHOME/program:$OOOHOME/program/pydemo:$OOOHOME/program/python/lib
+ endif
+-	
++
+ setenv LD_LIBRARY_PATH $OOOHOME/program:$LD_LIBRARY_PATH
+ 
+ if( $?PYTHONHOME ) then
+ setenv PATH $PYTHONHOME/bin:$PATH
+ endif
++
++# vim:set shiftwidth=4 softtabstop=4 expandtab:
+diff --git a/pyuno/demo/swriter.py b/pyuno/demo/swriter.py
+index 05ab332..3fafcd6 100644
+--- a/pyuno/demo/swriter.py
++++ b/pyuno/demo/swriter.py
+@@ -1,8 +1,10 @@
++# -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ 
+-# bootstrap uno component context 	
++# bootstrap uno component context
+ import uno
+ import unohelper
+ 
++from com.sun.star.lang import IllegalArgumentException
+ 
+ # a UNO struct later needed to create a document
+ from com.sun.star.text.ControlCharacter import PARAGRAPH_BREAK
+@@ -17,9 +19,9 @@ def insertTextIntoCell( table, cellName, text, color ):
+     tableText.setString( text )
+ 
+ localContext = uno.getComponentContext()
+-				   
++
+ resolver = localContext.ServiceManager.createInstanceWithContext(
+-				"com.sun.star.bridge.UnoUrlResolver", localContext )
++           "com.sun.star.bridge.UnoUrlResolver", localContext )
+ 
+ smgr = resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ServiceManager" )
+ remoteContext = smgr.getPropertyValue( "DefaultContext" )
+@@ -41,15 +43,15 @@ text.insertString( cursor, "Now we are in the second line\n" , 0 )
+ table = doc.createInstance( "com.sun.star.text.TextTable" )
+ 
+ # with 4 rows and 4 columns
+-table.initialize( 4,4)
++table.initialize(4, 4)
+ 
+ text.insertTextContent( cursor, table, 0 )
+ rows = table.Rows
+ 
+-table.setPropertyValue( "BackTransparent", uno.Bool(0) )
++table.setPropertyValue( "BackTransparent", False )
+ table.setPropertyValue( "BackColor", 13421823 )
+ row = rows.getByIndex(0)
+-row.setPropertyValue( "BackTransparent", uno.Bool(0) )
++row.setPropertyValue( "BackTransparent", False )
+ row.setPropertyValue( "BackColor", 6710932 )
+ 
+ textColor = 16777215
+@@ -60,8 +62,8 @@ insertTextIntoCell( table, "C1", "ThirdColumn", textColor )
+ insertTextIntoCell( table, "D1", "SUM", textColor )
+ 
+ values = ( (22.5,21.5,121.5),
+-	   (5615.3,615.3,-615.3),
+-	   (-2315.7,315.7,415.7) )
++         (5615.3,615.3,-615.3),
++         (-2315.7,315.7,415.7) )
+ table.getCellByName("A2").setValue(22.5)
+ table.getCellByName("B2").setValue(5615.3)
+ table.getCellByName("C2").setValue(-2315.7)
+@@ -79,7 +81,7 @@ table.getCellByName("D4").setFormula("sum <A4:C4>")
+ 
+ 
+ cursor.setPropertyValue( "CharColor", 255 )
+-cursor.setPropertyValue( "CharShadowed", uno.Bool(1) )
++cursor.setPropertyValue( "CharShadowed", True )
+ 
+ text.insertControlCharacter( cursor, PARAGRAPH_BREAK, 0 )
+ text.insertString( cursor, " This is a colored Text - blue with shadow\n" , 0 )
+@@ -99,7 +101,8 @@ textInTextFrame.insertString( cursorInTextFrame, "\nWith this second line the he
+ text.insertControlCharacter( cursor, PARAGRAPH_BREAK, 0 )
+ 
+ cursor.setPropertyValue( "CharColor", 65536 )
+-cursor.setPropertyValue( "CharShadowed", uno.Bool(0) )
++cursor.setPropertyValue( "CharShadowed", False )
+ 
+-text.insertString( cursor, " That's all for now !!" , 0 )
++text.insertString( cursor, " That's all for now!" , 0 )
+ 
++# vim:set shiftwidth=4 softtabstop=4 expandtab:
+diff --git a/pyuno/demo/swritercomp.py b/pyuno/demo/swritercomp.py
+index 6f8f306..be3109c 100644
+--- a/pyuno/demo/swritercomp.py
++++ b/pyuno/demo/swritercomp.py
+@@ -1,3 +1,5 @@
++# -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
++
+ # just a simple copy of the swriter.py demo, but implemented as a component. The advantage is,
+ # that the component may run within the office process which may give a performance improvement.
+ 
+@@ -21,92 +23,92 @@ def insertTextIntoCell( table, cellName, text, color ):
+ # implementing the interface com.sun.star.lang.XMain
+ # unohelper.Base implements the XTypeProvider interface
+ class SWriterComp(XMain,unohelper.Base):
+-      def __init__( self, ctx ):
+-	  self.ctx = ctx
+-
+-      # implementation for XMain.run( [in] sequence< any > )	  
+-      def run( self,args ):
++    def __init__( self, ctx ):
++        self.ctx = ctx
+ 
+-	 ctx = self.ctx
+-	 smgr = ctx.ServiceManager
+-	 desktop = smgr.createInstanceWithContext( "com.sun.star.frame.Desktop",ctx)
++    # implementation for XMain.run( [in] sequence< any > )
++    def run( self,args ):
++        ctx = self.ctx
++        smgr = ctx.ServiceManager
++        desktop = smgr.createInstanceWithContext( "com.sun.star.frame.Desktop",ctx)
+ 
+-	 # open a writer document
+-	 doc = desktop.loadComponentFromURL( "private:factory/swriter","_blank", 0, () )
++        # open a writer document
++        doc = desktop.loadComponentFromURL( "private:factory/swriter","_blank", 0, () )
+ 
+-	 text = doc.Text
+-	 cursor = text.createTextCursor()
+-	 text.insertString( cursor, "The first line in the newly created text document.\n", 0 )
+-	 text.insertString( cursor, "Now we are in the second line\n" , 0 )
++        text = doc.Text
++        cursor = text.createTextCursor()
++        text.insertString( cursor, "The first line in the newly created text document.\n", 0 )
++        text.insertString( cursor, "Now we are in the second line\n" , 0 )
+ 
+-	 # create a text table
+-	 table = doc.createInstance( "com.sun.star.text.TextTable" )
++        # create a text table
++        table = doc.createInstance( "com.sun.star.text.TextTable" )
+ 
+-	 # with 4 rows and 4 columns
+-	 table.initialize( 4,4)
++        # with 4 rows and 4 columns
++        table.initialize( 4,4)
+ 
+-	 text.insertTextContent( cursor, table, 0 )
+-	 rows = table.Rows
++        text.insertTextContent( cursor, table, 0 )
++        rows = table.Rows
+ 
+-	 table.setPropertyValue( "BackTransparent", uno.Bool(0) )
+-	 table.setPropertyValue( "BackColor", 13421823 )
+-	 row = rows.getByIndex(0)
+-	 row.setPropertyValue( "BackTransparent", uno.Bool(0) )
+-	 row.setPropertyValue( "BackColor", 6710932 )
++        table.setPropertyValue( "BackTransparent", uno.Bool(0) )
++        table.setPropertyValue( "BackColor", 13421823 )
++        row = rows.getByIndex(0)
++        row.setPropertyValue( "BackTransparent", uno.Bool(0) )
++        row.setPropertyValue( "BackColor", 6710932 )
+ 
+-	 textColor = 16777215
++        textColor = 16777215
+ 
+-	 insertTextIntoCell( table, "A1", "FirstColumn", textColor )
+-	 insertTextIntoCell( table, "B1", "SecondColumn", textColor )
+-	 insertTextIntoCell( table, "C1", "ThirdColumn", textColor )
+-	 insertTextIntoCell( table, "D1", "SUM", textColor )
++        insertTextIntoCell( table, "A1", "FirstColumn", textColor )
++        insertTextIntoCell( table, "B1", "SecondColumn", textColor )
++        insertTextIntoCell( table, "C1", "ThirdColumn", textColor )
++        insertTextIntoCell( table, "D1", "SUM", textColor )
+ 
+-	 values = ( (22.5,21.5,121.5),
+-	 	   (5615.3,615.3,-615.3),
+-		   (-2315.7,315.7,415.7) )
+-         table.getCellByName("A2").setValue(22.5)
+-	 table.getCellByName("B2").setValue(5615.3)
+-	 table.getCellByName("C2").setValue(-2315.7)
+-	 table.getCellByName("D2").setFormula("sum <A2:C2>")
++        values = ( (22.5,21.5,121.5),
++                 (5615.3,615.3,-615.3),
++                  (-2315.7,315.7,415.7) )
++        table.getCellByName("A2").setValue(22.5)
++        table.getCellByName("B2").setValue(5615.3)
++        table.getCellByName("C2").setValue(-2315.7)
++        table.getCellByName("D2").setFormula("sum <A2:C2>")
+ 
+-	 table.getCellByName("A3").setValue(21.5)
+-	 table.getCellByName("B3").setValue(615.3)
+-	 table.getCellByName("C3").setValue(-315.7)
+-	 table.getCellByName("D3").setFormula("sum <A3:C3>")
++        table.getCellByName("A3").setValue(21.5)
++        table.getCellByName("B3").setValue(615.3)
++        table.getCellByName("C3").setValue(-315.7)
++        table.getCellByName("D3").setFormula("sum <A3:C3>")
+ 
+-	 table.getCellByName("A4").setValue(121.5)
+-	 table.getCellByName("B4").setValue(-615.3)
+-	 table.getCellByName("C4").setValue(415.7)
+-	 table.getCellByName("D4").setFormula("sum <A4:C4>")
++        table.getCellByName("A4").setValue(121.5)
++        table.getCellByName("B4").setValue(-615.3)
++        table.getCellByName("C4").setValue(415.7)
++        table.getCellByName("D4").setFormula("sum <A4:C4>")
+ 
+ 
+-	 cursor.setPropertyValue( "CharColor", 255 )
+-	 cursor.setPropertyValue( "CharShadowed", uno.Bool(1) )
++        cursor.setPropertyValue( "CharColor", 255 )
++        cursor.setPropertyValue( "CharShadowed", uno.Bool(1) )
+ 
+-	 text.insertControlCharacter( cursor, PARAGRAPH_BREAK, 0 )
+-	 text.insertString( cursor, " This is a colored Text - blue with shadow\n" , 0 )
+-	 text.insertControlCharacter( cursor, PARAGRAPH_BREAK, 0 )
++        text.insertControlCharacter( cursor, PARAGRAPH_BREAK, 0 )
++        text.insertString( cursor, " This is a colored Text - blue with shadow\n" , 0 )
++        text.insertControlCharacter( cursor, PARAGRAPH_BREAK, 0 )
+ 
+-	 textFrame = doc.createInstance( "com.sun.star.text.TextFrame" )
+-	 textFrame.setSize( Size(15000,400))
+-	 textFrame.setPropertyValue( "AnchorType" , AS_CHARACTER )
++        textFrame = doc.createInstance( "com.sun.star.text.TextFrame" )
++        textFrame.setSize( Size(15000,400))
++        textFrame.setPropertyValue( "AnchorType" , AS_CHARACTER )
+ 
+-	 text.insertTextContent( cursor, textFrame, 0 )
++        text.insertTextContent( cursor, textFrame, 0 )
+ 
+-	 textInTextFrame = textFrame.getText()
+-	 cursorInTextFrame = textInTextFrame.createTextCursor()
+-	 textInTextFrame.insertString( cursorInTextFrame, "The first line in the newly created text frame.", 0 )
+-	 textInTextFrame.insertString( cursorInTextFrame, "\nWith this second line the height of the rame raises.",0)
+-	 text.insertControlCharacter( cursor, PARAGRAPH_BREAK, 0 )
++        textInTextFrame = textFrame.getText()
++        cursorInTextFrame = textInTextFrame.createTextCursor()
++        textInTextFrame.insertString( cursorInTextFrame, "The first line in the newly created text frame.", 0 )
++        textInTextFrame.insertString( cursorInTextFrame, "\nWith this second line the height of the rame raises.",0)
++        text.insertControlCharacter( cursor, PARAGRAPH_BREAK, 0 )
+ 
+-	 cursor.setPropertyValue( "CharColor", 65536 )
+-	 cursor.setPropertyValue( "CharShadowed", uno.Bool(0) )
+-
+-	 text.insertString( cursor, " That's all for now !!" , 0 )
+-	 return 0
++        cursor.setPropertyValue( "CharColor", 65536 )
++        cursor.setPropertyValue( "CharShadowed", uno.Bool(0) )
+ 
++        text.insertString( cursor, " That's all for now!" , 0 )
++        return 0
+ 
+ # pythonloader looks for a static g_ImplementationHelper variable
+ g_ImplementationHelper = unohelper.ImplementationHelper()
+ g_ImplementationHelper.addImplementation( \
+-	SWriterComp,"org.openoffice.comp.pyuno.swriter",("org.openoffice.demo.SWriter",),)
++    SWriterComp,"org.openoffice.comp.pyuno.swriter",("org.openoffice.demo.SWriter",),)
++
++# vim:set shiftwidth=4 softtabstop=4 expandtab:
+diff --git a/pyuno/demo/swritercompclient.py b/pyuno/demo/swritercompclient.py
+index 1076a69..19ca6b5 100644
+--- a/pyuno/demo/swritercompclient.py
++++ b/pyuno/demo/swritercompclient.py
+@@ -1,9 +1,10 @@
+-# instantiating
++# -*- tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
++
+ import uno
+ 
+ localContext = uno.getComponentContext()
+ resolver = localContext.ServiceManager.createInstanceWithContext(
+-				"com.sun.star.bridge.UnoUrlResolver", localContext )
++           "com.sun.star.bridge.UnoUrlResolver", localContext )
+ remoteContext = resolver.resolve( "uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext" )
+ remoteSmgr = remoteContext.ServiceManager
+ 
+@@ -11,3 +12,4 @@ pyComp = remoteSmgr.createInstanceWithContext( "org.openoffice.demo.SWriter" , r
+ 
+ pyComp.run( (), )
+ 
++# vim:set shiftwidth=4 softtabstop=4 expandtab:
+diff --git a/pyuno/inc/pyuno/pyuno.hxx b/pyuno/inc/pyuno/pyuno.hxx
+index fcb051c..6ccf1d3 100644
+--- a/pyuno/inc/pyuno/pyuno.hxx
++++ b/pyuno/inc/pyuno/pyuno.hxx
+@@ -45,8 +45,12 @@
+     preconditions: python has been initialized before and
+                    the global interpreter lock is held 
+ */
+-extern "C" PY_DLLEXPORT void SAL_CALL initpyuno();
+-
++extern "C" PY_DLLEXPORT
++#if PY_MAJOR_VERSION >= 3
++    PyObject* SAL_CALL PyInit_pyuno();
++#else
++   void SAL_CALL initpyuno();
++#endif
+ 
+ namespace pyuno
+ {
+diff --git a/pyuno/prj/build.lst b/pyuno/prj/build.lst
+index 5a3b2c1..a7c1c5b 100644
+--- a/pyuno/prj/build.lst
++++ b/pyuno/prj/build.lst
+@@ -1,5 +1,5 @@
+-bgpu	pyuno	:	stoc cpputools cppuhelper bridges tools PYTHON:python LIBXSLT:libxslt NULL
+-pu	pyuno				  usr1	-	all	br_mkout NULL
+-pu	pyuno\zipcore	nmake	-	all	pu_zipcore NULL
+-pu	pyuno\source\module	nmake	-	all	pu_module NULL
+-pu	pyuno\source\loader	nmake	-	all	pu_loader pu_module NULL
++bgpu  pyuno : stoc cpputools cppuhelper bridges tools PYTHON:python LIBXSLT:libxslt NULL
++pu    pyuno usr1 - all br_mkout NULL
++pu    pyuno\zipcore nmake - all pu_zipcore NULL
++pu    pyuno\source\module nmake - all pu_module NULL
++pu    pyuno\source\loader nmake - all pu_loader pu_module NULL
+diff --git a/pyuno/prj/d.lst b/pyuno/prj/d.lst
+index 1dd212e..81e79cf 100644
+--- a/pyuno/prj/d.lst
++++ b/pyuno/prj/d.lst
+@@ -1,8 +1,6 @@
+ mkdir: %_DEST%\bin%_EXT%\pyuno
+ mkdir: %_DEST%\lib%_EXT%\pyuno
+ 
+-..\%__SRC%\lib\libpyuno.so %_DEST%\lib%_EXT%\libpyuno.so
+-..\%__SRC%\lib\libpyuno.dylib %_DEST%\lib%_EXT%\libpyuno.dylib
+ ..\%__SRC%\lib\pyuno.so %_DEST%\lib%_EXT%\pyuno.so
+ ..\%__SRC%\lib\pythonloader.uno.so %_DEST%\lib%_EXT%\pythonloader.uno.so
+ ..\%__SRC%\lib\pythonloader.uno.dylib %_DEST%\lib%_EXT%\pythonloader.uno.dylib
+diff --git a/pyuno/source/loader/makefile.mk b/pyuno/source/loader/makefile.mk
+index 65ec811..76c3dc2 100644
+--- a/pyuno/source/loader/makefile.mk
++++ b/pyuno/source/loader/makefile.mk
+@@ -32,46 +32,46 @@ ENABLE_EXCEPTIONS=TRUE
+ 
+ # --- Settings -----------------------------------------------------
+ 
+-.INCLUDE :  settings.mk
++.INCLUDE : settings.mk
+ .IF "$(L10N_framework)"==""
+-DLLPRE = 
++DLLPRE =
+ 
+ #-------------------------------------------------------------------
+ 
+ .IF "$(OS)$(COMEX)" == "SOLARIS4"
+ # no -Bdirect for SunWS CC
+-DIRECT = $(LINKFLAGSDEFS)
++DIRECT= $(LINKFLAGSDEFS)
+ .ENDIF
+ 
+ .IF "$(SYSTEM_PYTHON)" == "YES"
+ PYTHONLIB=$(PYTHON_LIBS)
+ CFLAGS+=$(PYTHON_CFLAGS)
+ .IF "$(EXTRA_CFLAGS)"!=""
+-PYTHONLIB+=-framework Python
++PYTHONLIB+= -framework Python
+ .ENDIF # "$(EXTRA_CFLAGS)"!=""
+ .ELSE
+-.INCLUDE :  pyversion.mk
++.INCLUDE : pyversion.mk
+ 
+-CFLAGS+=-I$(SOLARINCDIR)$/python
++CFLAGS+= -I$(SOLARINCDIR)$/python
+ .ENDIF
+ 
+-SHL1TARGET=	$(TARGET)
++SHL1TARGET= $(TARGET)
+ 
+ SHL1STDLIBS= \
+-        $(CPPULIB)		\
+-        $(CPPUHELPERLIB)	\
+-        $(SALLIB)		\
+-        $(PYUNOLIB)		\
++        $(CPPULIB) \
++        $(CPPUHELPERLIB) \
++        $(SALLIB) \
++        $(PYUNOLIB) \
+         $(PYTHONLIB)
+ 
+-SHL1VERSIONMAP=$(SOLARENV)$/src$/component.map
++SHL1VERSIONMAP= $(SOLARENV)$/src$/component.map
+ SHL1DEPN=
+-SHL1IMPLIB=	i$(TARGET)
+-SHL1LIBS=	$(SLB)$/$(TARGET).lib
+-SHL1DEF=	$(MISC)$/$(SHL1TARGET).def
++SHL1IMPLIB= i$(TARGET)
++SHL1LIBS= $(SLB)$/$(TARGET).lib
++SHL1DEF= $(MISC)$/$(SHL1TARGET).def
+ 
+-DEF1NAME=	$(SHL1TARGET)
+-SLOFILES=       $(SLO)$/pyuno_loader.obj
++DEF1NAME= $(SHL1TARGET)
++SLOFILES= $(SLO)$/pyuno_loader.obj
+ 
+ # --- Targets ------------------------------------------------------
+ 
+diff --git a/pyuno/source/loader/pythonloader.py b/pyuno/source/loader/pythonloader.py
+index 15fe574..1f6716e 100644
+--- a/pyuno/source/loader/pythonloader.py
++++ b/pyuno/source/loader/pythonloader.py
+@@ -40,112 +40,110 @@ g_supportedServices  = "com.sun.star.loader.Python",      # referenced by the na
+ g_implementationName = "org.openoffice.comp.pyuno.Loader" # referenced by the native C++ loader !
+ 
+ def splitUrl( url ):
+-      nColon = url.find( ":" )
+-      if -1 == nColon:
+-            raise RuntimeException( "PythonLoader: No protocol in url " + url, None )
+-      return url[0:nColon], url[nColon+1:len(url)]
++    nColon = url.find( ":" )
++    if -1 == nColon:
++        raise RuntimeException( "PythonLoader: No protocol in url " + url, None )
++    return url[0:nColon], url[nColon+1:len(url)]
+ 
+ g_loadedComponents = {}
+ def checkForPythonPathBesideComponent( url ):
+-      path = unohelper.fileUrlToSystemPath( url+"/pythonpath.zip" );
+-      if DEBUG == 1:
+-            print "checking for existence of " + encfile( path )
+-      if 1 == os.access( encfile( path ), os.F_OK) and not path in sys.path:
+-            if DEBUG == 1:
+-                  print "adding " + encfile( path ) + " to sys.path"
+-            sys.path.append( path )
+-
+-      path = unohelper.fileUrlToSystemPath( url+"/pythonpath" );
+-      if 1 == os.access( encfile( path ), os.F_OK) and not path in sys.path:
+-            if DEBUG == 1:
+-                  print "adding " + encfile( path ) + " to sys.path"
+-            sys.path.append( path )
++    path = unohelper.fileUrlToSystemPath( url+"/pythonpath.zip" );
++    if DEBUG == 1:
++        print("checking for existence of " + encfile( path ))
++    if 1 == os.access( encfile( path ), os.F_OK) and not path in sys.path:
++        if DEBUG == 1:
++            print("adding " + encfile( path ) + " to sys.path")
++        sys.path.append( path )
++
++    path = unohelper.fileUrlToSystemPath( url+"/pythonpath" );
++    if 1 == os.access( encfile( path ), os.F_OK) and not path in sys.path:
++        if DEBUG == 1:
++            print("adding " + encfile( path ) + " to sys.path")
++        sys.path.append( path )
+ 
+ def encfile(uni):
+     return uni.encode( sys.getfilesystemencoding())
+ 
+ class Loader( XImplementationLoader, XServiceInfo, unohelper.Base ):
+-      def __init__(self, ctx ):
+-	  if DEBUG:
+-	     print "pythonloader.Loader ctor" 
+-	  self.ctx = ctx
+-
+-      def getModuleFromUrl( self, url ):
+-          if DEBUG:
+-                print "pythonloader: interpreting url " +url
+-          protocol, dependent = splitUrl( url )
+-          if "vnd.sun.star.expand" == protocol:
+-                exp = self.ctx.getValueByName( "/singletons/com.sun.star.util.theMacroExpander" )
+-                url = exp.expandMacros(dependent)
+-                protocol,dependent = splitUrl( url )
+-
+-          if DEBUG:
+-                print "pythonloader: after expansion " +protocol +":" + dependent
+-                
+-          try:
+-                if "file" == protocol:
+-                      # remove \..\ sequence, which may be useful e.g. in the build env
+-                      url = unohelper.absolutize( url, url )
+-
+-                      # did we load the module already ?
+-                      mod = g_loadedComponents.get( url )
+-                      if not mod:
+-                            mod = imp.new_module("uno_component")
+-
+-                            # check for pythonpath.zip beside .py files
+-                            checkForPythonPathBesideComponent( url[0:url.rfind('/')] )
+-                            
+-                            # read the file
+-                            filename = unohelper.fileUrlToSystemPath( url )
+-                            fileHandle = file( filename )
+-                            src = fileHandle.read().replace("\r","")
+-                            if not src.endswith( "\n" ):
+-                                  src = src + "\n"
+-
+-                            # compile and execute the module
+-                            codeobject = compile( src, encfile(filename), "exec" )
+-                            exec codeobject in mod.__dict__
+-                            mod.__file__ = encfile(filename)
+-                            g_loadedComponents[url] = mod
+-                      return mod
+-                elif "vnd.openoffice.pymodule" == protocol:
+-                      return  __import__( dependent )
+-                else:
+-                      raise RuntimeException( "PythonLoader: Unknown protocol " +
+-                                              protocol + " in url " +url, self )
+-          except ImportError, e:
+-                raise RuntimeException( "Couldn't load "+url+ " for reason "+str(e), None)
+-          return None
+-	   
+-      def activate( self, implementationName, dummy, locationUrl, regKey ):
+-	  if DEBUG:
+-	     print "pythonloader.Loader.activate"
+-
+-	  mod = self.getModuleFromUrl( locationUrl )
+-          implHelper = mod.__dict__.get( "g_ImplementationHelper" , None )
+-          if implHelper == None:
+-		return mod.getComponentFactory( implementationName, self.ctx.ServiceManager, regKey )
+-          else:
+-		return implHelper.getComponentFactory( implementationName,regKey,self.ctx.ServiceManager)
+-	     
+-      def writeRegistryInfo( self, regKey, dummy, locationUrl ):
+-	  if DEBUG:
+-	     print "pythonloader.Loader.writeRegistryInfo"
+-             
+-	  mod = self.getModuleFromUrl( locationUrl )
+-          implHelper = mod.__dict__.get( "g_ImplementationHelper" , None )
+-          if implHelper == None:
+-	        return mod.writeRegistryInfo( self.ctx.ServiceManager, regKey )
+-          else:
+-	        return implHelper.writeRegistryInfo( regKey, self.ctx.ServiceManager )
+-
+-      def getImplementationName( self ):
+-	  return g_implementationName
+-
+-      def supportsService( self, ServiceName ):
+-	  return ServiceName in self.serviceNames
+-
+-      def getSupportedServiceNames( self ):
+-	  return g_supportedServices
+-
+-
++    def __init__(self, ctx ):
++        if DEBUG:
++            print("pythonloader.Loader ctor")
++        self.ctx = ctx
++
++    def getModuleFromUrl( self, url ):
++        if DEBUG:
++            print("pythonloader: interpreting url " + url)
++        protocol, dependent = splitUrl( url )
++        if "vnd.sun.star.expand" == protocol:
++            exp = self.ctx.getValueByName( "/singletons/com.sun.star.util.theMacroExpander" )
++            url = exp.expandMacros(dependent)
++            protocol,dependent = splitUrl( url )
++
++        if DEBUG:
++            print("pythonloader: after expansion " + protocol + ":" + dependent)
++
++        try:
++            if "file" == protocol:
++                # remove \..\ sequence, which may be useful e.g. in the build env
++                url = unohelper.absolutize( url, url )
++
++                # did we load the module already ?
++                mod = g_loadedComponents.get( url )
++                if not mod:
++                    mod = imp.new_module("uno_component")
++
++                    # check for pythonpath.zip beside .py files
++                    checkForPythonPathBesideComponent( url[0:url.rfind('/')] )
++
++                    # read the file
++                    filename = unohelper.fileUrlToSystemPath( url )
++                    fileHandle = file( filename )
++                    src = fileHandle.read().replace("\r","")
++                    if not src.endswith( "\n" ):
++                        src = src + "\n"
++
++                    # compile and execute the module
++                    codeobject = compile( src, encfile(filename), "exec" )
++                    exec(codeobject, mod.__dict__)
++                    mod.__file__ = encfile(filename)
++                    g_loadedComponents[url] = mod
++                return mod
++            elif "vnd.openoffice.pymodule" == protocol:
++                return  __import__( dependent )
++            else:
++                raise RuntimeException( "PythonLoader: Unknown protocol " +
++                                         protocol + " in url " +url, self )
++        except ImportError as e:
++            raise RuntimeException( "Couldn't load " + url + " for reason " + str(e), None )
++        return None
++
++    def activate( self, implementationName, dummy, locationUrl, regKey ):
++        if DEBUG:
++            print("pythonloader.Loader.activate")
++
++        mod = self.getModuleFromUrl( locationUrl )
++        implHelper = mod.__dict__.get( "g_ImplementationHelper" , None )
++        if implHelper == None:
++            return mod.getComponentFactory( implementationName, self.ctx.ServiceManager, regKey )
++        else:
++            return implHelper.getComponentFactory( implementationName,regKey,self.ctx.ServiceManager)
++
++    def writeRegistryInfo( self, regKey, dummy, locationUrl ):
++        if DEBUG:
++            print( "pythonloader.Loader.writeRegistryInfo" )
++
++        mod = self.getModuleFromUrl( locationUrl )
++        implHelper = mod.__dict__.get( "g_ImplementationHelper" , None )
++        if implHelper == None:
++            return mod.writeRegistryInfo( self.ctx.ServiceManager, regKey )
++        else:
++            return implHelper.writeRegistryInfo( regKey, self.ctx.ServiceManager )
++
++    def getImplementationName( self ):
++        return g_implementationName
++
++    def supportsService( self, ServiceName ):
++        return ServiceName in self.serviceNames
++
++    def getSupportedServiceNames( self ):
++          return g_supportedServices
+diff --git a/pyuno/source/loader/pyuno_loader.cxx b/pyuno/source/loader/pyuno_loader.cxx
+index 771f2c5..ae9604a 100644
+--- a/pyuno/source/loader/pyuno_loader.cxx
++++ b/pyuno/source/loader/pyuno_loader.cxx
+@@ -1,4 +1,4 @@
+-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
++/*nd '!=' comparisions are defined"126G -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+ /*************************************************************************
+  *
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+@@ -118,8 +118,26 @@ static void setPythonHome ( const OUString & pythonHome )
+     OUString systemPythonHome;
+     osl_getSystemPathFromFileURL( pythonHome.pData, &(systemPythonHome.pData) );
+     OString o = rtl::OUStringToOString( systemPythonHome, osl_getThreadTextEncoding() );
+-    rtl_string_acquire(o.pData); // leak this string (thats the api!)
+-    Py_SetPythonHome( o.pData->buffer);
++#if PY_MAJOR_VERSION >= 3
++    // static because Py_SetPythonHome just copies the "wide" pointer
++    // PATH_MAX is defined in Python.h
++    static wchar_t wide[PATH_MAX + 1];
++    size_t len = mbstowcs(wide, o.pData->buffer, PATH_MAX + 1);
++    if(len == (size_t)-1)
++    {
++        PyErr_SetString(PyExc_SystemError, "invalid multibyte sequence in python home path");
++        return;
++    }
++    if(len == PATH_MAX + 1)
++    {
++        PyErr_SetString(PyExc_SystemError, "python home path is too long");
++        return;
++    }
++    Py_SetPythonHome(wide);
++#else
++    rtl_string_acquire(o.pData); // increase reference count
++    Py_SetPythonHome(o.pData->buffer);
++#endif
+ }
+ 
+ static void prependPythonPath( const OUString & pythonPathBootstrap )
+@@ -178,7 +196,11 @@ Reference< XInterface > CreateInstance( const Reference< XComponentContext > & c
+ 
+         if( pythonPath.getLength() )
+             prependPythonPath( pythonPath );
+-        
++#if PY_MAJOR_VERSION >= 3
++        PyImport_AppendInittab( "pyuno", PyInit_pyuno );
++#else
++        PyImport_AppendInittab( "pyuno", initpyuno );
++#endif
+         // initialize python 
+         Py_Initialize();
+         PyEval_InitThreads();
+diff --git a/pyuno/source/module/makefile.mk b/pyuno/source/module/makefile.mk
+index 5afc85b..41b48e1 100644
+--- a/pyuno/source/module/makefile.mk
++++ b/pyuno/source/module/makefile.mk
+@@ -49,9 +49,6 @@ EXTRA_FRAMEWORK_FLAG=-framework Python
+ .ENDIF # .IF "$(EXTRA_CFLAGS)"!=""
+ 
+ .IF "$(GUI)" == "UNX"
+-# python expects modules without the lib prefix 
+-# pyuno.so even on Mac OS X, because it is a python module
+-PYUNO_MODULE=$(DLLDEST)$/pyuno.so
+ PYUNORC=pyunorc
+ .ELIF "$(GUI)" == "OS2"
+ .INCLUDE :  pyversion.mk
+@@ -72,38 +69,37 @@ CFLAGS+=-I$(SOLARINCDIR)$/python
+ 
+ SHL1TARGET=$(TARGET)
+ SLOFILES= \
+-        $(SLO)$/pyuno_runtime.obj 	\
+-        $(SLO)$/pyuno.obj 		\
+-        $(SLO)$/pyuno_callable.obj 	\
+-        $(SLO)$/pyuno_module.obj 	\
+-        $(SLO)$/pyuno_type.obj 		\
+-        $(SLO)$/pyuno_util.obj		\
+-        $(SLO)$/pyuno_except.obj	\
+-        $(SLO)$/pyuno_adapter.obj	\
++        $(SLO)$/pyuno_runtime.obj \
++        $(SLO)$/pyuno.obj \
++        $(SLO)$/pyuno_callable.obj \
++        $(SLO)$/pyuno_module.obj \
++        $(SLO)$/pyuno_type.obj \
++        $(SLO)$/pyuno_util.obj \
++        $(SLO)$/pyuno_except.obj \
++        $(SLO)$/pyuno_adapter.obj \
+         $(SLO)$/pyuno_gc.obj
+ 
+ # remove this, when issue i35064 is integrated
+ .IF "$(COM)"=="GCC"
+ NOOPTFILES= \
+     $(SLO)$/pyuno_module.obj
+-.ENDIF			# "$(COM)"=="GCC"
+-
++.ENDIF # "$(COM)"=="GCC"
+ 
+ SHL1STDLIBS= \
+-        $(CPPULIB)		\
+-        $(CPPUHELPERLIB)	\
+-        $(SALLIB)		\
+-        $(PYTHONLIB) 		\
+-        $(EXTRA_FRAMEWORK_FLAG) 
++        $(CPPULIB) \
++        $(CPPUHELPERLIB) \
++        $(SALLIB) \
++        $(PYTHONLIB) \
++        $(EXTRA_FRAMEWORK_FLAG)
+ 
+ SHL1DEPN=
+-SHL1LIBS=$(SLB)$/$(TARGET).lib
+-SHL1IMPLIB=i$(TARGET)
++SHL1LIBS= $(SLB)$/$(TARGET).lib
++SHL1IMPLIB= i$(TARGET)
+ 
+-SHL1DEF=	$(MISC)$/$(SHL1TARGET).def
++SHL1DEF= $(MISC)$/$(SHL1TARGET).def
+ 
+-DEF1NAME=	$(SHL1TARGET)
+-DEF1DEPN=	$(MISC)$/pyuno.flt
++DEF1NAME= $(SHL1TARGET)
++DEF1DEPN= $(MISC)$/pyuno.flt
+ 
+ DEFLIB1NAME=$(TARGET)
+ 
+@@ -111,21 +107,20 @@ DEFLIB1NAME=$(TARGET)
+ 
+ .IF "$(GUI)$(COM)"=="WNTGCC"
+ ALLTAR : \
+-    $(DLLDEST)$/uno.py 		\
+-    $(DLLDEST)$/unohelper.py	\
+-    $(PYUNO_MODULE)			\
+-    $(MISC)$/$(PYUNORC)		\
++    $(DLLDEST)$/uno.py \
++    $(DLLDEST)$/unohelper.py \
++    $(MISC)$/$(PYUNORC) \
+     $(LB)$/lib$(TARGET).a
+ 
+ $(LB)$/lib$(TARGET).a: $(MISC)$/$(TARGET).def
+     dlltool --dllname $(TARGET)$(DLLPOST) --input-def=$(MISC)$/$(TARGET).def --kill-at --output-lib=$(LB)$/lib$(TARGET).a
+ .ELSE
+ ALLTAR : \
+-    $(DLLDEST)$/uno.py 		\
+-    $(DLLDEST)$/unohelper.py	\
+-    $(PYUNO_MODULE)			\
+-    $(MISC)$/$(PYUNORC)		
+-.ENDIF 
++    $(DLLDEST)$/uno.py \
++    $(DLLDEST)$/unohelper.py \
++    $(MISC)$/$(PYUNORC) \
++    $(LB)$/$(TARGET).so
++.ENDIF
+ .ENDIF
+ 
+ .INCLUDE :  target.mk
+@@ -133,37 +128,19 @@ ALLTAR : \
+ $(DLLDEST)$/%.py: %.py
+     cp $? $@
+ 
+-
+-.IF "$(GUI)" == "UNX"
+-$(PYUNO_MODULE) : $(SLO)$/pyuno_dlopenwrapper.obj
+-.IF "$(OS)" == "LINUX"
+-    @echo $(LINK) $(LINKFLAGS) $(LINKFLAGSRUNPATH_OOO) $(LINKFLAGSSHLCUI) -ldl -o $@ $(SLO)$/pyuno_dlopenwrapper.o > $(MISC)$/$(@:b).cmd
+-.ELIF "$(OS)" == "SOLARIS"
+-    @echo ld -G -ldl -o $@ $(SLO)$/pyuno_dlopenwrapper.o > $(MISC)$/$(@:b).cmd
+-.ELIF "$(OS)" == "FREEBSD"
+-    @echo ld -shared -o $@ $(SLO)$/pyuno_dlopenwrapper.o > $(MISC)$/$(@:b).cmd
+-.ELIF "$(OS)" == "NETBSD"
+-    @echo $(LINK) $(LINKFLAGSSHLCUI) -o $@ $(SLO)$/pyuno_dlopenwrapper.o > $(MISC)$/$(@:b).cmd
+-.ELIF "$(OS)" == "OPENBSD"
+-    @echo ld -shared -o $@ $(SLO)$/pyuno_dlopenwrapper.o > $(MISC)$/$(@:b).cmd
+-.ELIF "$(OS)" == "DRAGONFLY"
+-    @echo ld -shared -o $@ $(SLO)$/pyuno_dlopenwrapper.o > $(MISC)$/$(@:b).cmd
+-.ELIF "$(OS)" == "MACOSX"
+-    @echo $(CC) -bundle -ldl -o $@ $(SLO)$/pyuno_dlopenwrapper.o $(EXTRA_LINKFLAGS) $(EXTRA_FRAMEWORK_FLAG) > $(MISC)$/$(@:b).cmd
+-.ELSE
+-    @echo $(LINK) $(LINKFLAGSSHLCUI) -o $@ $(SLO)$/pyuno_dlopenwrapper.o > $(MISC)$/$(@:b).cmd
+-.ENDIF
+-    cat $(MISC)$/$(@:b).cmd
+-    @+source $(MISC)$/$(@:b).cmd
+-.ENDIF
+-
+-
+ $(MISC)$/$(PYUNORC) : pyuno
+     -rm -f $@
+-    cat pyuno > $@ 
++    cat pyuno > $@
+ 
+ $(MISC)$/pyuno.flt : pyuno.flt
+     -rm -f $@
+     cat $? > $@
++
++$(LB)$/$(TARGET).so : $(LB)$/lib$(TARGET).so
++    -rm -f $@
++    mv $? $@
++    ln -s $@ $?
++
+ .ENDIF # L10N_framework
+ 
++# vim:set shiftwidth=4 softtabstop=4 expandtab:
+diff --git a/pyuno/source/module/pyuno.cxx b/pyuno/source/module/pyuno.cxx
+index 2a39140..75844c9 100644
+--- a/pyuno/source/module/pyuno.cxx
++++ b/pyuno/source/module/pyuno.cxx
+@@ -135,13 +135,6 @@ OUString val2str( const void * pVal, typelib_TypeDescriptionReference * pTypeRef
+     }
+     case typelib_TypeClass_UNION:
+     {
+-//  		typelib_TypeDescription * pTypeDescr = 0;
+-//  		TYPELIB_DANGER_GET( &pTypeDescr, pTypeRef );
+-//  		buf.appendAscii( RTL_CONSTASCII_STRINGPARAM("{ ") );
+-//  		buf.append( val2str( (char *)pVal + ((typelib_UnionTypeDescription *)pTypeDescr)->nValueOffset,
+-//  							 union_getSetType( pVal, pTypeDescr ) ) );
+-//  		buf.appendAscii( RTL_CONSTASCII_STRINGPARAM(" }") );
+-//  		TYPELIB_DANGER_RELEASE( pTypeDescr );
+         break;
+     }
+     case typelib_TypeClass_STRUCT:
+@@ -193,7 +186,7 @@ OUString val2str( const void * pVal, typelib_TypeDescriptionReference * pTypeRef
+         TYPELIB_DANGER_GET( &pElementTypeDescr, ((typelib_IndirectTypeDescription *)pTypeDescr)->pType );
+         
+         sal_Int32 nElementSize = pElementTypeDescr->nSize;
+-        sal_Int32 nElements	   = pSequence->nElements;
++        sal_Int32 nElements = pSequence->nElements;
+         
+         if (nElements)
+         {
+@@ -600,11 +593,17 @@ int PyUNO_setattr (PyObject* self, char* name, PyObject* value)
+ }
+ 
+ // ensure object identity and struct equality
+-static int PyUNO_cmp( PyObject *self, PyObject *that )
++static PyObject* PyUNO_cmp( PyObject *self, PyObject *that, int op )
+ {
+-    if( self == that )
++    if(op != Py_EQ && op != Py_NE)
++    {
++        PyErr_SetString(PyExc_TypeError, "only '==' and '!=' comparisions are defined");
+         return 0;
+-    int retDefault = self > that ? 1 : -1;
++    }
++    if( self == that )
++    {
++        return (op == Py_EQ ? Py_True : Py_False);
++    }
+     try
+     {
+         Runtime runtime;
+@@ -624,13 +623,16 @@ static int PyUNO_cmp( PyObject *self, PyObject *that )
+                     Reference< XMaterialHolder > xMe( me->members->xInvocation,UNO_QUERY);
+                     Reference< XMaterialHolder > xOther( other->members->xInvocation,UNO_QUERY );
+                     if( xMe->getMaterial() == xOther->getMaterial() )
+-                        return 0;
++                    {
++                        return (op == Py_EQ ? Py_True : Py_False);
++                    }
+                 }
+                 else if( tcMe == com::sun::star::uno::TypeClass_INTERFACE )
+                 {
+                     if( me->members->wrappedObject == other->members->wrappedObject )
+-//                     if( me->members->xInvocation == other->members->xInvocation )
+-                        return 0;
++                    {
++                        return (op == Py_EQ ? Py_True : Py_False);
++                    }
+                 }
+             }
+         }
+@@ -639,13 +641,12 @@ static int PyUNO_cmp( PyObject *self, PyObject *that )
+     {
+         raisePyExceptionWithAny( makeAny( e ) );
+     }
+-    return retDefault;
++    return Py_False;
+ }
+ 
+ static PyTypeObject PyUNOType =
+ {
+-    PyObject_HEAD_INIT (&PyType_Type)
+-    0,
++    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
+     const_cast< char * >("pyuno"),
+     sizeof (PyUNO),
+     0,
+@@ -653,7 +654,7 @@ static PyTypeObject PyUNOType =
+     (printfunc) 0,
+     (getattrfunc) PyUNO_getattr,
+     (setattrfunc) PyUNO_setattr,
+-    (cmpfunc) PyUNO_cmp,
++    0,
+     (reprfunc) PyUNO_repr,
+     0,
+     0,
+@@ -668,7 +669,7 @@ static PyTypeObject PyUNOType =
+     NULL,
+     (traverseproc)0,
+     (inquiry)0,
+-    (richcmpfunc)0,
++    (richcmpfunc) PyUNO_cmp,
+     0,
+     (getiterfunc)0,
+     (iternextfunc)0,
+diff --git a/pyuno/source/module/pyuno_callable.cxx b/pyuno/source/module/pyuno_callable.cxx
+index 74bf7e9..2f5322e 100644
+--- a/pyuno/source/module/pyuno_callable.cxx
++++ b/pyuno/source/module/pyuno_callable.cxx
+@@ -196,8 +196,7 @@ PyObject* PyUNO_callable_call (PyObject* self, PyObject* args, PyObject*)
+ 
+ static PyTypeObject PyUNO_callable_Type =
+ {
+-    PyObject_HEAD_INIT (&PyType_Type)
+-    0,
++    PyVarObject_HEAD_INIT( &PyType_Type, 0 )
+     const_cast< char * >("PyUNO_callable"),
+     sizeof (PyUNO_callable),
+     0,
+@@ -205,7 +204,7 @@ static PyTypeObject PyUNO_callable_Type =
+     (printfunc) 0,
+     (getattrfunc) 0,
+     (setattrfunc) 0,
+-    (cmpfunc) 0,
++    0,
+     (reprfunc) 0,
+     0,
+     0,
+@@ -213,7 +212,7 @@ static PyTypeObject PyUNO_callable_Type =
+     (hashfunc) 0,
+     (ternaryfunc) ::pyuno::PyUNO_callable_call,
+     (reprfunc) 0,
+-        (getattrofunc)0,
++    (getattrofunc)0,
+     (setattrofunc)0,
+     NULL,
+     0,
+diff --git a/pyuno/source/module/pyuno_dlopenwrapper.c b/pyuno/source/module/pyuno_dlopenwrapper.c
+deleted file mode 100644
+index 0927bcb..0000000
+--- a/pyuno/source/module/pyuno_dlopenwrapper.c
++++ /dev/null
+@@ -1,63 +0,0 @@
+-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+-/*************************************************************************
+- *
+- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+- * 
+- * Copyright 2000, 2010 Oracle and/or its affiliates.
+- *
+- * OpenOffice.org - a multi-platform office productivity suite
+- *
+- * This file is part of OpenOffice.org.
+- *
+- * OpenOffice.org is free software: you can redistribute it and/or modify
+- * it under the terms of the GNU Lesser General Public License version 3
+- * only, as published by the Free Software Foundation.
+- *
+- * OpenOffice.org is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU Lesser General Public License version 3 for more details
+- * (a copy is included in the LICENSE file that accompanied this code).
+- *
+- * You should have received a copy of the GNU Lesser General Public License
+- * version 3 along with OpenOffice.org.  If not, see
+- * <http://www.openoffice.org/license.html>
+- * for a copy of the LGPLv3 License.
+- *
+- ************************************************************************/
+-
+-#include <rtl/string.h>
+-
+-#include <stdlib.h>
+-#include <string.h>
+-
+-#ifdef LINUX
+-#  ifndef __USE_GNU
+-#  define __USE_GNU
+-#  endif
+-#endif
+-#include <dlfcn.h>
+-
+-void initpyuno ()
+-{
+-    Dl_info dl_info;
+-    void (*func)(void);
+-
+-    if (dladdr((void*)&initpyuno, &dl_info) != 0) { 
+-        void* h = 0;
+-    size_t len = strrchr(dl_info.dli_fname, '/') - dl_info.dli_fname + 1;
+-    char* libname = malloc(len + RTL_CONSTASCII_LENGTH( SAL_DLLPREFIX "pyuno" SAL_DLLEXTENSION ) + 1);
+-        strncpy(libname, dl_info.dli_fname, len);
+-        strcpy(libname + (len), SAL_DLLPREFIX "pyuno" SAL_DLLEXTENSION);
+-
+-        h = dlopen (libname, RTLD_NOW | RTLD_GLOBAL);
+-    free(libname);
+-        if( h )
+-        {
+-            func = (void (*)())dlsym (h, "initpyuno");
+-            (func) ();
+-        }
+-    } 
+-}
+-
+-/* vim:set shiftwidth=4 softtabstop=4 expandtab: */
+diff --git a/pyuno/source/module/pyuno_except.cxx b/pyuno/source/module/pyuno_except.cxx
+index 0a2f70a..e31fe11 100644
+--- a/pyuno/source/module/pyuno_except.cxx
++++ b/pyuno/source/module/pyuno_except.cxx
+@@ -167,7 +167,7 @@ static PyRef createClass( const OUString & name, const Runtime &runtime )
+     PyTuple_SetItem( args.get(), 2, PyDict_New() );
+     
+     PyRef ret(
+-        PyObject_CallObject(reinterpret_cast<PyObject *>(&PyClass_Type) , args.get()),
++        PyObject_CallObject(reinterpret_cast<PyObject *>(&PyType_Type) , args.get()),
+         SAL_NO_ACQUIRE );
+ 
+     // now overwrite ctor and attrib functions
+diff --git a/pyuno/source/module/pyuno_impl.hxx b/pyuno/source/module/pyuno_impl.hxx
+index 744fb81..d0a0bba 100644
+--- a/pyuno/source/module/pyuno_impl.hxx
++++ b/pyuno/source/module/pyuno_impl.hxx
+@@ -28,6 +28,8 @@
+ #ifndef _PYUNO_IMPL_
+ #define _PYUNO_IMPL_
+ 
++#include <Python.h>
++
+ #include <pyuno/pyuno.hxx>
+ 
+ #include <boost/unordered_map.hpp>
+@@ -48,6 +50,49 @@
+ #include <cppuhelper/implbase2.hxx>
+ #include <cppuhelper/weakref.hxx>
+ 
++// In Python 3, the PyString_* functions have been replaced by PyBytes_*
++// and PyUnicode_* functions.
++#if PY_MAJOR_VERSION >= 3
++inline char* PyString_AsString(PyObject *object)
++{
++    // check whether object is already of type "PyBytes"
++    if(PyBytes_Check(object))
++    {
++        return PyBytes_AsString(object);
++    }
++
++    // object is not encoded yet, so encode it to utf-8
++    PyObject *pystring;
++    pystring = PyUnicode_AsUTF8String(object);
++    if(!pystring)
++    {
++       PyErr_SetString(PyExc_ValueError, "cannot utf-8 decode string");
++       return 0;
++    }
++    return PyBytes_AsString(pystring);
++}
++
++inline PyObject* PyString_FromString(const char *string)
++{
++    return PyUnicode_FromString(string);
++}
++
++inline int PyString_Check(PyObject *object)
++{
++    return PyBytes_Check(object);
++}
++
++inline Py_ssize_t PyString_Size(PyObject *object)
++{
++    return PyBytes_Size(object);
++}
++
++inline PyObject* PyString_FromStringAndSize(const char *string, Py_ssize_t len)
++{
++    return PyBytes_FromStringAndSize(string, len);
++}
++#endif /* PY_MAJOR_VERSION >= 3 */
++
+ namespace pyuno
+ {
+ 
+@@ -142,9 +187,6 @@ com::sun::star::uno::Any PyObjectToAny (PyObject* o)
+ void raiseInvocationTargetExceptionWhenNeeded( const Runtime &runtime )
+     throw ( com::sun::star::reflection::InvocationTargetException );
+ 
+-// bool CheckPyObjectTypes (PyObject* o, Sequence<Type> types);
+-// bool CheckPyObjectType (PyObject* o, Type type); //Only check 1 object.
+-
+ com::sun::star::uno::TypeClass StringToTypeClass (char* string);
+ 
+ PyRef PyUNO_callable_new (
+diff --git a/pyuno/source/module/pyuno_module.cxx b/pyuno/source/module/pyuno_module.cxx
+index 669a39c..06ba7c8 100644
+--- a/pyuno/source/module/pyuno_module.cxx
++++ b/pyuno/source/module/pyuno_module.cxx
+@@ -28,6 +28,8 @@
+ 
+ #include "pyuno_impl.hxx"
+ 
++#include <stdio.h>
++
+ #include <osl/module.hxx>
+ #include <osl/thread.h>
+ #include <osl/file.hxx>
+@@ -230,7 +232,7 @@ PyObject * extractOneStringArg( PyObject *args, char const *funcName )
+         return NULL;
+     }
+     PyObject *obj = PyTuple_GetItem( args, 0 );
+-    if( !PyString_Check( obj ) && ! PyUnicode_Check(obj))
++    if(!PyString_Check(obj) && !PyUnicode_Check(obj))
+     {
+         OStringBuffer buf;
+         buf.append( funcName ).append( ": expecting one string argument" );
+@@ -244,16 +246,17 @@ static PyObject *createUnoStructHelper(PyObject *, PyObject* args )
+ {
+     Any IdlStruct;
+     PyRef ret;
+-
+     try
+     {
+         Runtime runtime;
+         if( PyTuple_Size( args ) == 2 )
+         {
+-            PyObject *structName = PyTuple_GetItem( args,0 );
+-            PyObject *initializer = PyTuple_GetItem( args ,1 );
+-            
+-            if( PyString_Check( structName ) )
++            PyObject *structName = PyTuple_GetItem(args, 0);
++            PyObject *initializer = PyTuple_GetItem(args, 1);
++
++            // Perhaps in Python 3, only PyUnicode_Check returns true and
++            // in Python 2, only PyString_Check returns true.
++            if(PyString_Check(structName) || PyUnicode_Check(structName))
+             {
+                 if( PyTuple_Check( initializer ) )
+                 {
+@@ -491,9 +494,9 @@ static PyObject *isInterface( PyObject *, PyObject *args )
+     {
+         PyObject *obj = PyTuple_GetItem( args, 0 );
+         Runtime r;
+-        return PyInt_FromLong( isInterfaceClass( r, obj ) );
++        return PyLong_FromLong( isInterfaceClass( r, obj ) );
+     }
+-    return PyInt_FromLong( 0 );
++    return PyLong_FromLong( 0 );
+ }
+ 
+ static PyObject * generateUuid( PyObject *, PyObject * )
+@@ -592,41 +595,42 @@ static PyObject * absolutize( PyObject *, PyObject * args )
+     return 0;
+ }
+ 
+-static PyObject * invoke ( PyObject *, PyObject * args )
++static PyObject * invoke(PyObject *, PyObject *args)
+ {
+     PyObject *ret = 0;
+-    if( PyTuple_Check( args ) && PyTuple_Size( args ) == 3 )
++    if(PyTuple_Check(args) && PyTuple_Size(args) == 3)
+     {
+-        PyObject *object = PyTuple_GetItem( args, 0 );
+-
+-        if( PyString_Check( PyTuple_GetItem( args, 1 ) ) )
++        PyObject *object = PyTuple_GetItem(args, 0);
++        PyObject *item1 = PyTuple_GetItem(args, 1);
++        if(PyString_Check(item1) || PyUnicode_Check(item1))
+         {
+-            const char *name = PyString_AsString( PyTuple_GetItem( args, 1 ) );
+-            if( PyTuple_Check( PyTuple_GetItem( args , 2 )))
++            const char *name = PyString_AsString(item1);
++            PyObject *item2 = PyTuple_GetItem(args, 2);
++            if(PyTuple_Check(item2))
+             {
+-                ret = PyUNO_invoke( object, name , PyTuple_GetItem( args, 2 ) );
++                ret = PyUNO_invoke(object, name, item2);
+             }
+             else
+             {
+                 OStringBuffer buf;
+-                buf.append( "uno.invoke expects a tuple as 3rd argument, got " );
+-                buf.append( PyString_AsString( PyObject_Str( PyTuple_GetItem( args, 2) ) ) );
+-                PyErr_SetString( PyExc_RuntimeError, buf.makeStringAndClear() );
++                buf.append("uno.invoke expects a tuple as 3rd argument, got ");
++                buf.append(PyString_AsString(PyObject_Str(item2)));
++                PyErr_SetString(PyExc_RuntimeError, buf.makeStringAndClear());
+             }
+         }
+         else
+         {
+             OStringBuffer buf;
+-            buf.append( "uno.invoke expected a string as 2nd argument, got " );
+-            buf.append( PyString_AsString( PyObject_Str( PyTuple_GetItem( args, 1) ) ) );
+-            PyErr_SetString( PyExc_RuntimeError, buf.makeStringAndClear() );
++            buf.append("uno.invoke expected a string as 2nd argument, got ");
++            buf.append(PyString_AsString(PyObject_Str(item1)));
++            PyErr_SetString(PyExc_RuntimeError, buf.makeStringAndClear());
+         }
+     }
+     else
+     {
+         OStringBuffer buf;
+-        buf.append( "uno.invoke expects object, name, (arg1, arg2, ... )\n" );
+-        PyErr_SetString( PyExc_RuntimeError, buf.makeStringAndClear() );
++        buf.append("uno.invoke expects object, name, (arg1, arg2, ... )\n");
++        PyErr_SetString(PyExc_RuntimeError, buf.makeStringAndClear());
+     }
+     return ret;
+ }
+@@ -690,31 +694,52 @@ static PyObject *setCurrentContext( PyObject *, PyObject * args )
+ 
+ struct PyMethodDef PyUNOModule_methods [] =
+ {
+-    {const_cast< char * >("getComponentContext"), getComponentContext, 1, NULL}, 
+-    {const_cast< char * >("_createUnoStructHelper"), createUnoStructHelper, 2, NULL},
+-    {const_cast< char * >("getTypeByName"), getTypeByName, 1, NULL},
+-    {const_cast< char * >("getConstantByName"), getConstantByName,1, NULL},
+-    {const_cast< char * >("getClass"), getClass,1, NULL},
+-    {const_cast< char * >("checkEnum"), checkEnum, 1, NULL},
+-    {const_cast< char * >("checkType"), checkType, 1, NULL},
+-    {const_cast< char * >("generateUuid"), generateUuid,0, NULL},
+-    {const_cast< char * >("systemPathToFileUrl"),systemPathToFileUrl,1, NULL},
+-    {const_cast< char * >("fileUrlToSystemPath"),fileUrlToSystemPath,1, NULL},
+-    {const_cast< char * >("absolutize"),absolutize,2, NULL},
+-    {const_cast< char * >("isInterface"),isInterface,1, NULL},
+-    {const_cast< char * >("invoke"),invoke, 2, NULL},
+-    {const_cast< char * >("setCurrentContext"),setCurrentContext,1, NULL},
+-    {const_cast< char * >("getCurrentContext"),getCurrentContext,1, NULL},
++    {const_cast< char * >("getComponentContext"), getComponentContext, METH_VARARGS, NULL},
++    {const_cast< char * >("_createUnoStructHelper"), createUnoStructHelper, METH_VARARGS | METH_KEYWORDS, NULL},
++    {const_cast< char * >("getTypeByName"), getTypeByName, METH_VARARGS, NULL},
++    {const_cast< char * >("getConstantByName"), getConstantByName, METH_VARARGS, NULL},
++    {const_cast< char * >("getClass"), getClass, METH_VARARGS, NULL},
++    {const_cast< char * >("checkEnum"), checkEnum, METH_VARARGS, NULL},
++    {const_cast< char * >("checkType"), checkType, METH_VARARGS, NULL},
++    {const_cast< char * >("generateUuid"), generateUuid, METH_VARARGS, NULL},
++    {const_cast< char * >("systemPathToFileUrl"), systemPathToFileUrl, METH_VARARGS, NULL},
++    {const_cast< char * >("fileUrlToSystemPath"), fileUrlToSystemPath, METH_VARARGS, NULL},
++    {const_cast< char * >("absolutize"), absolutize, METH_VARARGS | METH_KEYWORDS, NULL},
++    {const_cast< char * >("isInterface"), isInterface, METH_VARARGS, NULL},
++    {const_cast< char * >("invoke"), invoke, METH_VARARGS | METH_KEYWORDS, NULL},
++    {const_cast< char * >("setCurrentContext"), setCurrentContext, METH_VARARGS, NULL},
++    {const_cast< char * >("getCurrentContext"), getCurrentContext, METH_VARARGS, NULL},
+     {NULL, NULL, 0, NULL}
+ };
+ 
+ }
+ 
+-extern "C" PY_DLLEXPORT void initpyuno()
++extern "C" PY_DLLEXPORT
++#if PY_MAJOR_VERSION >= 3
++PyObject* PyInit_pyuno()
+ {
+     // noop when called already, otherwise needed to allow multiple threads
+     PyEval_InitThreads();
++    static struct PyModuleDef moduledef =
++    {
++        PyModuleDef_HEAD_INIT,
++        "pyuno",             // module name
++        0,                   // module documentation
++        -1,                  // module keeps state in global variables,
++        PyUNOModule_methods, // modules methods
++        0,                   // m_reload (must be 0)
++        0,                   // m_traverse
++        0,                   // m_clear
++        0,                   // m_free
++    };
++    return PyModule_Create(&moduledef);
++}
++#else
++void initpyuno()
++{
++    PyEval_InitThreads();
+     Py_InitModule (const_cast< char * >("pyuno"), PyUNOModule_methods);
+ }
++#endif /* PY_MAJOR_VERSION >= 3 */
+ 
+ /* vim:set shiftwidth=4 softtabstop=4 expandtab: */
+diff --git a/pyuno/source/module/pyuno_runtime.cxx b/pyuno/source/module/pyuno_runtime.cxx
+index ed34ddf..61d05d8 100644
+--- a/pyuno/source/module/pyuno_runtime.cxx
++++ b/pyuno/source/module/pyuno_runtime.cxx
+@@ -72,8 +72,7 @@ namespace pyuno
+ 
+ static PyTypeObject RuntimeImpl_Type =
+ {
+-    PyObject_HEAD_INIT (&PyType_Type)
+-    0,
++    PyVarObject_HEAD_INIT (&PyType_Type, 0)
+     const_cast< char * >("pyuno_runtime"),
+     sizeof (RuntimeImpl),
+     0,
+@@ -81,7 +80,7 @@ static PyTypeObject RuntimeImpl_Type =
+     (printfunc) 0,
+     (getattrfunc) 0,
+     (setattrfunc) 0,
+-    (cmpfunc) 0,
++    0,
+     (reprfunc) 0,
+     0,
+     0,
+@@ -445,7 +444,7 @@ PyRef Runtime::any2PyObject (const Any &a ) const
+     {
+         sal_Int32 l = 0;
+         a >>= l;
+-        return PyRef( PyInt_FromLong (l), SAL_NO_ACQUIRE );
++        return PyRef( PyLong_FromLong (l), SAL_NO_ACQUIRE );
+     }
+     case typelib_TypeClass_UNSIGNED_LONG:
+     {
+@@ -666,6 +665,8 @@ Any Runtime::pyObject2Any ( const PyRef & source, enum ConversionMode mode ) con
+     {
+ 
+     }
++    // In Python 3, there is no PyInt type.
++#if PY_MAJOR_VERSION < 3
+     else if (PyInt_Check (o))
+     {
+         if( o == Py_True )
+@@ -680,7 +681,7 @@ Any Runtime::pyObject2Any ( const PyRef & source, enum ConversionMode mode ) con
+         }
+         else
+         {
+-            sal_Int32 l = (sal_Int32) PyInt_AsLong( o );
++            sal_Int32 l = (sal_Int32) PyLong_AsLong( o );
+             if( l < 128 && l >= -128 )
+             {
+                 sal_Int8 b = (sal_Int8 ) l;
+@@ -697,8 +698,24 @@ Any Runtime::pyObject2Any ( const PyRef & source, enum ConversionMode mode ) con
+             }
+         }
+     }
++#endif /* PY_MAJOR_VERSION < 3 */
+     else if (PyLong_Check (o))
+     {
++#if PY_MAJOR_VERSION >= 3
++        // Convert the Python 3 booleans that are actually of type PyLong.
++        if(o == Py_True)
++        {
++            sal_Bool b = sal_True;
++            a = Any(&b, getBooleanCppuType());
++        }
++        else if(o == Py_False)
++        {
++            sal_Bool b = sal_False;
++            a = Any(&b, getBooleanCppuType());
++        }
++        else
++        {
++#endif /* PY_MAJOR_VERSION >= 3 */
+         sal_Int64 l = (sal_Int64)PyLong_AsLong (o);
+         if( l < 128 && l >= -128 )
+         {
+@@ -720,16 +737,19 @@ Any Runtime::pyObject2Any ( const PyRef & source, enum ConversionMode mode ) con
+         {
+             a <<= l;
+         }
++#if PY_MAJOR_VERSION >= 3
++        }
++#endif
+     }
+     else if (PyFloat_Check (o))
+     {
+         double d = PyFloat_AsDouble (o);
+         a <<= d;
+     }
+-    else if (PyString_Check (o))
+-    a <<= pyString2ustring(o);
+-    else if( PyUnicode_Check( o ) )
+-    a <<= pyString2ustring(o);
++    else if (PyString_Check(o) || PyUnicode_Check(o))
++    {
++        a <<= pyString2ustring(o);
++    }
+     else if (PyTuple_Check (o))
+     {
+         Sequence<Any> s (PyTuple_Size (o));
+diff --git a/pyuno/source/module/uno.py b/pyuno/source/module/uno.py
+index f61b3c9..bca8892 100644
+--- a/pyuno/source/module/uno.py
++++ b/pyuno/source/module/uno.py
+@@ -27,7 +27,12 @@
+ import sys
+ 
+ import pyuno
+-import __builtin__
++
++try:
++    import __builtin__
++except ImportError:
++    import builtins as __builtin__
++
+ import socket # since on Windows sal3.dll no longer calls WSAStartup
+ 
+ # all functions and variables starting with a underscore (_) must be considered private
+@@ -149,9 +154,9 @@ class Bool(object):
+        Note: This class is deprecated. Use python's True and False directly instead
+     """
+     def __new__(cls, value):
+-        if isinstance(value, (str, unicode)) and value == "true":
++        if isinstance(value, str) and value == "true":
+             return True
+-        if isinstance(value, (str, unicode)) and value == "false":
++        if isinstance(value, str) and value == "false":
+             return False
+         if value:
+             return True
+@@ -161,7 +166,7 @@ class Char:
+     "Represents a UNO char, use an instance of this class to explicitly pass a char to UNO"
+     # @param value pass a Unicode string with length 1
+     def __init__(self,value):
+-        assert isinstance(value, unicode)
++        assert isinstance(value, str)
+         assert len(value) == 1
+         self.value=value
+ 
+@@ -169,7 +174,7 @@ class Char:
+         return "<Char instance %s>" % (self.value, )
+         
+     def __eq__(self, that):
+-        if isinstance(that, (str, unicode)):
++        if isinstance(that, str):
+             if len(that) > 1:
+                 return False
+             return self.value == that[0]
+@@ -260,7 +265,7 @@ def _uno_import( name, *optargs, **kwargs ):
+     mod = None
+     d = sys.modules
+     for x in modnames:
+-        if d.has_key(x):
++        if x in d:
+            mod = d[x]
+         else:
+            mod = pyuno.__class__(x)  # How to create a module ??
+@@ -268,25 +273,25 @@ def _uno_import( name, *optargs, **kwargs ):
+ 
+     RuntimeException = pyuno.getClass( "com.sun.star.uno.RuntimeException" )
+     for x in fromlist:
+-       if not d.has_key(x):
++       if x not in d:
+           if x.startswith( "typeOf" ):
+              try: 
+                 d[x] = pyuno.getTypeByName( name + "." + x[6:len(x)] )
+-             except RuntimeException,e:
++             except RuntimeException as e:
+                 raise ImportError( "type " + name + "." + x[6:len(x)] +" is unknown" )
+           else:
+             try:
+                 # check for structs, exceptions or interfaces
+                 d[x] = pyuno.getClass( name + "." + x )
+-            except RuntimeException,e:
++            except RuntimeException as e:
+                 # check for enums 
+                 try:
+                    d[x] = Enum( name , x )
+-                except RuntimeException,e2:
++                except RuntimeException as e2:
+                    # check for constants
+                    try:
+                       d[x] = getConstantByName( name + "." + x )
+-                   except RuntimeException,e3:
++                   except RuntimeException as e3:
+                       # no known uno type !
+                       raise ImportError( "type "+ name + "." +x + " is unknown" )
+     return mod
+@@ -296,7 +301,7 @@ __builtin__.__dict__["__import__"] = _uno_import
+         
+ # private function, don't use
+ def _impl_extractName(name):
+-    r = range (len(name)-1,0,-1)
++    r = list(range(len(name)-1,0,-1))
+     for i in r:
+         if name[i] == ".":
+            name = name[i+1:len(name)]
+@@ -336,7 +341,7 @@ def _uno_extract_printable_stacktrace( trace ):
+     mod = None
+     try:
+         mod = __import__("traceback")
+-    except ImportError,e:
++    except ImportError as e:
+         pass
+     ret = ""
+     if mod:
+diff --git a/pyuno/source/module/unohelper.py b/pyuno/source/module/unohelper.py
+index c59df05..112d0d9 100644
+--- a/pyuno/source/module/unohelper.py
++++ b/pyuno/source/module/unohelper.py
+@@ -78,7 +78,7 @@ def _propertymode_to_str( mode ):
+     if PROP_ATTR_MAYBEVOID & mode:
+         ret = ret + "maybevoid "
+     return ret.rstrip()
+-    
++
+ def inspect( obj , out ):
+     if isinstance( obj, uno.Type ) or \
+        isinstance( obj, uno.Char ) or \
+@@ -108,7 +108,7 @@ def inspect( obj , out ):
+             out.write( "  " + ii.typeName + "\n" )
+     else:
+         out.write( "  unknown\n" )
+-        
++
+     access = introspection.inspect( obj )
+     methods = access.getMethods( METHOD_CONCEPT_ALL )
+     out.write( "Methods:\n" )
+@@ -132,56 +132,56 @@ def createSingleServiceFactory( clazz, implementationName, serviceNames ):
+     return _FactoryHelper_( clazz, implementationName, serviceNames )
+ 
+ class _ImplementationHelperEntry:
+-      def __init__(self, ctor,serviceNames):
+-	  self.ctor = ctor
+-	  self.serviceNames = serviceNames
+-	  
++    def __init__(self, ctor,serviceNames):
++        self.ctor = ctor
++        self.serviceNames = serviceNames
++
+ class ImplementationHelper:
+-      def __init__(self):
+-	  self.impls = {}
+-	  
+-      def addImplementation( self, ctor, implementationName, serviceNames ):
+-          self.impls[implementationName] =  _ImplementationHelperEntry(ctor,serviceNames)
+-	  
+-      def writeRegistryInfo( self, regKey, smgr ):
+-          for i in self.impls.items():
+-	      keyName = "/"+ i[0] + "/UNO/SERVICES"
+-	      key = regKey.createKey( keyName )
+-	      for serviceName in i[1].serviceNames:
+-		  key.createKey( serviceName )
+-          return 1
+-
+-      def getComponentFactory( self, implementationName , regKey, smgr ):
+-	  entry = self.impls.get( implementationName, None )
+-	  if entry == None:
+-	     raise RuntimeException( implementationName + " is unknown" , None )
+-	  return createSingleServiceFactory( entry.ctor, implementationName, entry.serviceNames )
+-
+-      def getSupportedServiceNames( self, implementationName ):
+-	  entry = self.impls.get( implementationName, None )
+-	  if entry == None:
+-	     raise RuntimeException( implementationName + " is unknown" , None )
+-	  return entry.serviceNames	     
+-	  
+-      def supportsService( self, implementationName, serviceName ):
+-	  entry = self.impls.get( implementationName,None )
+-	  if entry == None:
+-	     raise RuntimeException( implementationName + " is unknown", None )
+-          return serviceName in entry.serviceNames	     
+-
+-	  
++    def __init__(self):
++        self.impls = {}
++
++    def addImplementation( self, ctor, implementationName, serviceNames ):
++        self.impls[implementationName] =  _ImplementationHelperEntry(ctor,serviceNames)
++
++    def writeRegistryInfo( self, regKey, smgr ):
++        for i in list(self.impls.items()):
++            keyName = "/"+ i[0] + "/UNO/SERVICES"
++            key = regKey.createKey( keyName )
++            for serviceName in i[1].serviceNames:
++                key.createKey( serviceName )
++        return 1
++
++    def getComponentFactory( self, implementationName , regKey, smgr ):
++        entry = self.impls.get( implementationName, None )
++        if entry == None:
++            raise RuntimeException( implementationName + " is unknown" , None )
++        return createSingleServiceFactory( entry.ctor, implementationName, entry.serviceNames )
++
++    def getSupportedServiceNames( self, implementationName ):
++        entry = self.impls.get( implementationName, None )
++        if entry == None:
++            raise RuntimeException( implementationName + " is unknown" , None )
++        return entry.serviceNames
++
++    def supportsService( self, implementationName, serviceName ):
++        entry = self.impls.get( implementationName,None )
++        if entry == None:
++            raise RuntimeException( implementationName + " is unknown", None )
++        return serviceName in entry.serviceNames
++
++
+ class ImplementationEntry:
+-      def __init__(self, implName, supportedServices, clazz ):
+-	  self.implName = implName
+-	  self.supportedServices = supportedServices
+-	  self.clazz = clazz
++    def __init__(self, implName, supportedServices, clazz ):
++        self.implName = implName
++        self.supportedServices = supportedServices
++        self.clazz = clazz
+ 
+ def writeRegistryInfoHelper( smgr, regKey, seqEntries ):
+     for entry in seqEntries:
+         keyName = "/"+ entry.implName + "/UNO/SERVICES"
+-	key = regKey.createKey( keyName )
+-	for serviceName in entry.supportedServices:
+-	    key.createKey( serviceName )
++        key = regKey.createKey( keyName )
++        for serviceName in entry.supportedServices:
++            key.createKey( serviceName )
+ 
+ def systemPathToFileUrl( systemPath ):
+     "returns a file-url for the given system path"
+@@ -194,11 +194,11 @@ def fileUrlToSystemPath( url ):
+ def absolutize( path, relativeUrl ):
+     "returns an absolute file url from the given urls"
+     return pyuno.absolutize( path, relativeUrl )
+-        
++
+ def getComponentFactoryHelper( implementationName, smgr, regKey, seqEntries ):
+     for x in seqEntries:
+-	if x.implName == implementationName:
+-	   return createSingleServiceFactory( x.clazz, implementationName, x.supportedServices )
++        if x.implName == implementationName:
++            return createSingleServiceFactory( x.clazz, implementationName, x.supportedServices )
+ 
+ def addComponentsToContext( toBeExtendedContext, contextRuntime, componentUrls, loaderName ):
+     smgr = contextRuntime.ServiceManager
+@@ -210,56 +210,56 @@ def addComponentsToContext( toBeExtendedContext, contextRuntime, componentUrls,
+     #   create a temporary registry
+     for componentUrl in componentUrls:
+         reg = smgr.createInstanceWithContext( "com.sun.star.registry.SimpleRegistry", contextRuntime )
+-	reg.open( "", 0, 1 )
++        reg.open( "", 0, 1 )
+         if not isWin and componentUrl.endswith( ".uno" ):  # still allow platform independent naming
+             if isMac:
+-               componentUrl = componentUrl + ".dylib"
++                componentUrl = componentUrl + ".dylib"
+             else:
+-               componentUrl = componentUrl + ".so"
+-
+-	implReg.registerImplementation( loaderName,componentUrl, reg )
+-	rootKey = reg.getRootKey()
+-	implementationKey = rootKey.openKey( "IMPLEMENTATIONS" )
+-	implNames = implementationKey.getKeyNames()
+-	extSMGR = toBeExtendedContext.ServiceManager
+-	for x in implNames:
+-	    fac = loader.activate( max(x.split("/")),"",componentUrl,rootKey)
+-	    extSMGR.insert( fac )
+-	reg.close()
+-	    	    
++                componentUrl = componentUrl + ".so"
++
++        implReg.registerImplementation( loaderName,componentUrl, reg )
++        rootKey = reg.getRootKey()
++        implementationKey = rootKey.openKey( "IMPLEMENTATIONS" )
++        implNames = implementationKey.getKeyNames()
++        extSMGR = toBeExtendedContext.ServiceManager
++        for x in implNames:
++            fac = loader.activate( max(x.split("/")),"",componentUrl,rootKey)
++            extSMGR.insert( fac )
++        reg.close()
++
+ # never shrinks !
+ _g_typeTable = {}
+ def _unohelper_getHandle( self):
+-   ret = None
+-   if _g_typeTable.has_key( self.__class__ ):
+-     ret = _g_typeTable[self.__class__]
+-   else:
+-     names = {}
+-     traverse = list(self.__class__.__bases__)
+-     while len( traverse ) > 0:
+-         item = traverse.pop()
+-         bases = item.__bases__
+-         if uno.isInterface( item ):
+-             names[item.__pyunointerface__] = None
+-         elif len(bases) > 0:
+-             # the "else if", because we only need the most derived interface
+-             traverse = traverse + list(bases)#
+-
+-     lst = names.keys()
+-     types = []
+-     for x in lst:
+-         t = uno.getTypeByName( x )
+-         types.append( t )
+-         
+-     ret = tuple(types) , uno.generateUuid()
+-     _g_typeTable[self.__class__] = ret
+-   return ret
+-  
++    ret = None
++    if self.__class__ in _g_typeTable:
++        ret = _g_typeTable[self.__class__]
++    else:
++        names = {}
++        traverse = list(self.__class__.__bases__)
++        while len( traverse ) > 0:
++            item = traverse.pop()
++            bases = item.__bases__
++            if uno.isInterface( item ):
++                names[item.__pyunointerface__] = None
++            elif len(bases) > 0:
++                # the "else if", because we only need the most derived interface
++                traverse = traverse + list(bases)#
++
++        lst = list(names.keys())
++        types = []
++        for x in lst:
++            t = uno.getTypeByName( x )
++            types.append( t )
++
++        ret = tuple(types) , uno.generateUuid()
++        _g_typeTable[self.__class__] = ret
++    return ret
++
+ class Base(XTypeProvider):
+-      def getTypes( self ):
+-	  return _unohelper_getHandle( self )[0]
+-      def getImplementationId(self):
+-	  return _unohelper_getHandle( self )[1]
++    def getTypes( self ):
++        return _unohelper_getHandle( self )[0]
++    def getImplementationId(self):
++        return _unohelper_getHandle( self )[1]
+ 
+ class CurrentContext(XCurrentContext, Base ):
+     """a current context implementation, which first does a lookup in the given
+@@ -277,28 +277,28 @@ class CurrentContext(XCurrentContext, Base ):
+             return self.oldContext.getValueByName( name )
+         else:
+             return None
+-        
++
+ # -------------------------------------------------
+ # implementation details
+ # -------------------------------------------------
+ class _FactoryHelper_( XSingleComponentFactory, XServiceInfo, Base ):
+-      def __init__( self, clazz, implementationName, serviceNames ):
+-	  self.clazz = clazz
+-	  self.implementationName = implementationName
+-	  self.serviceNames = serviceNames
+-	  
+-      def getImplementationName( self ):
+-	  return self.implementationName
+-
+-      def supportsService( self, ServiceName ):
+-	  return ServiceName in self.serviceNames
+-
+-      def getSupportedServiceNames( self ):
+-	  return self.serviceNames
+-
+-      def createInstanceWithContext( self, context ):
+-	  return self.clazz( context )
+-	      
+-      def createInstanceWithArgumentsAndContext( self, args, context ):
+-	  return self.clazz( context, *args )
+-      
++    def __init__( self, clazz, implementationName, serviceNames ):
++        self.clazz = clazz
++        self.implementationName = implementationName
++        self.serviceNames = serviceNames
++
++    def getImplementationName( self ):
++        return self.implementationName
++
++    def supportsService( self, ServiceName ):
++        return ServiceName in self.serviceNames
++
++    def getSupportedServiceNames( self ):
++        return self.serviceNames
++
++    def createInstanceWithContext( self, context ):
++        return self.clazz( context )
++
++    def createInstanceWithArgumentsAndContext( self, args, context ):
++        return self.clazz( context, *args )
++
