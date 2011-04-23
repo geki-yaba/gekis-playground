@@ -14,8 +14,9 @@
 EAPI="4"
 
 WANT_AUTOCONF="2.5"
-WANT_AUTOMAKE="1.11"
+WANT_AUTOMAKE="1.9"
 
+#WANT_AUTOMAKE="1.11"
 #PYTHON_DEPEND="python? 2:2.6"
 #PYTHON_USE_WITH="threads,xml"
 
@@ -35,9 +36,10 @@ fi
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_postrm
 
 IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
-junit kde languagetool ldap mono mysql nsplugin odbc odk opengl python
-reportbuilder templates webdav wiki"
+junit kde languagetool ldap mono mysql nsplugin odbc odk opengl reportbuilder
+templates webdav wiki"
 # postgres - system only diff available - no chance to choose! :(
+# python fubar
 
 # available languages
 LANGUAGES="af ar as ast be_BY bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
@@ -94,9 +96,7 @@ SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 # libreoffice modules
 MODULES="artwork base calc components extensions extras filters help impress
 libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
-writer"
-# FIXME: translations need python-2; too much trouble for now
-# translations
+writer translations"
 
 if [[ ${PV} != *_pre ]]; then
 	SRC_URI+=" ${LIBRE_SRC}/${PN}-bootstrap-${PV}.tar.bz2"
@@ -122,6 +122,7 @@ fi
 #	postgres? ( dev-db/postgresql )
 #		dev-java/saxon:9
 #		dev-db/hsqldb
+#	python? ( dev-lang/python[threads,xml] )
 CDEPEND="${SDEPEND}
 	cups? ( net-print/cups )
 	dbus? ( dev-libs/dbus-glib )
@@ -143,7 +144,7 @@ CDEPEND="${SDEPEND}
 	mono? ( dev-lang/mono )
 	mysql? ( dev-db/mysql-connector-c++:1.1.0 )
 	opengl? ( virtual/opengl virtual/glu )
-	python? ( dev-lang/python[threads,xml] )
+	  dev-lang/python:2.7[threads,xml]
 	reportbuilder? ( dev-java/commons-logging:0 )
 	webdav? ( net-libs/neon )
 	wiki? ( dev-java/commons-codec:0
@@ -207,7 +208,7 @@ DEPEND="${CDEPEND}
 	x11-proto/xineramaproto
 	x11-proto/xproto"
 
-REQUIRED_USE="!python? ( java ) junit? ( java ) languagetool? ( java ) reportbuilder? ( java ) wiki? ( java ) gnome? ( gtk ) nsplugin? ( gtk )"
+REQUIRED_USE="junit? ( java ) languagetool? ( java ) reportbuilder? ( java ) wiki? ( java ) gnome? ( gtk ) nsplugin? ( gtk )"
 
 libreoffice_pkg_pretend() {
 	# welcome
@@ -261,6 +262,12 @@ libreoffice_pkg_setup() {
 
 	# kde
 	use kde && kde4-base_pkg_setup
+
+	# python
+#	if use python; then
+#		python_set_active_version 2
+#		python_pkg_setup
+#	fi
 }
 
 libreoffice_src_unpack() {
@@ -337,8 +344,7 @@ libreoffice_src_prepare() {
 	echo "--with-system-zlib" >> ${CONFFILE}
 	echo "--with-vendor=Gentoo Foundation" >> ${CONFFILE}
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${CONFFILE}
-# FIXME: translations need python-2; too much trouble for now
-#	echo "--with-lang=${LINGUAS_OOO}" >> ${CONFFILE}
+	echo "--with-lang=${LINGUAS_OOO}" >> ${CONFFILE}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
 	echo "--with-system-hunspell" >> ${CONFFILE}
 	echo "--with-system-libwpd" >> ${CONFFILE}
@@ -401,7 +407,9 @@ libreoffice_src_prepare() {
 	echo "$(use_with odbc system-odbc)" >> ${CONFFILE}
 	echo "$(use_enable opengl)" >> ${CONFFILE}
 	echo "$(use_with opengl system-mesa-headers)" >> ${CONFFILE}
-	echo "$(use_enable python)" >> ${CONFFILE}
+#	echo "$(use_enable python)" >> ${CONFFILE}
+# FIXME: needs patching; python2 is a build dependency now ...
+	echo "--enable-python" >> ${CONFFILE}
 	echo "$(use_enable webdav neon)" >> ${CONFFILE}
 	echo "$(use_with webdav system-neon)" >> ${CONFFILE}
 
@@ -565,8 +573,8 @@ libreoffice_src_install() {
 		|| _libreoffice_die "wrapper failed"
 
 	# python
-	use !python && \
-		ln -s "${ED}"/usr/$(get_libdir)/${PN}{/basis3.4,}/program/services.rdb
+#	use !python && \
+#		ln -s "${ED}"/usr/$(get_libdir)/${PN}{/basis3.4,}/program/services.rdb
 
 	# remove fuzz
 	rm "${ED}"/gid_Module_*
