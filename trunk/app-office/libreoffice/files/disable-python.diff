@@ -1,3 +1,30 @@
+--- configure.in.orig	2011-04-25 00:04:13.938585334 +0200
++++ configure.in	2011-04-25 00:08:17.430585040 +0200
+@@ -4144,6 +4144,11 @@
+ if test "$enable_python" != "no"; then
+    AC_MSG_RESULT([yes])
+    BUILD_TYPE="$BUILD_TYPE PYUNO"
++else
++   AC_MSG_RESULT([no])
++   DISABLE_PYTHON=TRUE
++   AC_SUBST(DISABLE_PYTHON)
++fi
+ 
+ AC_MSG_CHECKING([which python to use])
+ if test "$_os" = "WINNT"; then
+@@ -4196,12 +4201,6 @@
+ AC_SUBST(PYTHON_LIBS)
+ HOME=`echo $HOME | $SED 's:\\\\:/:g'`
+ AC_SUBST(HOME)
+-dnl disable python
+-else
+-   AC_MSG_RESULT([no])
+-   DISABLE_PYTHON=TRUE
+-   AC_SUBST(DISABLE_PYTHON)
+-fi
+ 
+ dnl ===================================================================
+ dnl Check for system translate-toolkit
 --- postprocess/packcomponents/makefile.mk	2011-04-17 20:25:50.770857285 +0200
 +++ postprocess/packcomponents/makefile.mk	2011-04-17 20:32:17.190857141 +0200
 @@ -140,7 +140,6 @@
@@ -19,63 +46,28 @@
  .IF "$(OS)" != "WNT" && "$(OS)" != "MACOSX"
  my_components += splash
  .ENDIF
-@@ -363,11 +366,17 @@
- my_components += avmedia.jar
- .END
+--- scripting/source/pyprov/makefile.mk.orig	2011-04-25 00:05:08.874585333 +0200
++++ scripting/source/pyprov/makefile.mk	2011-04-25 00:24:33.918584452 +0200
+@@ -35,7 +35,8 @@
+ .INCLUDE :  settings.mk
  
-+.IF "$(DISABLE_PYTHON)" != "TRUE"
- my_ooo_components = mailmerge
-+.ENDIF
+ # --- Targets ------------------------------------------------------
+-.IF "$(DISABLE_PYTHON)" != "TRUE"
++# mailmerge is put in an extra services.rdb
++# simply do not fiddle with that. cws sb123, sb129
+ ALL : ALLTAR \
+     $(DLLDEST)$/officehelper.py	\
+         $(DLLDEST)$/mailmerge.py
+@@ -65,12 +66,6 @@
  
- .INCLUDE: target.mk
+ .ELSE
  
-+.IF "$(DISABLE_PYTHON)" != "TRUE"
- ALLTAR : $(MISC)/services.rdb $(MISC)/ooo-services.rdb
-+.ELSE
-+ALLTAR : $(MISC)/services.rdb
-+.ENDIF
+-.INCLUDE : target.mk
+-
+-.ENDIF
+-
+-.ELSE
+-
+ .INCLUDE : target.mk
  
- $(MISC)/services.rdb .ERRREMOVE : $(SOLARENV)/bin/packcomponents.xslt \
-         $(MISC)/services.input $(my_components:^"$(SOLARXMLDIR)/":+".component")
-@@ -379,6 +388,7 @@
-         '<list>$(my_components:^"<filename>":+".component</filename>")</list>' \
-         > $@
- 
-+.IF "$(DISABLE_PYTHON)" != "TRUE"
- $(MISC)/ooo-services.rdb .ERRREMOVE : $(SOLARENV)/bin/packcomponents.xslt \
-         $(MISC)/ooo-services.input \
-         $(my_ooo_components:^"$(SOLARXMLDIR)/":+".component")
-@@ -389,3 +399,4 @@
-     echo '<list>' \
-         '$(my_ooo_components:^"<filename>":+".component</filename>")' \
-         '</list>' > $@
-+.ENDIF
---- scp2/source/ooo/ooo_brand.scp.orig	2011-04-22 17:04:56.530672455 +0200
-+++ scp2/source/ooo/ooo_brand.scp	2011-04-22 17:05:54.230672424 +0200
-@@ -39,12 +39,14 @@
- End
- #endif
- 
-+#ifndef DISABLE_PYUNO
- File gid_Brand_File_ServicesRdb
-     TXT_FILE_BODY;
-     Dir = gid_Brand_Dir_Program;
-     Name = "/ooo/services.rdb";
-     Styles = (PACKED);
- End
-+#endif
- 
- ProfileItem gid_Brand_Profileitem_Bootstrap_Errorreport_Server
-     ProfileID = gid_Brand_Profile_Bootstrap_Ini;
---- scp2/source/ooo/common_brand.scp.orig	2011-04-22 17:06:22.046672420 +0200
-+++ scp2/source/ooo/common_brand.scp	2011-04-22 17:07:10.654671944 +0200
-@@ -86,7 +86,9 @@
-              gid_Brand_File_Msvcm80crt_Manifest,
-              gid_Brand_File_Lib_Npsoplugin,
-              gid_Brand_File_Lib_Subscrib_C05,
-+#ifndef DISABLE_PYUNO
-              gid_Brand_File_ServicesRdb,
-+#endif
-              gid_Brand_File_Share_Registry_Brand_Xcd,
-              gid_Brand_File_Share_Registry_O5oo_Xcd,
-              gid_Brand_File_Script_Unopkg,
+ .ENDIF

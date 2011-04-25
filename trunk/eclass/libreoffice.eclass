@@ -36,10 +36,9 @@ fi
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_postrm
 
 IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
-junit kde languagetool ldap mono mysql nsplugin odbc odk opengl reportbuilder
-templates webdav wiki"
+junit kde languagetool ldap mono mysql nsplugin odbc odk opengl python
+reportbuilder templates webdav wiki"
 # postgres - system only diff available - no chance to choose! :(
-# python fubar
 
 # available languages
 LANGUAGES="af ar as ast be_BY bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
@@ -122,7 +121,6 @@ fi
 #	postgres? ( dev-db/postgresql )
 #		dev-java/saxon:9
 #		dev-db/hsqldb
-#	python? ( dev-lang/python[threads,xml] )
 CDEPEND="${SDEPEND}
 	cups? ( net-print/cups )
 	dbus? ( dev-libs/dbus-glib )
@@ -144,7 +142,6 @@ CDEPEND="${SDEPEND}
 	mono? ( dev-lang/mono )
 	mysql? ( dev-db/mysql-connector-c++:1.1.0 )
 	opengl? ( virtual/opengl virtual/glu )
-	  dev-lang/python:2.7[threads,xml]
 	reportbuilder? ( dev-java/commons-logging:0 )
 	webdav? ( net-libs/neon )
 	wiki? ( dev-java/commons-codec:0
@@ -181,7 +178,8 @@ CDEPEND="${SDEPEND}
 	  virtual/jpeg"
 
 RDEPEND="${CDEPEND}
-	java? ( >=virtual/jre-1.5 )"
+	java? ( >=virtual/jre-1.5 )
+	python? ( dev-lang/python:2.7[threads,xml] )"
 
 DEPEND="${CDEPEND}
 	!dev-util/dmake
@@ -192,6 +190,7 @@ DEPEND="${CDEPEND}
 	app-arch/unzip
 	app-arch/zip
 	dev-lang/perl
+	dev-lang/python:2.7[threads,xml]
 	dev-libs/boost-headers
 	dev-perl/Archive-Zip
 	dev-util/cppunit
@@ -407,9 +406,7 @@ libreoffice_src_prepare() {
 	echo "$(use_with odbc system-odbc)" >> ${CONFFILE}
 	echo "$(use_enable opengl)" >> ${CONFFILE}
 	echo "$(use_with opengl system-mesa-headers)" >> ${CONFFILE}
-#	echo "$(use_enable python)" >> ${CONFFILE}
-# FIXME: needs patching; python2 is a build dependency now ...
-	echo "--enable-python" >> ${CONFFILE}
+	echo "$(use_enable python)" >> ${CONFFILE}
 	echo "$(use_enable webdav neon)" >> ${CONFFILE}
 	echo "$(use_with webdav system-neon)" >> ${CONFFILE}
 
@@ -571,10 +568,6 @@ libreoffice_src_install() {
 	sed -e "s:/opt:/usr/$(get_libdir):" \
 		-i "${ED}"/usr/bin/${PN} \
 		|| _libreoffice_die "wrapper failed"
-
-	# python
-#	use !python && \
-#		ln -s "${ED}"/usr/$(get_libdir)/${PN}{/basis3.4,}/program/services.rdb
 
 	# remove fuzz
 	rm "${ED}"/gid_Module_*
