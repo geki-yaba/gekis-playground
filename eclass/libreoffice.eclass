@@ -318,6 +318,9 @@ libreoffice_src_prepare() {
 	EPATCH_FORCE="yes"
 	epatch "${FILESDIR}"
 
+	# allow user to apply any additional patches without modifing ebuild
+	epatch_user
+
 	# create distro config
 	# FIXME: add GentooUnstable-VERSION.conf to ${FILESDIR} for defaults
 	echo "--prefix="${EPREFIX}"/usr" >> ${CONFFILE}
