@@ -318,7 +318,7 @@ libreoffice_src_prepare() {
 	EPATCH_FORCE="yes"
 	epatch "${FILESDIR}"
 
-	# allow user to apply any additional patches without modifing ebuild
+	# allow user to apply any additional patches without modifying ebuild
 	epatch_user
 
 	# create distro config
