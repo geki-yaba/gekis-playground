@@ -13,14 +13,13 @@ SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
 LICENSE="LGPL-2.1"
 SLOT="0.9"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~sparc-solaris ~x64-solaris ~x86-solaris"
-IUSE="doc debug static-libs test"
+IUSE="doc debug static-libs test tools"
 
 DEPEND="dev-util/pkgconfig
 	doc? ( app-doc/doxygen )
 	test? ( dev-util/cppunit )"
 
-PATCHES=( "${FILESDIR}/${PN}-0.9.1-gcc46.diff"
-	"${FILESDIR}/${P}-test-build.diff" )
+PATCHES=( "${FILESDIR}/${PN}-0.9.1-test-build.diff" )
 
 src_configure() {
 	econf $(use_with doc docs) \
