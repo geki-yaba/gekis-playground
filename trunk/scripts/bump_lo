@@ -9,7 +9,7 @@ EREM=$4
 # variables
 ECLASS_DIR=eclass
 ECLASS="${ECLASS_DIR}/libreoffice.eclass"
-LIST=ooo.lst
+LIST="ooo.lst.in"
 TAG=$(basename $ENEW .ebuild)
 
 # functions
@@ -53,8 +53,8 @@ EOH
 fetch_list ()
 {
 	# from "download_external_sources.sh"
-	wget http://cgit.freedesktop.org/libreoffice/bootstrap/plain/ooo.lst?id=${TAG} -O ${LIST}
-	sed -e /seamonkey/d -i ${LIST}
+	wget http://cgit.freedesktop.org/libreoffice/bootstrap/plain/${LIST}?id=${TAG} -O ${LIST}
+	sed -e /^$/d -e /^@/d -e /seamonkey/d -i ${LIST}
 
 	return 0
 }
