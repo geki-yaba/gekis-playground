@@ -24,9 +24,9 @@ KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
 inherit autotools bash-completion boost-utils check-reqs db-use eutils fdo-mime \
-	flag-o-matic gnome2-utils java-pkg-opt-2 kde4-base mono multilib pax-utils \
+	flag-o-matic gnome2-utils java-pkg-opt-2 kde4-base multilib pax-utils \
 	versionator
-# inherit python
+# inherit mono python
 
 if [[ ${PV} == *_pre ]]; then
 	# git-2 just hangs after first unpack?!
@@ -36,9 +36,9 @@ fi
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_postrm
 
 IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
-junit kde languagetool ldap mono mysql nsplugin odbc odk opengl python
-reportbuilder templates webdav wiki"
-# postgres - system only diff available - no chance to choose! :(
+junit kde languagetool ldap mysql nsplugin odbc odk opengl python reportbuilder
+templates webdav wiki"
+# mono, postgres - system only diff available - no chance to choose! :(
 
 # available languages
 LANGUAGES="af ar as ast be_BY bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
@@ -87,9 +87,9 @@ MY_PV="$(get_version_component_range 1-2)"
 GO_SRC="http://download.go-oo.org"
 LIBRE_SRC="http://download.documentfoundation.org/libreoffice/src"
 
+#	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
 SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
 	${GO_SRC}/SRC680/extras-3.1.tar.bz2
-	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
 	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
@@ -121,6 +121,7 @@ fi
 #	postgres? ( dev-db/postgresql )
 #		dev-java/saxon:9
 #		dev-db/hsqldb
+#	mono? ( dev-lang/mono )
 CDEPEND="${SDEPEND}
 	cups? ( net-print/cups )
 	dbus? ( dev-libs/dbus-glib )
@@ -139,7 +140,6 @@ CDEPEND="${SDEPEND}
 		kde-base/kstyles )
 	ldap? ( net-nds/openldap )
 	nsplugin? ( net-libs/xulrunner:1.9 )
-	mono? ( dev-lang/mono )
 	mysql? ( dev-db/mysql-connector-c++:1.1.0 )
 	opengl? ( virtual/opengl virtual/glu )
 	reportbuilder? ( dev-java/commons-logging:0 )
@@ -303,10 +303,6 @@ libreoffice_src_unpack() {
 	# move source into tree
 	# FIXME: symlink; possible to use ./g pull?
 	mv -n "${CLONE_DIR}"/*/* "${S}"
-
-	# no need to download external sources
-	# although we set two configure flags already for this ...
-	touch "${S}"/src.downloaded
 }
 
 libreoffice_src_prepare() {
@@ -365,7 +361,6 @@ libreoffice_src_prepare() {
 	echo "$(use_with templates sun-templates)" >> ${CONFFILE}
 	echo "--disable-crashdump" >> ${CONFFILE}
 	echo "--disable-epm" >> ${CONFFILE}
-	echo "--disable-unix-qstart" >> ${CONFFILE}
 	echo "--disable-dependency-tracking" >> ${CONFFILE}
 	echo "--disable-zenity" >> ${CONFFILE}
 	echo "--disable-fetch-external" >> ${CONFFILE}
@@ -528,13 +523,13 @@ libreoffice_src_configure() {
 	use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
 
 	./autogen.sh --with-distro="GentooUnstable"
-
-	# no need to download external sources
-	# although we set two configure flags already for this ...
-	sed /DO_FETCH_TARBALLS=/d -i *Env.Set*
 }
 
 libreoffice_src_compile() {
+	# no need to download external sources
+	# although we set two configure flags already for this ...
+	touch src.downloaded
+
 	# build
 	make || _libreoffice_die "make failed"
 }
@@ -569,6 +564,7 @@ libreoffice_src_install() {
 	newexe sysui/*.pro/misc/${PN}/openoffice.sh ${PN}
 
 	sed -e "s:/opt:/usr/$(get_libdir):" \
+		-e "s:${PN}${MY_PV}:${PN}:"
 		-i "${ED}"/usr/bin/${PN} \
 		|| _libreoffice_die "wrapper failed"
 
