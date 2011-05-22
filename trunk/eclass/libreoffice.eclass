@@ -564,7 +564,7 @@ libreoffice_src_install() {
 	newexe sysui/*.pro/misc/${PN}/openoffice.sh ${PN}
 
 	sed -e "s:/opt:/usr/$(get_libdir):" \
-		-e "s:${PN}${MY_PV}:${PN}:"
+		-e "s:${PN}${MY_PV}:${PN}:" \
 		-i "${ED}"/usr/bin/${PN} \
 		|| _libreoffice_die "wrapper failed"
 
