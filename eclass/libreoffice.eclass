@@ -541,6 +541,11 @@ libreoffice_src_install() {
 	# access
 	use prefix || chown -RP root:0 "${ED}"
 
+	# fix desktop files
+	sed -e "s:libreoffice34-::" \
+		-e "s:${PN}${MY_PV}:${PN}:" \
+		-i "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
+
 	# install desktop files
 	domenu "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
 
@@ -563,6 +568,7 @@ libreoffice_src_install() {
 	exeinto /usr/bin
 	newexe sysui/*.pro/misc/${PN}/openoffice.sh ${PN}
 
+	# fix wrapper
 	sed -e "s:/opt:/usr/$(get_libdir):" \
 		-e "s:${PN}${MY_PV}:${PN}:" \
 		-i "${ED}"/usr/bin/${PN} \
