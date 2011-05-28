@@ -542,9 +542,10 @@ libreoffice_src_install() {
 	use prefix || chown -RP root:0 "${ED}"
 
 	# fix desktop files
-	sed -e "s:libreoffice34-::" \
+	sed -e "s:${PN}${MY_PV/.}-::" \
 		-e "s:${PN}${MY_PV}:${PN}:" \
-		-i "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
+		-i "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop \
+		|| _libreoffice_die "desktop files failed"
 
 	# install desktop files
 	domenu "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
