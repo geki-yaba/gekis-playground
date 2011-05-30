@@ -35,6 +35,14 @@ fi
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_postrm
 
+DESCRIPTION="LibreOffice - a productivity suite (experimental version)"
+HOMEPAGE="http://www.libreoffice.org/"
+
+SLOT="0"
+
+LICENSE="LGPL-3"
+RESTRICT="binchecks mirror"
+
 IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
 junit kde languagetool ldap mysql nsplugin odbc odk opengl python reportbuilder
 templates webdav wiki"
@@ -51,41 +59,26 @@ for language in ${LANGUAGES}; do
 	IUSE+=" linguas_${language}"
 done
 
-# available app-dicts/myspell dictionaries
-MYSPELLS="af bg ca cs cy da de el en eo es et fr ga gl he hr hu it ku lt mk nb
-nl nn pl pt ru sk sl sv tn zu"
-
-SDEPEND=""
-for language in ${MYSPELLS}; do
-	SDEPEND+=" linguas_${language}? ( app-dicts/myspell-${language} )"
-done
-
-# available templates
-# - en_* => en_US templates for simplicity; fix:
-# https://forums.gentoo.org/viewtopic-p-6449940.html#6449940
-TEMPLATES="de en en_GB en_ZA es fr hu it"
-EXT_SRC="ftp://ftp.devall.hu/kami/go-oo"
-
-TDEPEND=""
-for template in ${TEMPLATES}; do
-	TDEPEND+=" linguas_${template}? ( \
-		${EXT_SRC}/Sun_ODF_Template_Pack_${template/en*/en-US}.oxt )"
-done
-
-DESCRIPTION="LibreOffice - a productivity suite (experimental version)"
-HOMEPAGE="http://www.libreoffice.org/"
-
-SLOT="0"
-
-LICENSE="LGPL-3"
-RESTRICT="binchecks mirror"
-
 # config
 MY_PV="$(get_version_component_range 1-2)"
 
 # paths
 GO_SRC="http://download.go-oo.org"
 LIBRE_SRC="http://download.documentfoundation.org/libreoffice/src"
+EXT_SRC="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
+
+# available templates
+# - en_* => en_US templates for simplicity; fix:
+# https://forums.gentoo.org/viewtopic-p-6449940.html#6449940
+TDEPEND=""
+TDEPEND+=" linguas_de? ( ${EXT_SRC}/53ca5e56ccd4cab3693ad32c6bd13343-Sun-ODF-Template-Pack-de_1.0.0.oxt )"
+TDEPEND+=" linguas_en? ( ${EXT_SRC}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
+TDEPEND+=" linguas_en_GB? ( ${EXT_SRC}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
+TDEPEND+=" linguas_en_ZA? ( ${EXT_SRC}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
+TDEPEND+=" linguas_es? ( ${EXT_SRC}/4ad003e7bbda5715f5f38fde1f707af2-Sun-ODF-Template-Pack-es_1.0.0.oxt )"
+TDEPEND+=" linguas_fr? ( ${EXT_SRC}/a53080dc876edcddb26eb4c3c7537469-Sun-ODF-Template-Pack-fr_1.0.0.oxt )"
+TDEPEND+=" linguas_hu? ( ${EXT_SRC}/09ec2dac030e1dcd5ef7fa1692691dc0-Sun-ODF-Template-Pack-hu_1.0.0.oxt )"
+TDEPEND+=" linguas_it? ( ${EXT_SRC}/b33775feda3bcf823cad7ac361fd49a6-Sun-ODF-Template-Pack-it_1.0.0.oxt )"
 
 #	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
 SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
@@ -104,6 +97,15 @@ if [[ ${PV} != *_pre ]]; then
 		SRC_URI+=" ${LIBRE_SRC}/${PN}-${module}-${PV}.tar.bz2"
 	done
 fi
+
+# available app-dicts/myspell dictionaries
+MYSPELLS="af bg ca cs cy da de el en eo es et fr ga gl he hr hu it ku lt mk nb
+nl nn pl pt ru sk sl sv tn zu"
+
+SDEPEND=""
+for language in ${MYSPELLS}; do
+	SDEPEND+=" linguas_${language}? ( app-dicts/myspell-${language} )"
+done
 
 #	>=dev-libs/xmlsec-1.2.14
 #	reportbuilder? ( dev-java/sac
