@@ -9,6 +9,8 @@
 
 #
 # TODO: waiting for eclass/python EAPI=4 :D
+# TODO: >=gnome-base/librsvg-2.32.1:2 for 3.5
+#		--enable-librsvg=system
 #
 
 EAPI="4"
@@ -524,7 +526,8 @@ libreoffice_src_configure() {
 	use kde && export KDE4DIR="${KDEDIR}"
 	use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
 
-	./autogen.sh --with-distro="GentooUnstable"
+	./autogen.sh --with-distro="GentooUnstable" \
+		|| _libreoffice_die "configure failed"
 }
 
 libreoffice_src_compile() {
