@@ -54,7 +54,14 @@ fetch_list ()
 {
 	# from "download_external_sources.sh"
 	wget http://cgit.freedesktop.org/libreoffice/bootstrap/plain/${LIST}?id=${TAG} -O ${LIST}
+
+	# remove foo
 	sed -e /^$/d -e /^@/d -e /seamonkey/d -i ${LIST}
+
+	# update paths
+	sed -e "s#http://hg.services.openoffice.org/binaries#http://dev-www.libreoffice.org/src#" \
+		-e "s#http://download.go-oo.org/src#http://dev-www.libreoffice.org/src#" \
+		-i ${LIST}
 
 	return 0
 }
