@@ -83,9 +83,7 @@ TDEPEND+=" linguas_hu? ( ${EXT_SRC}/09ec2dac030e1dcd5ef7fa1692691dc0-Sun-ODF-Tem
 TDEPEND+=" linguas_it? ( ${EXT_SRC}/b33775feda3bcf823cad7ac361fd49a6-Sun-ODF-Template-Pack-it_1.0.0.oxt )"
 
 #	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
-SRC_URI="${GO_SRC}/SRC680/biblio.tar.bz2
-	${GO_SRC}/SRC680/extras-3.1.tar.bz2
-	templates? ( ${TDEPEND} )"
+SRC_URI="templates? ( ${TDEPEND} )"
 
 # libreoffice modules
 MODULES="artwork base calc components extensions extras filters help impress
@@ -307,6 +305,23 @@ libreoffice_src_unpack() {
 	# move source into tree
 	# FIXME: symlink; possible to use ./g pull?
 	mv -n "${CLONE_DIR}"/*/* "${S}"
+
+	# copy extension templates; o what fun ...
+	if use templates; then
+		local dest="${S}/extras/source/extensions"
+		mkdir -p "${dest}"
+
+		for template in ${TDEPEND}; do
+			if [[ ${template: -3:3} == oxt ]]; then
+				tmplfile="${DISTDIR}/${template}"
+				tmplname="$(echo "${template}" | \
+					cut -f 2- -s -d - | cut -f 1 -d _)"
+
+				[ -f ${tfile} ] \
+					&& { cp -v "${tfile}" "${dest}/${tname}".oxt || die; }
+			fi
+		done
+	fi
 }
 
 libreoffice_src_prepare() {
