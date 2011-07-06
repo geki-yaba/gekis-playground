@@ -313,12 +313,12 @@ libreoffice_src_unpack() {
 
 		for template in ${TDEPEND}; do
 			if [[ ${template: -3:3} == oxt ]]; then
-				tmplfile="${DISTDIR}/${template}"
+				tmplfile="${DISTDIR}/$(basename ${template})"
 				tmplname="$(echo "${template}" | \
 					cut -f 2- -s -d - | cut -f 1 -d _)"
 
-				[ -f ${tfile} ] \
-					&& { cp -v "${tfile}" "${dest}/${tname}".oxt || die; }
+				[ -f ${tmplfile} ] && [ ! -f "${dest}/${tmplname}".oxt ] \
+					&& { cp -v "${tmplfile}" "${dest}/${tmplname}".oxt || die; }
 			fi
 		done
 	fi
