@@ -25,8 +25,7 @@ BOOST_PATCHDIR="${WORKDIR}/patches"
 
 # patchset
 if [[ ${SLOT} > 1.46 ]]; then
-	#BOOST_PATCHSET="gentoo-boost-1.47.0.tar.bz2"
-	BOOST_PATCHSET="gentoo-boost.tar.bz2"
+	BOOST_PATCHSET="gentoo-boost-1.47.0.tar.bz2"
 else
 	BOOST_PATCHSET="gentoo-boost.tar.bz2"
 fi
