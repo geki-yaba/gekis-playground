@@ -46,8 +46,8 @@ LICENSE="LGPL-3"
 RESTRICT="binchecks mirror"
 
 IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
-junit kde languagetool ldap mysql nsplugin odbc odk opengl python reportbuilder
-templates webdav wiki"
+junit kde languagetool ldap mysql nsplugin odbc odk offlinehelp opengl python
+reportbuilder templates webdav wiki"
 # mono, postgres - system only diff available - no chance to choose! :(
 
 # available languages
@@ -411,6 +411,7 @@ libreoffice_src_prepare() {
 	echo "--disable-binfilter" >> ${CONFFILE}
 	echo "$(use_enable dbus)" >> ${CONFFILE}
 	echo "$(use_enable debug symbols)" >> ${CONFFILE}
+	echo "$(use_with offlinehelp helppack-integration)" >> ${CONFFILE}
 	use jemalloc && echo "--with-alloc=jemalloc" >> ${CONFFILE}
 
 	# system
@@ -568,6 +569,7 @@ libreoffice_src_install() {
 		|| _libreoffice_die "desktop files failed"
 
 	# install desktop files
+	use java || rm "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/javafilter.desktop
 	domenu "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
 
 	cd "${S}"
@@ -578,11 +580,8 @@ libreoffice_src_install() {
 		"${ED}"/usr/share/mime/packages/${PN}.xml
 
 	# install icons
-	local path="${ED}/usr/share"
-	for icon in sysui/desktop/icons/hicolor/*/apps/*.png; do
-		mkdir -p "${path}$(dirname ${icon##sysui\/desktop})"
-		cp "${icon}" "${path}$(dirname ${icon##sysui\/desktop})"
-	done
+	insinto /usr/share/icons
+	doins -r "${S}"/sysui/desktop/icons/hicolor
 
 	# install wrapper
 	# FIXME: exeinto should not be necessary! :D
