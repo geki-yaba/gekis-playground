@@ -45,8 +45,15 @@ boost-build_pkg_pretend() {
 }
 
 boost-build_pkg_setup() {
-	# set jam root
+	# set jam paths
 	BOOST_JAM="${S}/build/v2/engine"
+	BOOST_JAM_SRC="${BOOST_JAM}/src"
+	BOOST_JAM_TEST="${BOOST_JAM}/test"
+
+	if [[ ${SLOT} > 1.46 ]]; then
+		BOOST_JAM_SRC="${BOOST_JAM}"
+		BOOST_JAM_TEST="${BOOST_JAM}/../test/engine"
+	fi
 
 #	use python && python_pkg_setup
 }
@@ -61,7 +68,7 @@ boost-build_src_unpack() {
 }
 
 boost-build_src_prepare() {
-	cd "${BOOST_JAM}/src" || die
+	cd "${BOOST_JAM_SRC}" || die
 
 	# Remove stripping option
 	sed -e 's|-s\b||' \
@@ -87,7 +94,7 @@ boost-build_src_compile() {
 
 	append-flags -fno-strict-aliasing
 
-	cd "${BOOST_JAM}/src" || die
+	cd "${BOOST_JAM_SRC}" || die
 
 	# For slotting
 	sed -e "s|/usr/share/boost-build|\0-${MAJOR_PV}|" \
@@ -105,7 +112,7 @@ boost-build_src_compile() {
 }
 
 boost-build_src_install() {
-	newbin "${BOOST_JAM}"/src/bin.*/bjam bjam-${MAJOR_PV}
+	newbin "${BOOST_JAM_SRC}"/bin.*/bjam bjam-${MAJOR_PV}
 
 	cd "${S}/build/v2"
 	insinto /usr/share/boost-build-${MAJOR_PV}
@@ -122,6 +129,6 @@ boost-build_src_install() {
 }
 
 boost-build_src_test() {
-	cd "${BOOST_JAM}"/test || die
+	cd "${BOOST_JAM_TEST}" || die
 	./test.sh || die "tests failed"
 }

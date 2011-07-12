@@ -13,6 +13,7 @@ inherit check-reqs flag-o-matic multilib toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install src_test
 
+SLOT="$(get_version_component_range 1-2)"
 MAJOR_PV="$(replace_all_version_separators _ ${SLOT})"
 BJAM="bjam-${MAJOR_PV}"
 
@@ -20,8 +21,15 @@ BOOST_LIB="${PN/boost-}"
 BOOST_PN="${PN/-/_}"
 BOOST_PV="$(replace_all_version_separators _)"
 BOOST_P="boost_${BOOST_PV}"
-BOOST_PATCHSET="gentoo-boost.tar.bz2"
 BOOST_PATCHDIR="${WORKDIR}/patches"
+
+# patchset
+if [[ ${SLOT} > 1.46 ]]; then
+	#BOOST_PATCHSET="gentoo-boost-1.47.0.tar.bz2"
+	BOOST_PATCHSET="gentoo-boost.tar.bz2"
+else
+	BOOST_PATCHSET="gentoo-boost.tar.bz2"
+fi
 
 DESCRIPTION="boost.org ${BOOST_LIB} libraries for C++"
 HOMEPAGE="http://www.boost.org/"
@@ -29,7 +37,6 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
 	http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
-SLOT="$(get_version_component_range 1-2)"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 IUSE="debug doc static test"
 

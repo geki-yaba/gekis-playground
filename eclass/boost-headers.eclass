@@ -58,7 +58,9 @@ boost-headers_src_unpack() {
 }
 
 boost-headers_src_prepare() {
-	epatch "${FILESDIR}/boost-1.45.0-lambda_bind.patch"
+	if [[ ${PV} < 1.47.0 ]]; then
+		epatch "${FILESDIR}/boost-1.45.0-lambda_bind.patch"
+	fi
 }
 
 boost-headers_src_configure() { :; }
