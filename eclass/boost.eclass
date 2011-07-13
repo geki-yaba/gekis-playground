@@ -139,7 +139,7 @@ boost_src_prepare() {
 boost_src_configure() {
 	einfo "Writing new user-config.jam"
 
-	local compiler compilerVersion compilerExecutable mpi pystring
+	local compiler compilerVersion compilerExecutable
 	if [[ ${CHOST} == *-darwin* ]] ; then
 		compiler=darwin
 		compilerVersion=$(gcc-fullversion)
@@ -159,11 +159,7 @@ boost_src_configure() {
 	# bug 298489
 	if use ppc || use ppc64 ; then
 		[[ $(gcc-version) > 4.3 ]] && append-flags -mno-altivec
-	fi;
-
-	[[ ${BOOST_LIB} == mpi ]] && mpi="using mpi ;"
-	[[ ${BOOST_LIB} == graph_parallel ]] && mpi="using mpi ;"
-#	[[ ${BOOST_LIB} == python ]] && pystring="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
+	fi
 
 	cat > "${S}/user-config.jam" << __EOF__
 
@@ -172,9 +168,7 @@ variant gentoodebug : debug : <optimization>none ;
 
 using ${compiler} : ${compilerVersion} : ${compilerExecutable} : <cxxflags>"${CXXFLAGS}" <linkflags>"${LDFLAGS}" ;
 
-${pystring}
-
-${mpi}
+${jam_options}
 
 __EOF__
 
@@ -222,14 +216,6 @@ boost_src_install() {
 	fi
 
 	popd >/dev/null
-
-	# Move the mpi.so to the right place and make sure it's slotted
-#	if [[ ${BOOST_LIB} == mpi ]] && use python; then
-#		exeinto "$(python_get_sitedir)/boost_${MAJOR_PV}"
-#		doexe "${ED}/usr/$(get_libdir)/mpi.so"
-#		touch "${ED}$(python_get_sitedir)/boost_${MAJOR_PV}/__init__.py" || die
-#		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
-#	fi
 
 	# install tests
 	cd "${S}/libs/${BOOST_LIB}/test" || die
@@ -317,8 +303,6 @@ boost_src_install() {
 				|| die
 		done
 	fi
-
-#	[[ ${BOOST_LIB} == mpi ]] && use python && python_need_rebuild
 
 	# boost's build system truely sucks for not having a destdir.  Because of
 	# this we are forced to build with a prefix that includes the

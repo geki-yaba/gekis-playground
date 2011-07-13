@@ -8,7 +8,6 @@
 #
 
 #
-# TODO: waiting for eclass/python EAPI=4 :D
 # TODO: >=gnome-base/librsvg-2.32.1:2 for 3.5
 #		--enable-librsvg=system
 #
@@ -16,19 +15,18 @@
 EAPI="4"
 
 WANT_AUTOCONF="2.5"
-WANT_AUTOMAKE="1.9"
+WANT_AUTOMAKE="1.11"
 
-#WANT_AUTOMAKE="1.11"
-#PYTHON_DEPEND="python? 2:2.6"
-#PYTHON_USE_WITH="threads,xml"
+PYTHON_BDEPEND="<<*:2.6[threads,xml]>>"
+PYTHON_DEPEND="python? ( <<*:2.6[threads,xml]>> )"
 
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
 inherit autotools bash-completion boost-utils check-reqs db-use eutils fdo-mime \
-	flag-o-matic gnome2-utils java-pkg-opt-2 kde4-base multilib pax-utils \
+	flag-o-matic gnome2-utils java-pkg-opt-2 kde4-base multilib pax-utils python \
 	versionator
-# inherit mono python
+# inherit mono
 
 if [[ ${PV} == *_pre ]]; then
 	# git-2 just hangs after first unpack?!
@@ -180,8 +178,7 @@ CDEPEND="${SDEPEND}
 	  virtual/jpeg"
 
 RDEPEND="${CDEPEND}
-	java? ( >=virtual/jre-1.5 )
-	python? ( dev-lang/python:2.7[threads,xml] )"
+	java? ( >=virtual/jre-1.5 )"
 
 DEPEND="${CDEPEND}
 	!dev-util/dmake
@@ -192,7 +189,6 @@ DEPEND="${CDEPEND}
 	app-arch/unzip
 	app-arch/zip
 	dev-lang/perl
-	dev-lang/python:2.7[threads,xml]
 	dev-libs/boost-headers
 	dev-perl/Archive-Zip
 	dev-util/cppunit
@@ -265,10 +261,14 @@ libreoffice_pkg_setup() {
 	use kde && kde4-base_pkg_setup
 
 	# python
-#	if use python; then
-#		python_set_active_version 2
-#		python_pkg_setup
-#	fi
+	if use python; then
+		local lo_pyver=2
+		# python 3 if skipping translate-toolkit
+		[ -z "${LINGUAS}" ] && lo_pyver=3
+
+		python_set_active_version ${lo_pyver}
+		python_pkg_setup
+	fi
 }
 
 libreoffice_src_unpack() {
@@ -424,6 +424,7 @@ libreoffice_src_prepare() {
 	echo "$(use_with odbc system-odbc)" >> ${CONFFILE}
 	echo "$(use_enable opengl)" >> ${CONFFILE}
 	echo "$(use_with opengl system-mesa-headers)" >> ${CONFFILE}
+	# FIXME: lo 3.5 fubared :(
 	echo "$(use_enable python)" >> ${CONFFILE}
 	echo "$(use_enable webdav neon)" >> ${CONFFILE}
 	echo "$(use_with webdav system-neon)" >> ${CONFFILE}

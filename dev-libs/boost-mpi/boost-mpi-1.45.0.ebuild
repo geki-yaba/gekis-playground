@@ -2,14 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-#
-# TODO: waiting for eclass/python EAPI=4 :D
-#
+PYTHON_DEPEND="python? ( <<*:2.6>> )"
 
-#PYTHON_DEPEND="python? *"
-
-#inherit boost python
-inherit boost
+inherit boost python
 
 IUSE="python"
 
@@ -27,11 +22,26 @@ src_unpack() {
 src_prepare() {
 	boost_src_prepare
 
-#	use python && python_pkg_setup
+	use python && python_pkg_setup
 }
 
 src_configure() {
-#	use python && pystring="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
+	local jam_options="using mpi ;\n\n"
+	use python && jam_options+="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
 
 	boost_src_configure
+}
+
+src_install() {
+	boost_src_install
+
+	# Move the mpi.so to the right place and make sure it's slotted
+	if use python; then
+		exeinto "$(python_get_sitedir)/boost_${MAJOR_PV}"
+		doexe "${ED}/usr/$(get_libdir)/mpi.so"
+		touch "${ED}$(python_get_sitedir)/boost_${MAJOR_PV}/__init__.py" || die
+		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
+
+		python_need_rebuild
+	fi
 }
