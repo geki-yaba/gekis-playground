@@ -9,3 +9,9 @@ DEPEND="${RDEPEND}"
 
 # additional targets to extract
 BOOST_ADDITIONAL_TARGETS="detail serialization"
+
+src_configure() {
+	local jam_options="using mpi ;"
+
+	boost_src_configure
+}

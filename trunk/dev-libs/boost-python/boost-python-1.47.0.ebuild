@@ -2,14 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-#
-# TODO: waiting for eclass/python EAPI=4 :D
-#
+PYTHON_DEPEND="<<*:2.6>>"
 
-#PYTHON_DEPEND="*"
-
-#inherit boost python
-inherit boost
+inherit boost python
 
 RDEPEND=""
 DEPEND=""
@@ -24,5 +19,5 @@ src_unpack() {
 src_prepare() {
 	boost_src_prepare
 
-#	python_pkg_setup
+	python_pkg_setup
 }

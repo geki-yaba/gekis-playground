@@ -7,16 +7,11 @@
 # Purpose: Selectively build/install boost build
 #
 
-#
-# TODO: waiting for eclass/python EAPI=4 :D
-#
-
 EAPI="4"
 
-#PYTHON_DEPEND="python? *"
+PYTHON_DEPEND="python? ( <<*>> )"
 
-#inherit flag-o-matic python toolchain-funcs versionator
-inherit flag-o-matic toolchain-funcs versionator
+inherit flag-o-matic python toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_compile src_install src_test
 
@@ -55,7 +50,7 @@ boost-build_pkg_setup() {
 		BOOST_JAM_TEST="${BOOST_JAM}/../test/engine"
 	fi
 
-#	use python && python_pkg_setup
+	use python && python_pkg_setup
 }
 
 boost-build_src_unpack() {
