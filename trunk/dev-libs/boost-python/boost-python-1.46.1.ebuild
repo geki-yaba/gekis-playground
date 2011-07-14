@@ -9,15 +9,14 @@ inherit boost python
 RDEPEND=""
 DEPEND=""
 
+pkg_setup() {
+	boost_pkg_setup
+	python_pkg_setup
+}
+
 src_unpack() {
 	boost_src_unpack
 
 	# copy library specific patches
 	cp -v "${FILESDIR}/${PN}"-*.diff "${BOOST_PATCHDIR}"
-}
-
-src_prepare() {
-	boost_src_prepare
-
-	python_pkg_setup
 }
