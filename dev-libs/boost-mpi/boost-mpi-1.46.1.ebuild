@@ -12,17 +12,17 @@ RDEPEND="dev-libs/boost-serialization:${SLOT}
 	|| ( sys-cluster/openmpi[cxx] sys-cluster/mpich2[cxx,threads] )"
 DEPEND="${RDEPEND}"
 
+pkg_setup() {
+	boost_pkg_setup
+
+	use python && python_pkg_setup
+}
+
 src_unpack() {
 	boost_src_unpack
 
 	# copy library specific patches
 	cp -v "${FILESDIR}/${PN}"-*.diff "${BOOST_PATCHDIR}"
-}
-
-src_prepare() {
-	boost_src_prepare
-
-	use python && python_pkg_setup
 }
 
 src_configure() {
