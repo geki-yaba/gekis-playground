@@ -8,8 +8,10 @@ inherit libreoffice
 KEYWORDS=""
 
 # git clone
-CLONE_DIR="${S}/clone"
 EGIT_BRANCH="libreoffice-3-4"
+
+# config
+CONFFILE="3.4.1"
 
 # addons
 ADDONS_SRC+=" http://dev-www.libreoffice.org/src/48a9f787f43a09c0a9b7b00cd1fddbbf-hyphen-2.7.1.tar.gz"
