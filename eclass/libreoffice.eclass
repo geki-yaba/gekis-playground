@@ -8,7 +8,8 @@
 #
 
 #
-# TODO: >=gnome-base/librsvg-2.32.1:2 for 3.5
+# TODO: fix eclass/git-2
+#		>=gnome-base/librsvg-2.32.1:2 for 3.5
 #		--enable-librsvg=system
 #
 
@@ -272,6 +273,8 @@ libreoffice_pkg_setup() {
 }
 
 libreoffice_src_unpack() {
+	local clone="${S}/clone"
+
 	# layered clone/build process - fun! :)
 	if [[ ${PV} == *_pre ]]; then
 		local root="git://anongit.freedesktop.org/${PN}"
@@ -287,14 +290,14 @@ libreoffice_src_unpack() {
 		# clone modules
 		for module in ${MODULES}; do
 			EGIT_PROJECT="${PN}/${module}"
-			EGIT_UNPACK_DIR="${CLONE_DIR}/${module}"
+			EGIT_UNPACK_DIR="${clone}/${module}"
 			EGIT_REPO_URI="${root}/${module}"
 			git_src_unpack
 		done
 	else
 		unpack "${PN}-bootstrap-${PV}.tar.bz2"
 
-		cd "${CLONE_DIR}"
+		cd "${clone}"
 
 		# unpack modules
 		for module in ${MODULES}; do
@@ -302,9 +305,8 @@ libreoffice_src_unpack() {
 		done
 	fi
 
-	# move source into tree
-	# FIXME: symlink; possible to use ./g pull?
-	mv -n "${CLONE_DIR}"/*/* "${S}"
+	# link source into tree
+	ln -sf "${clone}"/*/* .
 
 	# copy extension templates; o what fun ...
 	if use templates; then
@@ -325,9 +327,6 @@ libreoffice_src_unpack() {
 }
 
 libreoffice_src_prepare() {
-	# gentoo
-	local CONFFILE="${S}/distro-configs/GentooUnstable.conf"
-
 	# specifics not for upstream
 	EPATCH_SUFFIX="diff"
 	EPATCH_FORCE="yes"
@@ -337,184 +336,144 @@ libreoffice_src_prepare() {
 	epatch_user
 
 	# create distro config
-	# FIXME: add GentooUnstable-VERSION.conf to ${FILESDIR} for defaults
-	echo "--prefix="${EPREFIX}"/usr" >> ${CONFFILE}
-	echo "--sysconfdir="${EPREFIX}"/etc" >> ${CONFFILE}
-	echo "--libdir="${EPREFIX}"/usr/$(get_libdir)" >> ${CONFFILE}
-	echo "--mandir="${EPREFIX}"/usr/share/man" >> ${CONFFILE}
-	echo "--docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${CONFFILE}
-	echo "--with-external-dict-dir=/usr/share/myspell" >> ${CONFFILE}
-	echo "--with-external-hyph-dir=/usr/share/myspell" >> ${CONFFILE}
-	echo "--with-external-thes-dir=/usr/share/myspell" >> ${CONFFILE}
-	echo "--with-system-boost" >> ${CONFFILE}
-	echo "--with-system-curl" >> ${CONFFILE}
-	echo "--with-system-db" >> ${CONFFILE}
-	echo "--with-system-dicts" >> ${CONFFILE}
-	echo "--with-system-expat" >> ${CONFFILE}
-	echo "--with-system-hunspell" >> ${CONFFILE}
-	echo "--with-system-icu" >> ${CONFFILE}
-	echo "--with-system-libxslt" >> ${CONFFILE}
-	echo "--with-system-openssl" >> ${CONFFILE}
-	echo "--with-system-vigra" >> ${CONFFILE}
-	echo "--without-myspell-dicts" >> ${CONFFILE}
-	echo "--without-stlport" >> ${CONFFILE}
-	echo "--with-system-zlib" >> ${CONFFILE}
-	echo "--with-vendor=Gentoo Foundation" >> ${CONFFILE}
-	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${CONFFILE}
-	echo "--with-lang=${LINGUAS_OOO}" >> ${CONFFILE}
-	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${CONFFILE}
-	echo "--with-system-hunspell" >> ${CONFFILE}
-	echo "--with-system-libwpd" >> ${CONFFILE}
-	echo "--with-system-libwpg" >> ${CONFFILE}
-	echo "--with-system-libwps" >> ${CONFFILE}
-	echo "--enable-cairo" >> ${CONFFILE}
-	echo "--with-system-cairo" >> ${CONFFILE}
-	echo "--disable-kde" >> ${CONFFILE}
-	echo "--disable-layout" >> ${CONFFILE}
-	echo "$(use_enable gtk)" >> ${CONFFILE}
-	echo "$(use_enable kde kde4)" >> ${CONFFILE}
-	echo "$(use_enable !debug strip-solver)" >> ${CONFFILE}
-	echo "$(use_with java)" >> ${CONFFILE}
-#	echo "$(use_enable mono)" >> ${CONFFILE}
-	echo "$(use_enable odk)" >> ${CONFFILE}
-	echo "$(use_with templates sun-templates)" >> ${CONFFILE}
-	echo "--disable-crashdump" >> ${CONFFILE}
-	echo "--disable-epm" >> ${CONFFILE}
-	echo "--disable-dependency-tracking" >> ${CONFFILE}
-	echo "--disable-zenity" >> ${CONFFILE}
-	echo "--disable-fetch-external" >> ${CONFFILE}
-	echo "--with-external-tar=${DISTDIR}" >> ${CONFFILE}
+	local config="${S}/distro-configs/GentooUnstable.conf"
+	sed -e /^#/d \
+		< "${FILESDIR}"/conf/GentooUnstable-${CONFFILE} \
+		> ${config} \
+		|| die "base configuration generation failed"
 
-	# gentooexperimental defaults
-	echo "--without-afms" >> ${CONFFILE}
-	echo "--without-fonts" >> ${CONFFILE}
-	echo "--without-ppds" >> ${CONFFILE}
-	echo "--with-system-cppunit" >> ${CONFFILE}
-	echo "--with-system-openssl" >> ${CONFFILE}
-	echo "--with-system-redland" >> ${CONFFILE}
-#	echo "--with-system-xmlsec" >> ${CONFFILE}
-	echo "--enable-xrender-link" >> ${CONFFILE}
-	echo "--disable-systray" >> ${CONFFILE}
+	# gentoo
+	echo "--prefix=${EPREFIX}/usr" >> ${config}
+	echo "--sysconfdir=${EPREFIX}/etc" >> ${config}
+	echo "--libdir=${EPREFIX}/usr/$(get_libdir)" >> ${config}
+	echo "--mandir=${EPREFIX}/usr/share/man" >> ${config}
+	echo "--docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${config}
+	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${config}
+	echo "--with-external-tar=${DISTDIR}" >> ${config}
+	echo "--with-lang=${LINGUAS_OOO}" >> ${config}
+	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
+	echo "$(use_enable gtk)" >> ${config}
+	echo "$(use_enable kde kde4)" >> ${config}
+	echo "$(use_enable !debug strip-solver)" >> ${config}
+#	echo "$(use_enable mono)" >> ${config}
+	echo "$(use_enable odk)" >> ${config}
+	echo "$(use_with java)" >> ${config}
+	echo "$(use_with templates sun-templates)" >> ${config}
 
 	# extensions
-	echo "--with-extension-integration" >> ${CONFFILE}
-	echo "--enable-ext-pdfimport" >> ${CONFFILE}
-	echo "--enable-ext-presenter-console" >> ${CONFFILE}
-	echo "--enable-ext-presenter-minimizer" >> ${CONFFILE}
-	echo "$(use_enable reportbuilder ext-report-builder)" >> ${CONFFILE}
-	echo "$(use_enable wiki ext-wiki-publisher)" >> ${CONFFILE}
-	echo "$(use_enable mysql ext-mysql-connector)" >> ${CONFFILE}
+	echo "$(use_enable reportbuilder ext-report-builder)" >> ${config}
+	echo "$(use_enable wiki ext-wiki-publisher)" >> ${config}
+	echo "$(use_enable mysql ext-mysql-connector)" >> ${config}
 	# FIXME: enable-ext
-	echo "$(use_with languagetool)" >> ${CONFFILE}
+	echo "$(use_with languagetool)" >> ${config}
 
 	# internal
-	echo "--disable-binfilter" >> ${CONFFILE}
-	echo "$(use_enable dbus)" >> ${CONFFILE}
-	echo "$(use_enable debug symbols)" >> ${CONFFILE}
-	echo "$(use_with offlinehelp helppack-integration)" >> ${CONFFILE}
-	use jemalloc && echo "--with-alloc=jemalloc" >> ${CONFFILE}
+	echo "$(use_enable dbus)" >> ${config}
+	echo "$(use_enable debug symbols)" >> ${config}
+	echo "$(use_with offlinehelp helppack-integration)" >> ${config}
+	use jemalloc && echo "--with-alloc=jemalloc" >> ${config}
 
 	# system
-	echo "$(use_enable cups)" >> ${CONFFILE}
-	echo "$(use_enable eds evolution2)" >> ${CONFFILE}
-	echo "$(use_enable graphite)" >> ${CONFFILE}
-#	echo "$(use_with graphite system-graphite)" >> ${CONFFILE}
-	echo "$(use_enable ldap)" >> ${CONFFILE}
-	echo "$(use_with ldap openldap)" >> ${CONFFILE}
-	echo "$(use_with odbc system-odbc)" >> ${CONFFILE}
-	echo "$(use_enable opengl)" >> ${CONFFILE}
-	echo "$(use_with opengl system-mesa-headers)" >> ${CONFFILE}
+	echo "$(use_enable cups)" >> ${config}
+	echo "$(use_enable eds evolution2)" >> ${config}
+	echo "$(use_enable graphite)" >> ${config}
+#	echo "$(use_with graphite system-graphite)" >> ${config}
+	echo "$(use_enable ldap)" >> ${config}
+	echo "$(use_with ldap openldap)" >> ${config}
+	echo "$(use_with odbc system-odbc)" >> ${config}
+	echo "$(use_enable opengl)" >> ${config}
+	echo "$(use_with opengl system-mesa-headers)" >> ${config}
 	# FIXME: lo 3.5 fubared :(
-	echo "$(use_enable python)" >> ${CONFFILE}
-	echo "$(use_enable webdav neon)" >> ${CONFFILE}
-	echo "$(use_with webdav system-neon)" >> ${CONFFILE}
+	echo "$(use_enable python)" >> ${config}
+	echo "$(use_enable webdav neon)" >> ${config}
+	echo "$(use_with webdav system-neon)" >> ${config}
 
 	# mysql
-	echo "$(use_with mysql system-mysql)" >> ${CONFFILE}
-	echo "$(use_with mysql system-mysql-cppconn)" >> ${CONFFILE}
+	echo "$(use_with mysql system-mysql)" >> ${config}
+	echo "$(use_with mysql system-mysql-cppconn)" >> ${config}
 
 	# browser
-	echo "$(use_enable nsplugin mozilla)" >> ${CONFFILE}
-	echo "$(use_with nsplugin system-mozilla libxul)" >> ${CONFFILE}
+	echo "$(use_enable nsplugin mozilla)" >> ${config}
+	echo "$(use_with nsplugin system-mozilla libxul)" >> ${config}
 
 	# gnome
-	echo "--disable-gnome-vfs" >> ${CONFFILE}
-	echo "$(use_enable gtk gio)" >> ${CONFFILE}
-	echo "$(use_enable gnome lockdown)" >> ${CONFFILE}
-	echo "$(use_enable gnome gconf)" >> ${CONFFILE}
-	echo "$(use_enable gstreamer)" >> ${CONFFILE}
+	echo "--disable-gnome-vfs" >> ${config}
+	echo "$(use_enable gtk gio)" >> ${config}
+	echo "$(use_enable gnome lockdown)" >> ${config}
+	echo "$(use_enable gnome gconf)" >> ${config}
+	echo "$(use_enable gstreamer)" >> ${config}
 
 	# java
 	if use java; then
-		echo "--with-ant-home=${ANT_HOME}" >> ${CONFFILE}
-		echo "--with-jdk-home=$(java-config --jdk-home 2>/dev/null)" >> ${CONFFILE}
-		echo "--with-java-target-version=1.5" >> ${CONFFILE}
-		echo "--with-jvm-path=/usr/$(get_libdir)/" >> ${CONFFILE}
-		echo "--with-system-beanshell" >> ${CONFFILE}
-#		echo "--with-system-hsqldb" >> ${CONFFILE}
-		echo "--with-system-lucene" >> ${CONFFILE}
-#		echo "--with-system-saxon" >> ${CONFFILE}
-		echo "--with-beanshell-jar=$(java-pkg_getjar bsh bsh.jar)" >> ${CONFFILE}
-#		echo "--with-hsqldb-jar=$(java-pkg_getjar hsqldb hsqldb.jar)" >> ${CONFFILE}
+		echo "--with-ant-home=${ANT_HOME}" >> ${config}
+		echo "--with-jdk-home=$(java-config --jdk-home 2>/dev/null)" >> ${config}
+		echo "--with-java-target-version=1.5" >> ${config}
+		echo "--with-jvm-path=/usr/$(get_libdir)/" >> ${config}
+		echo "--with-system-beanshell" >> ${config}
+#		echo "--with-system-hsqldb" >> ${config}
+		echo "--with-system-lucene" >> ${config}
+#		echo "--with-system-saxon" >> ${config}
+		echo "--with-beanshell-jar=$(java-pkg_getjar bsh bsh.jar)" >> ${config}
+#		echo "--with-hsqldb-jar=$(java-pkg_getjar hsqldb hsqldb.jar)" >> ${config}
 		echo "--with-lucene-core-jar=$(java-pkg_getjar \
-			lucene-2.9 lucene-core.jar)" >> ${CONFFILE}
+			lucene-2.9 lucene-core.jar)" >> ${config}
 		echo "--with-lucene-analyzers-jar=$(java-pkg_getjar \
-			lucene-2.9 lucene-analyzers.jar)" >> ${CONFFILE}
-#		echo "--with-saxon-jar=$(java-pkg_getjar saxon-9 saxon.jar)" >> ${CONFFILE}
+			lucene-2.9 lucene-analyzers.jar)" >> ${config}
+#		echo "--with-saxon-jar=$(java-pkg_getjar saxon-9 saxon.jar)" >> ${config}
 
 		# junit:4
 		use junit && echo "--with-junit=$(java-pkg_getjar \
-			junit-4 junit.jar)" >> ${CONFFILE}
+			junit-4 junit.jar)" >> ${config}
 	fi
 
 	# junit:4
-	use !junit && echo "--without-junit" >> ${CONFFILE}
+	use !junit && echo "--without-junit" >> ${config}
 
 	# reportbuilder extension
 #	if use reportbuilder; then
-#		echo "--with-system-jfreereport" >> ${CONFFILE}
+#		echo "--with-system-jfreereport" >> ${config}
 #		echo "--with-sac-jar=$(java-pkg_getjar \
-#			sac sac.jar)" >> ${CONFFILE}
+#			sac sac.jar)" >> ${config}
 #		echo "--with-flute-jar=$(java-pkg_getjar \
-#			flute-jfree flute-jfree.jar)" >> ${CONFFILE}
+#			flute-jfree flute-jfree.jar)" >> ${config}
 #		echo "--with-jcommon-jar=$(java-pkg_getjar \
-#			jcommon-1.0 jcommon.jar)" >> ${CONFFILE}
+#			jcommon-1.0 jcommon.jar)" >> ${config}
 #		echo "--with-jcommon-serializer-jar=$(java-pkg_getjar \
-#			jcommon-serializer jcommon-serializer.jar)" >> ${CONFFILE}
+#			jcommon-serializer jcommon-serializer.jar)" >> ${config}
 #		echo "--with-libfonts-jar=$(java-pkg_getjar \
-#			libfonts libfonts.jar)" >> ${CONFFILE}
+#			libfonts libfonts.jar)" >> ${config}
 #		echo "--with-libformula-jar=$(java-pkg_getjar \
-#			libformula libformula.jar)" >> ${CONFFILE}
+#			libformula libformula.jar)" >> ${config}
 #		echo "--with-liblayout-jar=$(java-pkg_getjar \
-#			liblayout liblayout.jar)" >> ${CONFFILE}
+#			liblayout liblayout.jar)" >> ${config}
 #		echo "--with-libloader-jar=$(java-pkg_getjar \
-#			libloader libloader.jar)" >> ${CONFFILE}
+#			libloader libloader.jar)" >> ${config}
 #		echo "--with-librepository-jar=$(java-pkg_getjar \
-#			librepository librepository.jar)" >> ${CONFFILE}
+#			librepository librepository.jar)" >> ${config}
 #		echo "--with-libxml-jar=$(java-pkg_getjar \
-#			libxml libxml.jar)" >> ${CONFFILE}
+#			libxml libxml.jar)" >> ${config}
 #		echo "--with-jfreereport-jar=$(java-pkg_getjar \
-#			jfreereport jfreereport.jar)" >> ${CONFFILE}
+#			jfreereport jfreereport.jar)" >> ${config}
 #	fi
 
 	# wiki extension
 	if use wiki; then
-		echo "--with-system-servlet-api" >> ${CONFFILE}
+		echo "--with-system-servlet-api" >> ${config}
 		echo "--with-commons-codec-jar=$(java-pkg_getjar \
-			commons-codec commons-codec.jar)" >> ${CONFFILE}
+			commons-codec commons-codec.jar)" >> ${config}
 		echo "--with-commons-httpclient-jar=$(java-pkg_getjar \
-			commons-httpclient-3 commons-httpclient.jar)" >> ${CONFFILE}
+			commons-httpclient-3 commons-httpclient.jar)" >> ${config}
 		echo "--with-commons-lang-jar=$(java-pkg_getjar \
-			commons-lang-2.1 commons-lang.jar)" >> ${CONFFILE}
+			commons-lang-2.1 commons-lang.jar)" >> ${config}
 		echo "--with-servlet-api-jar=$(java-pkg_getjar \
-			tomcat-servlet-api-2.4 servlet-api.jar)" >> ${CONFFILE}
+			tomcat-servlet-api-2.4 servlet-api.jar)" >> ${config}
 	fi
 
 	# reportbuilder & wiki extension
 	if use reportbuilder || use wiki; then
 		echo "--with-commons-logging-jar=$(java-pkg_getjar \
-			commons-logging commons-logging.jar)" >> ${CONFFILE}
-		echo "--with-system-apache-commons" >> ${CONFFILE}
+			commons-logging commons-logging.jar)" >> ${config}
+		echo "--with-system-apache-commons" >> ${config}
 	fi
 
 	eautoreconf
