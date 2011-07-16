@@ -262,14 +262,12 @@ libreoffice_pkg_setup() {
 	use kde && kde4-base_pkg_setup
 
 	# python
-	if use python; then
-		local lo_pyver=2
-		# python 3 if skipping translate-toolkit
-		[ -z "${LINGUAS}" ] && lo_pyver=3
+	local lo_pyver=2
+	# python 3 if skipping translate-toolkit
+	[ -z "${LINGUAS}" ] && lo_pyver=3
 
-		python_set_active_version ${lo_pyver}
-		python_pkg_setup
-	fi
+	python_set_active_version ${lo_pyver}
+	python_pkg_setup
 }
 
 libreoffice_src_unpack() {
@@ -306,7 +304,7 @@ libreoffice_src_unpack() {
 	fi
 
 	# link source into tree
-	ln -sf "${clone}"/*/* .
+	ln -sf "${clone}"/*/* "${S}"
 
 	# copy extension templates; o what fun ...
 	if use templates; then

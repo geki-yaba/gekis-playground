@@ -56,7 +56,7 @@ fetch_list ()
 	wget http://cgit.freedesktop.org/libreoffice/bootstrap/plain/${LIST}?id=${TAG} -O ${LIST}
 
 	# remove foo
-	sed -e /^$/d -e /^@/d -e /seamonkey/d -i ${LIST}
+	sed -e /^$/d -e /^@/d -e /README/d -e /LICENSE/d -e /Python/d -e /seamonkey/d -i ${LIST}
 
 	# update paths
 	sed -e "s#http://hg.services.openoffice.org/binaries#http://dev-www.libreoffice.org/src#" \
@@ -75,7 +75,10 @@ filter_list()
 
 	for package in $(egrep -v "^http|\.txt|\.html|core.zip" $LIST | cut -c 34- | cut -d "." -f 1 | sed -r -e "s/([A-Za-z]+)[0-9_-].*/\1/")
 	do
-		if egrep -q -s -i -c "^[^#].*\/$package" $ECLASS
+		# exception: libxml2 vs libxml.jar ...
+		[[ ${package} == libxml ]] && package="libxml2"
+
+		if egrep -q -s -i -c "^[^#][^\/]*\/$package" $ECLASS
 		then
 			echo "Dependency found: $package"
 			sed -e /-$package/d -i $LIST
