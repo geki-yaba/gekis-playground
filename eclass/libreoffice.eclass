@@ -11,6 +11,7 @@
 # TODO: fix eclass/git-2
 #		>=gnome-base/librsvg-2.32.1:2 for 3.5
 #		--enable-librsvg=system
+#		proper documentation of eclass like portage/eclass/java-utils-2.eclass
 #
 
 EAPI="4"
@@ -494,7 +495,7 @@ libreoffice_src_configure() {
 
 	# linker flags
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
-	export LINKFLAGSDEFS="-Wl,-z,defs -L$(get_boost_library_path)"
+	export LINKFLAGSDEFS="-Wl,-z,defs -L$(boost-utils_get_library_path)"
 
 	# qt/kde --- yay
 	use kde && export KDE4DIR="${KDEDIR}"

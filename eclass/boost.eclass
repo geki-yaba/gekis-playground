@@ -7,6 +7,10 @@
 # Purpose: Selectively build/install boost libraries
 #
 
+#
+# TODO:	proper documentation of eclass like portage/eclass/java-utils-2.eclass
+#
+
 EAPI="4"
 
 inherit check-reqs flag-o-matic multilib toolchain-funcs versionator

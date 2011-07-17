@@ -7,30 +7,30 @@
 # Purpose: Serve paths to boost libraries & headers
 #
 
+#
+# TODO:	proper documentation of eclass like portage/eclass/java-utils-2.eclass
+#
+
 inherit flag-o-matic multilib
 
-# get_boost_library_path
-get_boost_library_path() {
-	local version="$(grep -o -e "[0-9]_[0-9][0-9]" \
+boost-utils_get_library_path() {
+	local slot="$(grep -o -e "[0-9]_[0-9][0-9]" \
 		/usr/include/boost/version.hpp)"
-
-	local path="/usr/$(get_libdir)/boost-${version}"
+	local path="/usr/$(get_libdir)/boost-${slot}"
 
 	[ -d "${path}" ] && echo -n "${path}"
 }
 
-# add_boost_library_path
-add_boost_library_path() {
-	local path="$(get_boost_library_path)"
+boost-utils_add_library_path() {
+	local path="$(boost-utils_get_library_path)"
 
-	if [ "${path}" ] ; then
+	if [  "${path}" ] ; then
 		append-ldflags "-L${path}"
 	else
 		die "path not found! (${path})"
 	fi
 }
 
-# add_boost_paths: convenient wrapper
-add_boost_paths() {
-	add_boost_library_path
+boost-utils_add_paths() {
+	boost-utils_add_library_path
 }
