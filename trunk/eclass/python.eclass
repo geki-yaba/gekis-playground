@@ -118,10 +118,12 @@ _python_set_IUSE() {
 		fi
 	done
 
-	IUSE="${USE_flags}"
+	if ! has "${EAPI:-0}" 4; then
+		IUSE="${USE_flags}"
+	fi
 }
 
-if ! has "${EAPI:-0}" 0 1 2 3 4 && _python_package_supporting_installation_for_multiple_python_abis; then
+if ! has "${EAPI:-0}" 0 1 2 3 && _python_package_supporting_installation_for_multiple_python_abis; then
 	_python_set_IUSE
 fi
 unset -f _python_set_IUSE
@@ -311,7 +313,7 @@ _python_parse_dependencies_in_old_EAPIs() {
 unset _PYTHON_USE_FLAGS_CHECKS_CODE
 
 _python_parse_dependencies_in_new_EAPIs() {
-	local component cpython_abis=() cpython_atoms=() cpython_reversed_abis=() i input_value input_variable matched_USE_dependencies output_value output_variable output_variables patterns PYTHON_ABI replace_whitespace_characters="1" required_USE_flags separate_components separate_USE_dependencies USE_dependencies USE_dependency versions_range
+	local component cpython_abis=() cpython_atoms=() cpython_reversed_abis=() i input_value input_variable output_value output_variable output_variables PYTHON_ABI replace_whitespace_characters="1" required_USE_flags separate_components USE_dependencies versions_range
 
 	input_value="${!1}"
 	input_variable="$1"
@@ -323,6 +325,32 @@ _python_parse_dependencies_in_new_EAPIs() {
 			cpython_reversed_abis+=("${cpython_abis[${i}]}")
 		done
 	fi
+
+	_get_matched_USE_dependencies() {
+		local matched_USE_dependencies patterns separate_USE_dependencies USE_dependency
+
+		if [[ -n "${USE_dependencies}" ]]; then
+			separate_USE_dependencies="${USE_dependencies:1:$((${#USE_dependencies} - 2))}"
+			separate_USE_dependencies="${separate_USE_dependencies//,/$'\n'}"
+			while read USE_dependency; do
+				if [[ "${USE_dependency}" == "{"*"}"* ]]; then
+					patterns="${USE_dependency%\}*}"
+					patterns="${patterns:1}"
+					USE_dependency="${USE_dependency#*\}}"
+					if _python_check_python_abi_matching --patterns-list "${PYTHON_ABI}" "${patterns}"; then
+						matched_USE_dependencies+="${matched_USE_dependencies:+,}${USE_dependency}"
+					fi
+				else
+					matched_USE_dependencies+="${matched_USE_dependencies:+,}${USE_dependency}"
+				fi
+			done <<< "${separate_USE_dependencies}"
+			if [[ -n "${matched_USE_dependencies}" ]]; then
+				matched_USE_dependencies="[${matched_USE_dependencies}]"
+			fi
+		fi
+
+		echo "${matched_USE_dependencies}"
+	}
 
 	for ((i = 0; i < "${#input_value}"; i++)); do
 		if [[ "${input_value:${i}:1}" == "<" && "${input_value:$((${i} + 1)):1}" == "<" ]]; then
@@ -362,7 +390,7 @@ _python_parse_dependencies_in_new_EAPIs() {
 					cpython_atoms=()
 					for PYTHON_ABI in "${cpython_reversed_abis[@]}"; do
 						if ! _python_check_python_abi_matching --patterns-list "${PYTHON_ABI}" "${PYTHON_RESTRICTED_ABIS}"; then
-							cpython_atoms+=("dev-lang/python:${PYTHON_ABI}${USE_dependencies}")
+							cpython_atoms+=("dev-lang/python:${PYTHON_ABI}$(_get_matched_USE_dependencies)")
 						fi
 					done
 					if [[ "${#cpython_atoms[@]}" -gt 1 ]]; then
@@ -370,38 +398,26 @@ _python_parse_dependencies_in_new_EAPIs() {
 					else
 						output_value+="${output_value:+ }${cpython_atoms[@]}"
 					fi
-				else
-					for PYTHON_ABI in "${_PYTHON_LOCALLY_SUPPORTED_ABIS[@]}"; do
+					if [[ -z "${USE_dependencies}" ]]; then
+						_PYTHON_USE_FLAGS_CHECKS_CODE+="${_PYTHON_USE_FLAGS_CHECKS_CODE:+ }:;"
+					fi
+				fi
+				for PYTHON_ABI in "${_PYTHON_LOCALLY_SUPPORTED_ABIS[@]}"; do
+					if has "${EAPI:-0}" 4; then
 						if [[ -n "${USE_dependencies}" ]]; then
-							separate_USE_dependencies="${USE_dependencies:1:$((${#USE_dependencies} - 2))}"
-							separate_USE_dependencies="${separate_USE_dependencies//,/$'\n'}"
-							matched_USE_dependencies=""
-							while read USE_dependency; do
-								if [[ "${USE_dependency}" == "{"*"}"* ]]; then
-									patterns="${USE_dependency%\}*}"
-									patterns="${patterns:1}"
-									USE_dependency="${USE_dependency#*\}}"
-									if _python_check_python_abi_matching --patterns-list "${PYTHON_ABI}" "${patterns}"; then
-										matched_USE_dependencies+="${matched_USE_dependencies:+,}${USE_dependency}"
-									fi
-								else
-									matched_USE_dependencies+="${matched_USE_dependencies:+,}${USE_dependency}"
-								fi
-							done <<< "${separate_USE_dependencies}"
-							if [[ -n "${matched_USE_dependencies}" ]]; then
-								matched_USE_dependencies="[${matched_USE_dependencies}]"
-							fi
-						else
-							matched_USE_dependencies=""
+							_PYTHON_USE_FLAGS_CHECKS_CODE+="${_PYTHON_USE_FLAGS_CHECKS_CODE:+ }if [[ \"\${PYTHON_ABI}\" == \"${PYTHON_ABI}\" ]] && ! has_version \"\$(python_get_implementational_package)$(_get_matched_USE_dependencies)\"; then die \"\$(python_get_implementational_package)$(_get_matched_USE_dependencies) not installed\"; fi;"
 						fi
+					else
 						if [[ "${PYTHON_ABI}" =~ ^[[:digit:]]+\.[[:digit:]]+$ ]]; then
-							output_value+="${output_value:+ }python_abis_${PYTHON_ABI}? ( dev-lang/python:${PYTHON_ABI}${matched_USE_dependencies} )"
+							output_value+="${output_value:+ }python_abis_${PYTHON_ABI}? ( dev-lang/python:${PYTHON_ABI}$(_get_matched_USE_dependencies) )"
 						elif [[ "${PYTHON_ABI}" =~ ^[[:digit:]]+\.[[:digit:]]+-jython$ ]]; then
-							output_value+="${output_value:+ }python_abis_${PYTHON_ABI}? ( dev-java/jython:${PYTHON_ABI%-jython}${matched_USE_dependencies} )"
+							output_value+="${output_value:+ }python_abis_${PYTHON_ABI}? ( dev-java/jython:${PYTHON_ABI%-jython}$(_get_matched_USE_dependencies) )"
 						elif [[ "${PYTHON_ABI}" =~ ^[[:digit:]]+\.[[:digit:]]+-pypy-[[:digit:]]+\.[[:digit:]]+$ ]]; then
-							output_value+="${output_value:+ }python_abis_${PYTHON_ABI}? ( dev-python/pypy:${PYTHON_ABI#*-pypy-}${matched_USE_dependencies} )"
+							output_value+="${output_value:+ }python_abis_${PYTHON_ABI}? ( dev-python/pypy:${PYTHON_ABI#*-pypy-}$(_get_matched_USE_dependencies) )"
 						fi
-					done
+					fi
+				done
+				if ! has "${EAPI:-0}" 4; then
 					if [[ "${#_PYTHON_LOCALLY_SUPPORTED_ABIS[@]}" -gt 1 ]]; then
 						required_USE_flags+="${required_USE_flags:+ }|| ( ${_PYTHON_LOCALLY_SUPPORTED_ABIS[@]/#/python_abis_} )"
 					else
@@ -439,7 +455,7 @@ _python_parse_dependencies_in_new_EAPIs() {
 		elif [[ "${component}" == ")" ]]; then
 			output_value+="${output_value:+ }${component}"
 			required_USE_flags+="${required_USE_flags:+ }${component}"
-			_PYTHON_USE_FLAGS_CHECKS_CODE+="${_PYTHON_USE_FLAGS_CHECKS_CODE:+ }fi"
+			_PYTHON_USE_FLAGS_CHECKS_CODE+="${_PYTHON_USE_FLAGS_CHECKS_CODE:+ }fi;"
 		else
 			die "Invalid syntax of ${input_variable}: Unrecognized component '${component}'"
 		fi
@@ -449,6 +465,8 @@ _python_parse_dependencies_in_new_EAPIs() {
 		eval "${output_variable}+=\"\${!output_variable:+ }\${output_value}\""
 	done
 
+	_PYTHON_USE_FLAGS_CHECKS_CODE="${_PYTHON_USE_FLAGS_CHECKS_CODE%;}"
+
 	if ! has "${EAPI:-0}" 4 && _python_package_supporting_installation_for_multiple_python_abis; then
 		if [[ "${input_variable}" == "PYTHON_DEPEND" ]]; then
 			REQUIRED_USE="${required_USE_flags}"
@@ -456,6 +474,8 @@ _python_parse_dependencies_in_new_EAPIs() {
 
 		unset _PYTHON_USE_FLAGS_CHECKS_CODE
 	fi
+
+	unset -f _get_matched_USE_dependencies
 }
 
 DEPEND=">=app-admin/eselect-python-20091230"
@@ -3320,7 +3340,7 @@ python_mod_optimize() {
 						eval "dirs+=(\"\${root}${dir}\")"
 					done
 					stderr+="${stderr:+$'\n'}$("$(PYTHON)" -m compileall "${options[@]}" "${dirs[@]}" 2>&1)" || return_code="1"
-					if [[ ! "$(_python_get_implementation "${PYTHON_ABI}")" =~ ^(Jython|PyPy)$ ]]; then
+					if ! has "$(_python_get_implementation "${PYTHON_ABI}")" Jython PyPy; then
 						"$(PYTHON)" -O -m compileall "${options[@]}" "${dirs[@]}" &> /dev/null || return_code="1"
 					fi
 					_python_clean_compiled_modules "${dirs[@]}"
@@ -3333,7 +3353,7 @@ python_mod_optimize() {
 						eval "files+=(\"\${root}${file}\")"
 					done
 					stderr+="${stderr:+$'\n'}$("$(PYTHON)" -m py_compile "${files[@]}" 2>&1)" || return_code="1"
-					if [[ ! "$(_python_get_implementation "${PYTHON_ABI}")" =~ ^(Jython|PyPy)$ ]]; then
+					if ! has "$(_python_get_implementation "${PYTHON_ABI}")" Jython PyPy; then
 						"$(PYTHON)" -O -m py_compile "${files[@]}" &> /dev/null || return_code="1"
 					fi
 					_python_clean_compiled_modules "${files[@]}"
@@ -3364,14 +3384,14 @@ python_mod_optimize() {
 			ebegin "Compilation and optimization of Python modules placed outside of site-packages directories for $(python_get_implementation_and_version)"
 			if ((${#other_dirs[@]})); then
 				stderr+="${stderr:+$'\n'}$("$(PYTHON ${PYTHON_ABI})" -m compileall "${options[@]}" "${other_dirs[@]}" 2>&1)" || return_code="1"
-				if [[ ! "$(_python_get_implementation "${PYTHON_ABI}")" =~ ^(Jython|PyPy)$ ]]; then
+				if ! has "$(_python_get_implementation "${PYTHON_ABI}")" Jython PyPy; then
 					"$(PYTHON ${PYTHON_ABI})" -O -m compileall "${options[@]}" "${other_dirs[@]}" &> /dev/null || return_code="1"
 				fi
 				_python_clean_compiled_modules "${other_dirs[@]}"
 			fi
 			if ((${#other_files[@]})); then
 				stderr+="${stderr:+$'\n'}$("$(PYTHON ${PYTHON_ABI})" -m py_compile "${other_files[@]}" 2>&1)" || return_code="1"
-				if [[ ! "$(_python_get_implementation "${PYTHON_ABI}")" =~ ^(Jython|PyPy)$ ]]; then
+				if ! has "$(_python_get_implementation "${PYTHON_ABI}")" Jython PyPy; then
 					"$(PYTHON ${PYTHON_ABI})" -O -m py_compile "${other_files[@]}" &> /dev/null || return_code="1"
 				fi
 				_python_clean_compiled_modules "${other_files[@]}"
