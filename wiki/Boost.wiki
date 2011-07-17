@@ -41,7 +41,7 @@ Install the respective split packages and/or install _dev-libs/boost_ with its r
  * add this line to src_configure before configure:
 
 {{{
-add_boost_paths
+boost-utils_add_paths
 }}}
 _It checks for the respective library path of the boost-headers version!_
 
