@@ -25,14 +25,20 @@ SAL_USE_VCLPLUGIN - 'gen', 'gtk' or 'kde4'
  export SAL_USE_VCLPLUGIN=gtk
 }}}
 
+=== Why do you want it over portage version? ===
+ * no gtk dep for kde-only
+ * jemalloc allocator
+ * more useflags
+ * *epatch_user* - add your patches like postgresql, ...
+ * ... whatever I forgot to mention
+
+_there are various extensions to libreoffice.<br>
+you may check './configure --help' for '--enable-ext-...'<br>
+and request them here_
 
 === Known issues ===
 
-<u>RMD160 verification failure</u>
-
- * grab libreoffice build tarball manually with wget
- * edit Manifest file; remove build-... line
- * run 'ebuild /path/to/ebuild digest'
+ * libreoffice-3.4.0: calc crashes on dnd here and there?! take care ...
 
 
 === Good to know about ... ===
