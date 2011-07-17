@@ -7,6 +7,10 @@
 # Purpose: Selectively build/install boost build
 #
 
+#
+# TODO:	proper documentation of eclass like portage/eclass/java-utils-2.eclass
+#
+
 EAPI="4"
 
 PYTHON_DEPEND="python? ( <<*>> )"
