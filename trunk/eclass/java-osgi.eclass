@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------------
 
-inherit java-utils-2
+inherit xorg-2
 
 # We define _OSGI_T so that it does not contain a slash at the end.
 # According to Paludis guys, there is currently a proposal for EAPIs that

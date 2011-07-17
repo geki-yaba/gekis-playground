@@ -8,7 +8,7 @@
 #
 
 #
-# TODO:	proper documentation of eclass like portage/eclass/java-utils-2.eclass
+# TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
 EAPI="4"

@@ -11,7 +11,7 @@
 # TODO: fix eclass/git-2
 #		>=gnome-base/librsvg-2.32.1:2 for 3.5
 #		--enable-librsvg=system
-#		proper documentation of eclass like portage/eclass/java-utils-2.eclass
+#		proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
 EAPI="4"
