@@ -3,6 +3,7 @@
 <pkgmetadata>
   <herd>video</herd>
   <maintainer>
-    <email>media-video@gentoo.org</email>
+    <name>Mads</name>
+    <email>mads@ab3.no</email>
   </maintainer>
 </pkgmetadata>
