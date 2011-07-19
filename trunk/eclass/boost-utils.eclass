@@ -14,11 +14,22 @@
 inherit flag-o-matic multilib
 
 boost-utils_get_library_path() {
-	local slot="$(grep -o -e "[0-9]_[0-9][0-9]" \
-		/usr/include/boost/version.hpp)"
+	local header="/usr/include/boost/version.hpp"
+	local slot="$(grep -o -e "[0-9]_[0-9][0-9]" ${header})"
 	local path="/usr/$(get_libdir)/boost-${slot}"
 
 	[ -d "${path}" ] && echo -n "${path}"
+}
+
+boost-utils_get_slot() {
+	local header="/usr/include/boost/version.hpp"
+	local slot="$(grep -o -e "[0-9]_[0-9][0-9]" ${header})"
+
+	if [ "${slot}" ] ; then
+		echo -n "${slot/_/.}"
+	else
+		die "could not find boost slot"
+	fi
 }
 
 boost-utils_add_library_path() {

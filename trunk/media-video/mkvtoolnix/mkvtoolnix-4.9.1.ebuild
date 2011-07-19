@@ -1,10 +1,10 @@
 # Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/media-video/mkvtoolnix/mkvtoolnix-4.9.0.ebuild,v 1.1 2011/07/11 07:27:31 radhermit Exp $
+# $Header: $
 
 EAPI=4
 
-inherit wxwidgets autotools
+inherit wxwidgets boost-utils autotools
 
 DESCRIPTION="Tools to create, alter, and inspect Matroska files"
 HOMEPAGE="http://www.bunkus.org/videotools/mkvtoolnix"
@@ -15,10 +15,12 @@ SLOT="0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 IUSE="bzip2 debug lzo pch wxwidgets"
 
+BOOST_SLOT="$(boost-utils_get_slot)"
+
 RDEPEND="
 	>=dev-libs/libebml-1.2.0
 	>=media-libs/libmatroska-1.1.0
-	=dev-libs/boost-1.47*
+	dev-libs/boost:${BOOST_SLOT}[filesystem,regex]
 	dev-libs/expat
 	media-libs/flac
 	media-libs/libogg
@@ -59,9 +61,7 @@ src_configure() {
 		$(use_enable debug) \
 		--disable-qt \
 		${myconf} \
-		--with-boost-regex=boost_regex-1_47 \
-		--with-boost-filesystem=boost_filesystem-1_47 \
-		--with-boost-system=boost_system-1_47
+		--with-boost-libdir="$(boost-utils_get_library_path)"
 }
 
 src_compile() {
