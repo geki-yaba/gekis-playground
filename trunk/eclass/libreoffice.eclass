@@ -16,9 +16,6 @@
 
 EAPI="4"
 
-WANT_AUTOCONF="2.5"
-WANT_AUTOMAKE="1.11"
-
 PYTHON_BDEPEND="<<*:2.6[threads,xml]>>"
 PYTHON_DEPEND="python? ( <<*:2.6[threads,xml]>> )"
 
@@ -30,10 +27,8 @@ inherit autotools bash-completion boost-utils check-reqs db-use eutils fdo-mime 
 	versionator
 # inherit mono
 
-if [[ ${PV} == *_pre ]]; then
-	# git-2 just hangs after first unpack?!
-	inherit git
-fi
+# git-2 just hangs after first unpack?!
+[[ ${PV} == *_pre ]] && inherit git
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_postrm
 
@@ -54,8 +49,8 @@ reportbuilder templates webdav wiki"
 LANGUAGES="af ar as ast be_BY bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
 en en_GB en_ZA eo es et eu fa fi fr ga gd gl gu he hi hr hu id is it ja ka kk km
 kn kok ko ks ku ky lo lt lv mai mk ml mn mni mr ms my nb ne nl nn nr ns oc om or
-pa pap pl ps pt pt_BR ro ru rw sa sat sd sh si sk sl sq sr ss st sv sw_TZ ta te
-tg th ti tn tr ts ug uk ur uz ve vi xh zh_CN zh_TW zu"
+pa pap pl ps pt pt_BR ro ru rw sat sd sh si sk sl sq sr ss st sv sw_TZ ta te tg
+th ti tn tr ts ug uk uz ve vi xh zh_CN zh_TW zu"
 
 for language in ${LANGUAGES}; do
 	IUSE+=" linguas_${language}"
@@ -65,24 +60,25 @@ done
 MY_PV="$(get_version_component_range 1-2)"
 
 # paths
-GO_SRC="http://download.go-oo.org"
-LIBRE_SRC="http://download.documentfoundation.org/libreoffice/src"
-EXT_SRC="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
+GO_URI="http://download.go-oo.org"
+LIBRE_URI="http://download.documentfoundation.org/libreoffice/src"
+EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
 
 # available templates
 # - en_* => en_US templates for simplicity; fix:
 # https://forums.gentoo.org/viewtopic-p-6449940.html#6449940
+# FIXME: assoc arrays in global namespace impossible?! anyone enlighten me, please!
 TDEPEND=""
-TDEPEND+=" linguas_de? ( ${EXT_SRC}/53ca5e56ccd4cab3693ad32c6bd13343-Sun-ODF-Template-Pack-de_1.0.0.oxt )"
-TDEPEND+=" linguas_en? ( ${EXT_SRC}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
-TDEPEND+=" linguas_en_GB? ( ${EXT_SRC}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
-TDEPEND+=" linguas_en_ZA? ( ${EXT_SRC}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
-TDEPEND+=" linguas_es? ( ${EXT_SRC}/4ad003e7bbda5715f5f38fde1f707af2-Sun-ODF-Template-Pack-es_1.0.0.oxt )"
-TDEPEND+=" linguas_fr? ( ${EXT_SRC}/a53080dc876edcddb26eb4c3c7537469-Sun-ODF-Template-Pack-fr_1.0.0.oxt )"
-TDEPEND+=" linguas_hu? ( ${EXT_SRC}/09ec2dac030e1dcd5ef7fa1692691dc0-Sun-ODF-Template-Pack-hu_1.0.0.oxt )"
-TDEPEND+=" linguas_it? ( ${EXT_SRC}/b33775feda3bcf823cad7ac361fd49a6-Sun-ODF-Template-Pack-it_1.0.0.oxt )"
+TDEPEND+=" linguas_de? ( ${EXT_URI}/53ca5e56ccd4cab3693ad32c6bd13343-Sun-ODF-Template-Pack-de_1.0.0.oxt )"
+TDEPEND+=" linguas_en? ( ${EXT_URI}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
+TDEPEND+=" linguas_en_GB? ( ${EXT_URI}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
+TDEPEND+=" linguas_en_ZA? ( ${EXT_URI}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
+TDEPEND+=" linguas_es? ( ${EXT_URI}/4ad003e7bbda5715f5f38fde1f707af2-Sun-ODF-Template-Pack-es_1.0.0.oxt )"
+TDEPEND+=" linguas_fr? ( ${EXT_URI}/a53080dc876edcddb26eb4c3c7537469-Sun-ODF-Template-Pack-fr_1.0.0.oxt )"
+TDEPEND+=" linguas_hu? ( ${EXT_URI}/09ec2dac030e1dcd5ef7fa1692691dc0-Sun-ODF-Template-Pack-hu_1.0.0.oxt )"
+TDEPEND+=" linguas_it? ( ${EXT_URI}/b33775feda3bcf823cad7ac361fd49a6-Sun-ODF-Template-Pack-it_1.0.0.oxt )"
 
-#	mono? ( ${GO_SRC}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
+#	mono? ( ${GO_URI}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
 SRC_URI="templates? ( ${TDEPEND} )"
 
 # libreoffice modules
@@ -91,10 +87,10 @@ libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
 writer translations"
 
 if [[ ${PV} != *_pre ]]; then
-	SRC_URI+=" ${LIBRE_SRC}/${PN}-bootstrap-${PV}.tar.bz2"
+	SRC_URI+=" ${LIBRE_URI}/${PN}-bootstrap-${PV}.tar.bz2"
 
 	for module in ${MODULES}; do
-		SRC_URI+=" ${LIBRE_SRC}/${PN}-${module}-${PV}.tar.bz2"
+		SRC_URI+=" ${LIBRE_URI}/${PN}-${module}-${PV}.tar.bz2"
 	done
 fi
 
@@ -558,20 +554,16 @@ libreoffice_src_install() {
 }
 
 libreoffice_pkg_preinst() {
-	use gnome && gnome2_icon_savelist
+	# icon savelist
+	kde4-base_pkg_preinst
 }
 
 libreoffice_pkg_postinst() {
-	# mime data
-	fdo-mime_desktop_database_update
-	fdo-mime_mime_database_update
-	use gnome && gnome2_icon_cache_update
+	# mime data and kde4
+	kde4-base_pkg_postinst
 
 	# hardened
 	_libreoffice_pax_fix
-
-	# kde4
-	use kde && kde4-base_pkg_postinst
 
 	# bash-completion postinst
 #	BASHCOMPLETION_NAME="libreoffice-libre" \
@@ -616,12 +608,12 @@ libreoffice_pkg_postinst() {
 
 libreoffice_pkg_postrm() {
 	# mime data
-	fdo-mime_desktop_database_update
-	use gnome && gnome2_icon_cache_update
+	kde4-base_pkg_postrm
 }
 
 _libreoffice_pax_fix() {
 	local bin="${EPREFIX}/usr/$(get_libdir)/${PN}/program/soffice.bin"
+
 	pax-mark -m "${bin}"
 }
 
