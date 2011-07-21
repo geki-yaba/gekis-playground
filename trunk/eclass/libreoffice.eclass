@@ -601,4 +601,7 @@ fi
 _libreoffice_die() {
 	# custom-cflags
 	_libreoffice_custom-cflags_message
+
+	# python version
+	echo "Python: $(python_get_version)"
 }
