@@ -9,6 +9,7 @@
 
 #
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
+#		refactor from split-boost to single-boost with useflags
 #
 
 EAPI="4"

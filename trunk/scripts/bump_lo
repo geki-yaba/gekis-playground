@@ -137,7 +137,11 @@ bump_ebuild()
 	do
 		if [ $(echo "$LINE" |grep -c "^http") -gt 0 ]
 		then
-			SERVER="$LINE"
+			if [[ ${LINE} == http://dev-www.libreoffice.org/src ]] ; then
+				SERVER="\${ADDONS_URI}"
+			else
+				SERVER="$LINE"
+			fi
 		else
 			echo "ADDONS_SRC+=\" ${SERVER}/${LINE}\"" >> $ENEW
 		fi

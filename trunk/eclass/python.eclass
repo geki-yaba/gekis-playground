@@ -676,14 +676,34 @@ python_abi_depend() {
 					USE_flags+=("python_abis_${PYTHON_ABI}")
 				fi
 			done
+
+			if [[ "${#USE_flags[@]}" -eq 0 ]]; then
+				ewarn "'${EBUILD}':"
+				ewarn "${FUNCNAME}(): Python ABI patterns list '${excluded_ABIs}' excludes all locally supported Python ABIs"
+			elif [[ "${#USE_flags[@]}" -eq "${#_PYTHON_LOCALLY_SUPPORTED_ABIS[@]}" ]]; then
+				ewarn "'${EBUILD}':"
+				ewarn "${FUNCNAME}(): Python ABI patterns list '${excluded_ABIs}' excludes no locally supported Python ABIs"
+			fi
 		elif [[ "${include_ABIs}" == "1" ]]; then
 			for PYTHON_ABI in "${_PYTHON_LOCALLY_SUPPORTED_ABIS[@]}"; do
 				if _python_check_python_abi_matching --patterns-list "${PYTHON_ABI}" "${included_ABIs}"; then
 					USE_flags+=("python_abis_${PYTHON_ABI}")
 				fi
 			done
+
+			if [[ "${#USE_flags[@]}" -eq 0 ]]; then
+				ewarn "'${EBUILD}':"
+				ewarn "${FUNCNAME}(): Python ABI patterns list '${included_ABIs}' includes no locally supported Python ABIs"
+			elif [[ "${#USE_flags[@]}" -eq "${#_PYTHON_LOCALLY_SUPPORTED_ABIS[@]}" ]]; then
+				ewarn "'${EBUILD}':"
+				ewarn "${FUNCNAME}(): Python ABI patterns list '${included_ABIs}' includes all locally supported Python ABIs"
+			fi
 		else
 			die "${FUNCNAME}(): Internal error"
+		fi
+
+		if [[ "${#USE_flags[@]}" -gt 1 ]]; then
+			echo -n "( "
 		fi
 
 		for USE_flag_index in "${!USE_flags[@]}"; do
@@ -713,6 +733,10 @@ python_abi_depend() {
 				echo -n " "
 			fi
 		done
+
+		if [[ "${#USE_flags[@]}" -gt 1 ]]; then
+			echo -n " )"
+		fi
 	fi
 }
 
