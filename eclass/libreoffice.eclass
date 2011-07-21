@@ -22,9 +22,8 @@ PYTHON_DEPEND="python? ( <<*:2.6[threads,xml]>> )"
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
-inherit autotools bash-completion boost-utils check-reqs db-use eutils fdo-mime \
-	flag-o-matic gnome2-utils java-pkg-opt-2 kde4-base multilib pax-utils python \
-	versionator
+inherit autotools bash-completion boost-utils check-reqs db-use eutils \
+	flag-o-matic java-pkg-opt-2 kde4-base multilib pax-utils python versionator
 # inherit mono
 
 # git-2 just hangs after first unpack?!
@@ -61,7 +60,7 @@ MY_PV="$(get_version_component_range 1-2)"
 
 # paths
 GO_URI="http://download.go-oo.org"
-LIBRE_URI="http://download.documentfoundation.org/libreoffice/src"
+LIBRE_URI="${LIBRE_URI:="http://download.documentfoundation.org/libreoffice/src"}"
 EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
 
 # available templates
@@ -498,7 +497,7 @@ libreoffice_src_configure() {
 	use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
 
 	./autogen.sh --with-distro="GentooUnstable" \
-		|| _libreoffice_die "configure failed"
+		|| die "configure failed"
 }
 
 libreoffice_src_compile() {
@@ -507,50 +506,15 @@ libreoffice_src_compile() {
 	touch src.downloaded
 
 	# build
-	make || _libreoffice_die "make failed"
+	make || die "make failed"
 }
 
 libreoffice_src_install() {
 	# install
-	make DESTDIR="${ED}" install || _libreoffice_die "install failed"
+	make DESTDIR="${ED}" distro-pack-install || die "install failed"
 
 	# access
 	use prefix || chown -RP root:0 "${ED}"
-
-	# fix desktop files
-	sed -e "s:${PN}${MY_PV/.}-::" \
-		-e "s:${PN}${MY_PV}:${PN}:" \
-		-i "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop \
-		|| _libreoffice_die "desktop files failed"
-
-	# install desktop files
-	use java || rm "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/javafilter.desktop
-	domenu "${ED}"/usr/$(get_libdir)/${PN}/share/xdg/*.desktop
-
-	cd "${S}"
-
-	# install mime package
-	dodir /usr/share/mime/packages
-	cp sysui/*.pro/misc/${PN}/openoffice.org.xml \
-		"${ED}"/usr/share/mime/packages/${PN}.xml
-
-	# install icons
-	insinto /usr/share/icons
-	doins -r "${S}"/sysui/desktop/icons/hicolor
-
-	# install wrapper
-	# FIXME: exeinto should not be necessary! :D
-	exeinto /usr/bin
-	newexe sysui/*.pro/misc/${PN}/openoffice.sh ${PN}
-
-	# fix wrapper
-	sed -e "s:/opt:/usr/$(get_libdir):" \
-		-e "s:${PN}${MY_PV}:${PN}:" \
-		-i "${ED}"/usr/bin/${PN} \
-		|| _libreoffice_die "wrapper failed"
-
-	# remove fuzz
-	rm "${ED}"/gid_Module_*
 }
 
 libreoffice_pkg_preinst() {
@@ -566,20 +530,20 @@ libreoffice_pkg_postinst() {
 	_libreoffice_pax_fix
 
 	# bash-completion postinst
-#	BASHCOMPLETION_NAME="libreoffice-libre" \
-#	bash-completion_pkg_postinst
+	BASHCOMPLETION_NAME="libreoffice" \
+	bash-completion_pkg_postinst
 
 	# info
 	elog " To start LibreOffice, run:"
 	elog
 	elog " $ libreoffice"
 	elog
-#	elog "__________________________________________________________________"
-#	elog " Also, for individual components, you can use any of:"
-#	elog
-#	elog " lobase-libre, localc-libre, lodraw-libre, lofromtemplate-libre,"
-#	elog " loimpress-libre, lomath-libre, loweb-libre or lowriter-libre"
-#	elog
+	elog "__________________________________________________________________"
+	elog " Also, for individual components, you can use any of:"
+	elog
+	elog " lobase, localc, lodraw, lofromtemplate, loimpress,"
+	elog " lomath, loweb or lowriter"
+	elog
 	elog "__________________________________________________________________"
 	elog " Some parts have to be installed via Extension Manager now"
 	ewarn " - VBA (VisualBasic-Assistant) support is no longer an extension"
@@ -598,12 +562,12 @@ libreoffice_pkg_postinst() {
 	elog " Either with the GUI ..."
 	elog " or with the 'unopkg' commandline-tool."
 	elog
-	elog " ex.:	# unopkg-libre add /usr/$(get_libdir)/${PN}/share/extension/install/<extension>.oxt"
-	elog "		# unopkg-libre remove <Identifier>"
+	elog " ex.:	# unopkg add /usr/$(get_libdir)/${PN}/share/extension/install/<extension>.oxt"
+	elog "		# unopkg remove <Identifier>"
 	elog
 	elog " To get the Identifier check the list of installed extensions."
 	elog
-	elog "		# unopkg-libre list"
+	elog "		# unopkg list"
 }
 
 libreoffice_pkg_postrm() {
@@ -630,9 +594,11 @@ _libreoffice_custom-cflags_message() {
 	fi
 }
 
+if ! has _libreoffice_die ${EBUILD_DEATH_HOOKS}; then
+	EBUILD_DEATH_HOOKS+=" _libreoffice_die"
+fi
+
 _libreoffice_die() {
 	# custom-cflags
 	_libreoffice_custom-cflags_message
-
-	die "${@}"
 }
