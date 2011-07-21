@@ -150,6 +150,7 @@ CDEPEND="${SDEPEND}
 	  app-text/hunspell
 	  app-text/libwpd:0.9[tools]
 	  app-text/libwps:0.2
+	  app-text/mythes
 	  app-text/poppler[xpdf-headers]
 	  dev-libs/boost[program_options,thread]
 	  dev-libs/expat
