@@ -16,8 +16,9 @@
 
 EAPI="4"
 
-PYTHON_BDEPEND="<<*:2.6[threads,xml]>>"
-PYTHON_DEPEND="python? ( <<*:2.6[threads,xml]>> )"
+_libreoffice_python="<<*:2.6:3.1[threads,xml]>>"
+PYTHON_BDEPEND="${_libreoffice_python}"
+PYTHON_DEPEND="python? ( ${_libreoffice_python} )"
 
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
