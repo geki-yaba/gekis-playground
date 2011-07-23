@@ -154,6 +154,7 @@ CDEPEND="${SDEPEND}
 	  app-text/poppler[xpdf-headers]
 	  dev-libs/boost[program_options,thread]
 	  dev-libs/expat
+	>=dev-libs/hyphen-2.7.1
 	  dev-libs/icu
 	  dev-libs/libxml2
 	  dev-libs/libxslt
@@ -192,8 +193,8 @@ DEPEND="${CDEPEND}
 	dev-perl/Archive-Zip
 	dev-util/cppunit
 	dev-util/intltool
+	dev-util/mdds
 	dev-util/pkgconfig
-	dev-vcs/git
 	media-gfx/imagemagick[png]
 	sys-apps/coreutils
 	sys-apps/grep
@@ -203,6 +204,8 @@ DEPEND="${CDEPEND}
 	x11-proto/xextproto
 	x11-proto/xineramaproto
 	x11-proto/xproto"
+
+[[ ${PV} == *_pre ]] && DEPEND+=" dev-vcs/git"
 
 REQUIRED_USE="junit? ( java ) languagetool? ( java ) reportbuilder? ( java ) wiki? ( java ) gnome? ( gtk ) nsplugin? ( gtk )"
 
@@ -493,10 +496,6 @@ libreoffice_src_configure() {
 	# linker flags
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
 	export LINKFLAGSDEFS="-Wl,-z,defs -L$(boost-utils_get_library_path)"
-
-	# qt/kde --- yay
-	use kde && export KDE4DIR="${KDEDIR}"
-	use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
 
 	./autogen.sh --with-distro="GentooUnstable" \
 		|| die "configure failed"
