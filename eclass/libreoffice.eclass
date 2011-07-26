@@ -334,6 +334,16 @@ libreoffice_src_prepare() {
 	# allow user to apply any additional patches without modifying ebuild
 	epatch_user
 
+	# disable avx for bridges
+	sed -e "s:^CFLAGSCXX.*:\0 -mo-avx:" \
+		-i "${S}"/bridges/source/cpp_uno/*/makefile.mk \
+		|| die
+
+	# disable printeradmin
+	sed -e "s:.*printeradmin:#\0:" \
+		-i "${S}"/sysui/desktop/share/create_tree.sh \
+		|| die
+
 	# create distro config
 	local config="${S}/distro-configs/GentooUnstable.conf"
 	sed -e /^#/d \

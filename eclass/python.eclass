@@ -478,7 +478,7 @@ _python_parse_dependencies_in_new_EAPIs() {
 	unset -f _get_matched_USE_dependencies
 }
 
-DEPEND=">=app-admin/eselect-python-20091230"
+DEPEND=">=app-admin/eselect-python-20091230 >=app-shells/bash-4"
 RDEPEND="${DEPEND}"
 
 if ! has "${EAPI:-0}" 0 1 2 3 4; then
@@ -1377,35 +1377,54 @@ python_execute_function() {
 	_python_check_python_pkg_setup_execution
 	_python_set_color_variables
 
-	local action action_message action_message_template default_function="0" failure_message failure_message_template final_ABI="0" function iterated_PYTHON_ABIS nonfatal="0" previous_directory previous_directory_stack previous_directory_stack_length PYTHON_ABI quiet="0" return_code separate_build_dirs="0" source_dir
+	local PYTHON_ABI
+	local -A _python=(
+		[action]=
+		[action_message]=
+		[action_message_template]=
+		[default_function]="0"
+		[exit_status]=
+		[failure_message]=
+		[failure_message_template]=
+		[final_ABI]="0"
+		[function]=
+		[iterated_PYTHON_ABIS]=
+		[nonfatal]="0"
+		[previous_directory]=
+		[previous_directory_stack]=
+		[previous_directory_stack_length]=
+		[quiet]="0"
+		[separate_build_dirs]="0"
+		[source_dir]=
+	)
 
 	while (($#)); do
 		case "$1" in
 			--action-message)
-				action_message_template="$2"
+				_python[action_message_template]="$2"
 				shift
 				;;
 			-d|--default-function)
-				default_function="1"
+				_python[default_function]="1"
 				;;
 			--failure-message)
-				failure_message_template="$2"
+				_python[failure_message_template]="$2"
 				shift
 				;;
 			-f|--final-ABI)
-				final_ABI="1"
+				_python[final_ABI]="1"
 				;;
 			--nonfatal)
-				nonfatal="1"
+				_python[nonfatal]="1"
 				;;
 			-q|--quiet)
-				quiet="1"
+				_python[quiet]="1"
 				;;
 			-s|--separate-build-dirs)
-				separate_build_dirs="1"
+				_python[separate_build_dirs]="1"
 				;;
 			--source-dir)
-				source_dir="$2"
+				_python[source_dir]="$2"
 				shift
 				;;
 			--)
@@ -1422,19 +1441,19 @@ python_execute_function() {
 		shift
 	done
 
-	if [[ -n "${source_dir}" && "${separate_build_dirs}" == 0 ]]; then
+	if [[ -n "${_python[source_dir]}" && "${_python[separate_build_dirs]}" == 0 ]]; then
 		die "${FUNCNAME}(): '--source-dir' option can be specified only with '--separate-build-dirs' option"
 	fi
 
-	if [[ "${default_function}" == "0" ]]; then
+	if [[ "${_python[default_function]}" == "0" ]]; then
 		if [[ "$#" -eq 0 ]]; then
 			die "${FUNCNAME}(): Missing function name"
 		fi
-		function="$1"
+		_python[function]="$1"
 		shift
 
-		if [[ -z "$(type -t "${function}")" ]]; then
-			die "${FUNCNAME}(): '${function}' function is not defined"
+		if [[ -z "$(type -t "${_python[function]}")" ]]; then
+			die "${FUNCNAME}(): '${_python[function]}' function is not defined"
 		fi
 	else
 		if has "${EAPI:-0}" 0 1; then
@@ -1470,7 +1489,7 @@ python_execute_function() {
 		else
 			die "${FUNCNAME}(): '--default-function' option cannot be used in this ebuild phase"
 		fi
-		function="python_default_function"
+		_python[function]="python_default_function"
 	fi
 
 	# Ensure that python_execute_function() cannot be directly or indirectly called by python_execute_function().
@@ -1479,28 +1498,28 @@ python_execute_function() {
 	fi
 
 	if [[ "${quiet}" == "0" ]]; then
-		[[ "${EBUILD_PHASE}" == "setup" ]] && action="Setting up"
-		[[ "${EBUILD_PHASE}" == "unpack" ]] && action="Unpacking"
-		[[ "${EBUILD_PHASE}" == "prepare" ]] && action="Preparation"
-		[[ "${EBUILD_PHASE}" == "configure" ]] && action="Configuration"
-		[[ "${EBUILD_PHASE}" == "compile" ]] && action="Building"
-		[[ "${EBUILD_PHASE}" == "test" ]] && action="Testing"
-		[[ "${EBUILD_PHASE}" == "install" ]] && action="Installation"
-		[[ "${EBUILD_PHASE}" == "preinst" ]] && action="Preinstallation"
-		[[ "${EBUILD_PHASE}" == "postinst" ]] && action="Postinstallation"
-		[[ "${EBUILD_PHASE}" == "prerm" ]] && action="Preuninstallation"
-		[[ "${EBUILD_PHASE}" == "postrm" ]] && action="Postuninstallation"
+		[[ "${EBUILD_PHASE}" == "setup" ]] && _python[action]="Setting up"
+		[[ "${EBUILD_PHASE}" == "unpack" ]] && _python[action]="Unpacking"
+		[[ "${EBUILD_PHASE}" == "prepare" ]] && _python[action]="Preparation"
+		[[ "${EBUILD_PHASE}" == "configure" ]] && _python[action]="Configuration"
+		[[ "${EBUILD_PHASE}" == "compile" ]] && _python[action]="Building"
+		[[ "${EBUILD_PHASE}" == "test" ]] && _python[action]="Testing"
+		[[ "${EBUILD_PHASE}" == "install" ]] && _python[action]="Installation"
+		[[ "${EBUILD_PHASE}" == "preinst" ]] && _python[action]="Preinstallation"
+		[[ "${EBUILD_PHASE}" == "postinst" ]] && _python[action]="Postinstallation"
+		[[ "${EBUILD_PHASE}" == "prerm" ]] && _python[action]="Preuninstallation"
+		[[ "${EBUILD_PHASE}" == "postrm" ]] && _python[action]="Postuninstallation"
 	fi
 
 	_python_calculate_PYTHON_ABIS
-	if [[ "${final_ABI}" == "1" ]]; then
-		iterated_PYTHON_ABIS="$(PYTHON -f --ABI)"
+	if [[ "${_python[final_ABI]}" == "1" ]]; then
+		_python[iterated_PYTHON_ABIS]="$(PYTHON -f --ABI)"
 	else
-		iterated_PYTHON_ABIS="${PYTHON_ABIS}"
+		_python[iterated_PYTHON_ABIS]="${PYTHON_ABIS}"
 	fi
-	for PYTHON_ABI in ${iterated_PYTHON_ABIS}; do
+	for PYTHON_ABI in ${_python[iterated_PYTHON_ABIS]}; do
 		if [[ "${EBUILD_PHASE}" == "test" ]] && _python_check_python_abi_matching --patterns-list "${PYTHON_ABI}" "${PYTHON_TESTS_RESTRICTED_ABIS}"; then
-			if [[ "${quiet}" == "0" ]]; then
+			if [[ "${_python[quiet]}" == "0" ]]; then
 				echo " ${_GREEN}*${_NORMAL} ${_BLUE}Testing of ${CATEGORY}/${PF} with $(python_get_implementation_and_version) skipped${_NORMAL}"
 			fi
 			continue
@@ -1508,18 +1527,18 @@ python_execute_function() {
 
 		_python_prepare_flags
 
-		if [[ "${quiet}" == "0" ]]; then
-			if [[ -n "${action_message_template}" ]]; then
-				eval "action_message=\"${action_message_template}\""
+		if [[ "${_python[quiet]}" == "0" ]]; then
+			if [[ -n "${_python[action_message_template]}" ]]; then
+				eval "_python[action_message]=\"${_python[action_message_template]}\""
 			else
-				action_message="${action} of ${CATEGORY}/${PF} with $(python_get_implementation_and_version)..."
+				_python[action_message]="${_python[action]} of ${CATEGORY}/${PF} with $(python_get_implementation_and_version)..."
 			fi
-			echo " ${_GREEN}*${_NORMAL} ${_BLUE}${action_message}${_NORMAL}"
+			echo " ${_GREEN}*${_NORMAL} ${_BLUE}${_python[action_message]}${_NORMAL}"
 		fi
 
-		if [[ "${separate_build_dirs}" == "1" ]]; then
-			if [[ -n "${source_dir}" ]]; then
-				export BUILDDIR="${S}/${source_dir}-${PYTHON_ABI}"
+		if [[ "${_python[separate_build_dirs]}" == "1" ]]; then
+			if [[ -n "${_python[source_dir]}" ]]; then
+				export BUILDDIR="${S}/${_python[source_dir]}-${PYTHON_ABI}"
 			else
 				export BUILDDIR="${S}-${PYTHON_ABI}"
 			fi
@@ -1528,30 +1547,30 @@ python_execute_function() {
 			export BUILDDIR="${S}"
 		fi
 
-		previous_directory="$(pwd)"
-		previous_directory_stack="$(dirs -p)"
-		previous_directory_stack_length="$(dirs -p | wc -l)"
+		_python[previous_directory]="$(pwd)"
+		_python[previous_directory_stack]="$(dirs -p)"
+		_python[previous_directory_stack_length]="$(dirs -p | wc -l)"
 
 		if ! has "${EAPI}" 0 1 2 3 && has "${PYTHON_ABI}" ${FAILURE_TOLERANT_PYTHON_ABIS}; then
-			EPYTHON="$(PYTHON)" nonfatal "${function}" "$@"
+			EPYTHON="$(PYTHON)" nonfatal "${_python[function]}" "$@"
 		else
-			EPYTHON="$(PYTHON)" "${function}" "$@"
+			EPYTHON="$(PYTHON)" "${_python[function]}" "$@"
 		fi
 
-		return_code="$?"
+		_python[exit_status]="$?"
 
 		_python_restore_flags
 
-		if [[ "${return_code}" -ne 0 ]]; then
-			if [[ -n "${failure_message_template}" ]]; then
-				eval "failure_message=\"${failure_message_template}\""
+		if [[ "${_python[exit_status]}" -ne 0 ]]; then
+			if [[ -n "${_python[failure_message_template]}" ]]; then
+				eval "_python[failure_message]=\"${_python[failure_message_template]}\""
 			else
-				failure_message="${action} failed with $(python_get_implementation_and_version) in ${function}() function"
+				_python[failure_message]="${_python[action]} failed with $(python_get_implementation_and_version) in ${_python[function]}() function"
 			fi
 
-			if [[ "${nonfatal}" == "1" ]]; then
-				if [[ "${quiet}" == "0" ]]; then
-					ewarn "${failure_message}"
+			if [[ "${_python[nonfatal]}" == "1" ]]; then
+				if [[ "${_python[quiet]}" == "0" ]]; then
+					ewarn "${_python[failure_message]}"
 				fi
 			elif [[ "${final_ABI}" == "0" ]] && has "${PYTHON_ABI}" ${FAILURE_TOLERANT_PYTHON_ABIS}; then
 				if [[ "${EBUILD_PHASE}" != "test" ]] || ! has test-fail-continue ${FEATURES}; then
@@ -1561,24 +1580,24 @@ python_execute_function() {
 					done
 					export PYTHON_ABIS="${enabled_PYTHON_ABIS}"
 				fi
-				if [[ "${quiet}" == "0" ]]; then
-					ewarn "${failure_message}"
+				if [[ "${_python[quiet]}" == "0" ]]; then
+					ewarn "${_python[failure_message]}"
 				fi
 				if [[ -z "${PYTHON_ABIS}" ]]; then
-					die "${function}() function failed with all enabled Python ABIs"
+					die "${_python[function]}() function failed with all enabled Python ABIs"
 				fi
 			else
-				die "${failure_message}"
+				die "${_python[failure_message]}"
 			fi
 		fi
 
 		# Ensure that directory stack has not been decreased.
-		if [[ "$(dirs -p | wc -l)" -lt "${previous_directory_stack_length}" ]]; then
+		if [[ "$(dirs -p | wc -l)" -lt "${_python[previous_directory_stack_length]}" ]]; then
 			die "Directory stack decreased illegally"
 		fi
 
 		# Avoid side effects of earlier returning from the specified function.
-		while [[ "$(dirs -p | wc -l)" -gt "${previous_directory_stack_length}" ]]; do
+		while [[ "$(dirs -p | wc -l)" -gt "${_python[previous_directory_stack_length]}" ]]; do
 			popd > /dev/null || die "popd failed"
 		done
 
@@ -1588,18 +1607,18 @@ python_execute_function() {
 		# potential using of 'cd' to change current directory. Restoration of previous
 		# directory allows to safely use 'cd' to change current directory in the
 		# specified function without changing it back to original directory.
-		cd "${previous_directory}"
-		if [[ "$(dirs -p)" != "${previous_directory_stack}" ]]; then
+		cd "${_python[previous_directory]}"
+		if [[ "$(dirs -p)" != "${_python[previous_directory_stack]}" ]]; then
 			die "Directory stack changed illegally"
 		fi
 
-		if [[ "${separate_build_dirs}" == "1" ]]; then
+		if [[ "${_python[separate_build_dirs]}" == "1" ]]; then
 			popd > /dev/null || die "popd failed"
 		fi
 		unset BUILDDIR
 	done
 
-	if [[ "${default_function}" == "1" ]]; then
+	if [[ "${_python[default_function]}" == "1" ]]; then
 		unset -f python_default_function
 	fi
 }
@@ -3249,7 +3268,7 @@ python_mod_optimize() {
 
 	if ! has "${EAPI:-0}" 0 1 2 || _python_package_supporting_installation_for_multiple_python_abis || _python_implementation || [[ "${CATEGORY}/${PN}" == "sys-apps/portage" ]]; then
 		# PYTHON_ABI variable cannot be local in packages not supporting installation for multiple Python ABIs.
-		local allow_evaluated_non_sitedir_paths="0" dir dirs=() evaluated_dirs=() evaluated_files=() file files=() iterated_PYTHON_ABIS options=() other_dirs=() other_files=() previous_PYTHON_ABI="${PYTHON_ABI}" return_code root site_packages_dirs=() site_packages_files=() stderr stderr_line
+		local allow_evaluated_non_sitedir_paths="0" dir dirs=() evaluated_dirs=() evaluated_files=() exit_status file files=() iterated_PYTHON_ABIS options=() other_dirs=() other_files=() previous_PYTHON_ABI="${PYTHON_ABI}" root site_packages_dirs=() site_packages_files=() stderr stderr_line
 
 		if _python_package_supporting_installation_for_multiple_python_abis; then
 			if has "${EAPI:-0}" 0 1 2 3 && [[ -z "${PYTHON_ABIS}" ]]; then
@@ -3353,7 +3372,7 @@ python_mod_optimize() {
 
 		for PYTHON_ABI in ${iterated_PYTHON_ABIS}; do
 			if ((${#site_packages_dirs[@]})) || ((${#site_packages_files[@]})) || ((${#evaluated_dirs[@]})) || ((${#evaluated_files[@]})); then
-				return_code="0"
+				exit_status="0"
 				stderr=""
 				ebegin "Compilation and optimization of Python modules for $(python_get_implementation_and_version)"
 				if ((${#site_packages_dirs[@]})) || ((${#evaluated_dirs[@]})); then
@@ -3363,9 +3382,9 @@ python_mod_optimize() {
 					for dir in "${evaluated_dirs[@]}"; do
 						eval "dirs+=(\"\${root}${dir}\")"
 					done
-					stderr+="${stderr:+$'\n'}$("$(PYTHON)" -m compileall "${options[@]}" "${dirs[@]}" 2>&1)" || return_code="1"
+					stderr+="${stderr:+$'\n'}$("$(PYTHON)" -m compileall "${options[@]}" "${dirs[@]}" 2>&1)" || exit_status="1"
 					if ! has "$(_python_get_implementation "${PYTHON_ABI}")" Jython PyPy; then
-						"$(PYTHON)" -O -m compileall "${options[@]}" "${dirs[@]}" &> /dev/null || return_code="1"
+						"$(PYTHON)" -O -m compileall "${options[@]}" "${dirs[@]}" &> /dev/null || exit_status="1"
 					fi
 					_python_clean_compiled_modules "${dirs[@]}"
 				fi
@@ -3376,13 +3395,13 @@ python_mod_optimize() {
 					for file in "${evaluated_files[@]}"; do
 						eval "files+=(\"\${root}${file}\")"
 					done
-					stderr+="${stderr:+$'\n'}$("$(PYTHON)" -m py_compile "${files[@]}" 2>&1)" || return_code="1"
+					stderr+="${stderr:+$'\n'}$("$(PYTHON)" -m py_compile "${files[@]}" 2>&1)" || exit_status="1"
 					if ! has "$(_python_get_implementation "${PYTHON_ABI}")" Jython PyPy; then
-						"$(PYTHON)" -O -m py_compile "${files[@]}" &> /dev/null || return_code="1"
+						"$(PYTHON)" -O -m py_compile "${files[@]}" &> /dev/null || exit_status="1"
 					fi
 					_python_clean_compiled_modules "${files[@]}"
 				fi
-				eend "${return_code}"
+				eend "${exit_status}"
 				if [[ -n "${stderr}" ]]; then
 					eerror "Syntax errors / warnings in Python modules for $(python_get_implementation_and_version):" &> /dev/null
 					while read stderr_line; do
@@ -3403,24 +3422,24 @@ python_mod_optimize() {
 		fi
 
 		if ((${#other_dirs[@]})) || ((${#other_files[@]})); then
-			return_code="0"
+			exit_status="0"
 			stderr=""
 			ebegin "Compilation and optimization of Python modules placed outside of site-packages directories for $(python_get_implementation_and_version)"
 			if ((${#other_dirs[@]})); then
-				stderr+="${stderr:+$'\n'}$("$(PYTHON ${PYTHON_ABI})" -m compileall "${options[@]}" "${other_dirs[@]}" 2>&1)" || return_code="1"
+				stderr+="${stderr:+$'\n'}$("$(PYTHON ${PYTHON_ABI})" -m compileall "${options[@]}" "${other_dirs[@]}" 2>&1)" || exit_status="1"
 				if ! has "$(_python_get_implementation "${PYTHON_ABI}")" Jython PyPy; then
-					"$(PYTHON ${PYTHON_ABI})" -O -m compileall "${options[@]}" "${other_dirs[@]}" &> /dev/null || return_code="1"
+					"$(PYTHON ${PYTHON_ABI})" -O -m compileall "${options[@]}" "${other_dirs[@]}" &> /dev/null || exit_status="1"
 				fi
 				_python_clean_compiled_modules "${other_dirs[@]}"
 			fi
 			if ((${#other_files[@]})); then
-				stderr+="${stderr:+$'\n'}$("$(PYTHON ${PYTHON_ABI})" -m py_compile "${other_files[@]}" 2>&1)" || return_code="1"
+				stderr+="${stderr:+$'\n'}$("$(PYTHON ${PYTHON_ABI})" -m py_compile "${other_files[@]}" 2>&1)" || exit_status="1"
 				if ! has "$(_python_get_implementation "${PYTHON_ABI}")" Jython PyPy; then
-					"$(PYTHON ${PYTHON_ABI})" -O -m py_compile "${other_files[@]}" &> /dev/null || return_code="1"
+					"$(PYTHON ${PYTHON_ABI})" -O -m py_compile "${other_files[@]}" &> /dev/null || exit_status="1"
 				fi
 				_python_clean_compiled_modules "${other_files[@]}"
 			fi
-			eend "${return_code}"
+			eend "${exit_status}"
 			if [[ -n "${stderr}" ]]; then
 				eerror "Syntax errors / warnings in Python modules placed outside of site-packages directories for $(python_get_implementation_and_version):" &> /dev/null
 				while read stderr_line; do
