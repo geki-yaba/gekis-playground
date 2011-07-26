@@ -120,12 +120,12 @@ done
 #		dev-java/saxon:9
 #		dev-db/hsqldb
 #	mono? ( dev-lang/mono )
-#	graphite? ( media-libs/graphite2 )
 CDEPEND="${SDEPEND}
 	cups? ( net-print/cups )
 	dbus? ( dev-libs/dbus-glib )
 	eds? ( gnome-extra/evolution-data-server )
 	gnome? ( gnome-base/gconf:2 )
+	graphite? ( media-gfx/graphite2 )
 	gstreamer? ( media-libs/gstreamer
 		media-libs/gst-plugins-base )
 	gtk? ( x11-libs/gtk+:2 )
@@ -387,7 +387,7 @@ libreoffice_src_prepare() {
 	echo "$(use_enable cups)" >> ${config}
 	echo "$(use_enable eds evolution2)" >> ${config}
 	echo "$(use_enable graphite)" >> ${config}
-#	echo "$(use_with graphite system-graphite)" >> ${config}
+	echo "$(use_with graphite system-graphite)" >> ${config}
 	echo "$(use_enable ldap)" >> ${config}
 	echo "$(use_with ldap openldap)" >> ${config}
 	echo "$(use_with odbc system-odbc)" >> ${config}
