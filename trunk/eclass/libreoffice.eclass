@@ -41,8 +41,8 @@ LICENSE="LGPL-3"
 RESTRICT="binchecks mirror"
 
 IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
-junit kde languagetool ldap mysql nsplugin odbc odk offlinehelp opengl python
-reportbuilder templates webdav wiki"
+junit kde languagetool ldap mysql nsplugin odbc odk offlinehelp opengl +python
+reportbuilder templates +vba webdav wiki"
 # mono, postgres - system only diff available - no chance to choose! :(
 
 # available languages
@@ -370,6 +370,7 @@ libreoffice_src_prepare() {
 	echo "$(use_enable dbus)" >> ${config}
 	echo "$(use_enable debug symbols)" >> ${config}
 	echo "$(use_with offlinehelp helppack-integration)" >> ${config}
+	echo "$(use_enable vba)" >> ${config}
 	use jemalloc && echo "--with-alloc=jemalloc" >> ${config}
 
 	# system
