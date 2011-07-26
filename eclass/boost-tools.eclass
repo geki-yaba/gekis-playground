@@ -48,11 +48,10 @@ boost-tools_src_configure() {
 }
 
 boost-tools_src_compile() {
-	local cmd
 	local options="$(_boost_options)"
 
 	cd "${S}/tools"
-	cmd="${BJAM} ${jobs} -q -d+2 gentoorelease ${options}"
+	local cmd="${BJAM} ${jobs} -q -d+2 gentoorelease ${options}"
 	_boost_execute "${cmd}" || die "build of tools failed"
 }
 
@@ -100,7 +99,7 @@ boost-tools_src_install() {
 	doins -r share/boostbook
 
 	# Append version postfix for slotting
-	mv "${ED}/usr/share/boostbook" "${D}/usr/share/boostbook-${MAJOR_PV}" || die
+	mv "${ED}/usr/share/boostbook" "${ED}/usr/share/boostbook-${MAJOR_PV}" || die
 }
 
 boost-tools_src_test() {
