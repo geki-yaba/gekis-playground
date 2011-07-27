@@ -201,6 +201,7 @@ DEPEND="${CDEPEND}
 	sys-devel/bison
 	sys-devel/flex
 	x11-libs/libXrender
+	x11-proto/randrproto
 	x11-proto/xextproto
 	x11-proto/xineramaproto
 	x11-proto/xproto"
