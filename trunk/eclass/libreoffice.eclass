@@ -412,6 +412,7 @@ libreoffice_src_prepare() {
 	echo "$(use_enable gtk gio)" >> ${config}
 	echo "$(use_enable gnome lockdown)" >> ${config}
 	echo "$(use_enable gnome gconf)" >> ${config}
+	echo "$(use_enable gnome systray)" >> ${config}
 	echo "$(use_enable gstreamer)" >> ${config}
 
 	# java
