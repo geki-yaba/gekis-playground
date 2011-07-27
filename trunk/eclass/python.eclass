@@ -1497,7 +1497,7 @@ python_execute_function() {
 		die "${FUNCNAME}(): Invalid call stack"
 	fi
 
-	if [[ "${quiet}" == "0" ]]; then
+	if [[ "${_python[quiet]}" == "0" ]]; then
 		[[ "${EBUILD_PHASE}" == "setup" ]] && _python[action]="Setting up"
 		[[ "${EBUILD_PHASE}" == "unpack" ]] && _python[action]="Unpacking"
 		[[ "${EBUILD_PHASE}" == "prepare" ]] && _python[action]="Preparation"
@@ -1572,7 +1572,7 @@ python_execute_function() {
 				if [[ "${_python[quiet]}" == "0" ]]; then
 					ewarn "${_python[failure_message]}"
 				fi
-			elif [[ "${final_ABI}" == "0" ]] && has "${PYTHON_ABI}" ${FAILURE_TOLERANT_PYTHON_ABIS}; then
+			elif [[ "${_python[final_ABI]}" == "0" ]] && has "${PYTHON_ABI}" ${FAILURE_TOLERANT_PYTHON_ABIS}; then
 				if [[ "${EBUILD_PHASE}" != "test" ]] || ! has test-fail-continue ${FEATURES}; then
 					local enabled_PYTHON_ABIS= other_PYTHON_ABI
 					for other_PYTHON_ABI in ${PYTHON_ABIS}; do
