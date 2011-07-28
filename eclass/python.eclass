@@ -679,10 +679,10 @@ python_abi_depend() {
 
 			if [[ "${#USE_flags[@]}" -eq 0 ]]; then
 				ewarn "'${EBUILD}':"
-				ewarn "${FUNCNAME}(): Python ABI patterns list '${excluded_ABIs}' excludes all locally supported Python ABIs"
+				ewarn "${FUNCNAME}(): Python ABIs patterns list '${excluded_ABIs}' excludes all locally supported Python ABIs"
 			elif [[ "${#USE_flags[@]}" -eq "${#_PYTHON_LOCALLY_SUPPORTED_ABIS[@]}" ]]; then
 				ewarn "'${EBUILD}':"
-				ewarn "${FUNCNAME}(): Python ABI patterns list '${excluded_ABIs}' excludes no locally supported Python ABIs"
+				ewarn "${FUNCNAME}(): Python ABIs patterns list '${excluded_ABIs}' excludes no locally supported Python ABIs"
 			fi
 		elif [[ "${include_ABIs}" == "1" ]]; then
 			for PYTHON_ABI in "${_PYTHON_LOCALLY_SUPPORTED_ABIS[@]}"; do
@@ -693,10 +693,10 @@ python_abi_depend() {
 
 			if [[ "${#USE_flags[@]}" -eq 0 ]]; then
 				ewarn "'${EBUILD}':"
-				ewarn "${FUNCNAME}(): Python ABI patterns list '${included_ABIs}' includes no locally supported Python ABIs"
+				ewarn "${FUNCNAME}(): Python ABIs patterns list '${included_ABIs}' includes no locally supported Python ABIs"
 			elif [[ "${#USE_flags[@]}" -eq "${#_PYTHON_LOCALLY_SUPPORTED_ABIS[@]}" ]]; then
 				ewarn "'${EBUILD}':"
-				ewarn "${FUNCNAME}(): Python ABI patterns list '${included_ABIs}' includes all locally supported Python ABIs"
+				ewarn "${FUNCNAME}(): Python ABIs patterns list '${included_ABIs}' includes all locally supported Python ABIs"
 			fi
 		else
 			die "${FUNCNAME}(): Internal error"
@@ -1103,12 +1103,12 @@ fi
 
 # @ECLASS-VARIABLE: PYTHON_RESTRICTED_ABIS
 # @DESCRIPTION:
-# Space-separated list of Python ABI patterns. Support for Python ABIs matching any Python ABI
+# Space-separated list of Python ABIs patterns. Support for Python ABIs matching any Python ABIs
 # patterns specified in this list is disabled.
 
 # @ECLASS-VARIABLE: PYTHON_TESTS_RESTRICTED_ABIS
 # @DESCRIPTION:
-# Space-separated list of Python ABI patterns. Testing in Python ABIs matching any Python ABI
+# Space-separated list of Python ABIs patterns. Testing with Python ABIs matching any Python ABIs
 # patterns specified in this list is skipped.
 
 # @ECLASS-VARIABLE: PYTHON_EXPORT_PHASE_FUNCTIONS

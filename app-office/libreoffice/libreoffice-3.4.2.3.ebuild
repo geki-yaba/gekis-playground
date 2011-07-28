@@ -2,9 +2,6 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-# dev uri
-LIBRE_URI="http://dev-builds.libreoffice.org/pre-releases/src"
-
 inherit libreoffice
 
 # keywords

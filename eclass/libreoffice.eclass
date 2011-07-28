@@ -24,7 +24,8 @@ KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
 inherit autotools bash-completion boost-utils check-reqs db-use eutils \
-	flag-o-matic java-pkg-opt-2 kde4-base multilib pax-utils python versionator
+	flag-o-matic java-pkg-opt-2 kde4-base multilib pax-utils python versionator \
+	nsplugins
 # inherit mono
 
 # git-2 just hangs after first unpack?!
@@ -40,9 +41,9 @@ SLOT="0"
 LICENSE="LGPL-3"
 RESTRICT="binchecks mirror"
 
-IUSE="cups custom-cflags dbus debug eds gnome graphite gstreamer gtk jemalloc
-junit kde languagetool ldap mysql nsplugin odbc odk offlinehelp opengl +python
-reportbuilder templates +vba webdav wiki"
+IUSE="+branding cups custom-cflags dbus debug eds gnome graphite gstreamer gtk
+jemalloc junit kde languagetool ldap mysql nsplugin odbc odk offlinehelp opengl
++python reportbuilder templates +vba webdav wiki"
 # mono, postgres - system only diff available - no chance to choose! :(
 
 # available languages
@@ -60,9 +61,12 @@ done
 MY_PV="$(get_version_component_range 1-2)"
 
 # paths
-GO_URI="http://download.go-oo.org"
 LIBRE_URI="${LIBRE_URI:="http://download.documentfoundation.org/libreoffice/src"}"
 EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
+BRAND_URI="http://dev.gentooexperimental.org/~scarabeus"
+
+# branding
+BRAND_SRC="${PN}-branding-gentoo-0.2.tar.xz"
 
 # available templates
 # - en_* => en_US templates for simplicity; fix:
@@ -78,8 +82,8 @@ TDEPEND+=" linguas_fr? ( ${EXT_URI}/a53080dc876edcddb26eb4c3c7537469-Sun-ODF-Tem
 TDEPEND+=" linguas_hu? ( ${EXT_URI}/09ec2dac030e1dcd5ef7fa1692691dc0-Sun-ODF-Template-Pack-hu_1.0.0.oxt )"
 TDEPEND+=" linguas_it? ( ${EXT_URI}/b33775feda3bcf823cad7ac361fd49a6-Sun-ODF-Template-Pack-it_1.0.0.oxt )"
 
-#	mono? ( ${GO_URI}/DEV300/ooo-cli-prebuilt-${MY_PV}.tar.bz2 )
-SRC_URI="templates? ( ${TDEPEND} )"
+SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )
+	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
 MODULES="artwork base calc components extensions extras filters help impress
@@ -308,6 +312,12 @@ libreoffice_src_unpack() {
 	# link source into tree
 	ln -sf "${clone}"/*/* "${S}"
 
+	# branding
+	if use branding; then
+		cd "${S}"/src
+		unpack "${BRAND_SRC}"
+	fi
+
 	# copy extension templates; o what fun ...
 	if use templates; then
 		local dest="${S}/extras/source/extensions"
@@ -336,7 +346,7 @@ libreoffice_src_prepare() {
 	epatch_user
 
 	# disable avx for bridges
-	sed -e "s:^CFLAGSCXX.*:\0 -mo-avx:" \
+	sed -e "s:^CFLAGSCXX.*:\0 -mno-avx:" \
 		-i "${S}"/bridges/source/cpp_uno/*/makefile.mk \
 		|| die
 
@@ -344,6 +354,10 @@ libreoffice_src_prepare() {
 	sed -e "s:.*printeradmin:#\0:" \
 		-i "${S}"/sysui/desktop/share/create_tree.sh \
 		|| die
+
+	# honour linker hash-style
+	sed -r -e "s:(hash-style)=both:\1=\$(WITH_LINKER_HASH_STYLE):" \
+		-i "${S}"/solenv/gbuild/platform/unxgcc.mk
 
 	# create distro config
 	local config="${S}/distro-configs/GentooUnstable.conf"
@@ -362,6 +376,8 @@ libreoffice_src_prepare() {
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
 	echo "--with-lang=${LINGUAS_OOO}" >> ${config}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
+	use branding && echo "--with-about-bitmap=${S}/src/branding-about.png" >> ${config}
+	use branding && echo "--with-intro-bitmap=${S}/src/branding-intro.png" >> ${config}
 	echo "$(use_enable gtk)" >> ${config}
 	echo "$(use_enable kde kde4)" >> ${config}
 	echo "$(use_enable !debug strip-solver)" >> ${config}
@@ -412,7 +428,7 @@ libreoffice_src_prepare() {
 	echo "$(use_enable gtk gio)" >> ${config}
 	echo "$(use_enable gnome lockdown)" >> ${config}
 	echo "$(use_enable gnome gconf)" >> ${config}
-	echo "$(use_enable gnome systray)" >> ${config}
+	echo "$(use_enable gtk systray)" >> ${config}
 	echo "$(use_enable gstreamer)" >> ${config}
 
 	# java
@@ -529,6 +545,14 @@ libreoffice_src_install() {
 
 	# access
 	use prefix || chown -RP root:0 "${ED}"
+
+	if use branding; then
+		insinto /usr/$(get_libdir)/${PN}/program
+		newins "${S}/src/branding-sofficerc" sofficerc || die
+	fi
+
+	use nsplugin && inst_plugin \
+		/usr/$(get_libdir)/${PN}/program/libnpsoplugin.so
 }
 
 libreoffice_pkg_preinst() {
