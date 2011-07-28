@@ -121,8 +121,8 @@ boost-monolithic_src_configure() {
 	fi
 
 	local jam_options=""
-	use mpi && jam_options+="using mpi ;\n\n"
-	use python && jam_options+="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;\n\n"
+	use mpi && jam_options+="using mpi ;"
+	use python && jam_options+="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
 
 	einfo "Writing new user-config.jam"
 	cat > "${S}/user-config.jam" << __EOF__
@@ -132,8 +132,7 @@ variant gentoodebug : debug : <optimization>none ;
 
 using ${compiler} : ${compilerVersion} : ${compilerExecutable} : <cxxflags>"${CXXFLAGS}" <linkflags>"${LDFLAGS}" ;
 
-${jam_options}
-
+${jam_options//using/\nusing}
 __EOF__
 
 	# Maintainer information:

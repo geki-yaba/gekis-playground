@@ -1,0 +1,51 @@
+--- solenv/gbuild/LinkTarget.mk.orig	2011-07-28 16:22:01.192783891 +0200
++++ solenv/gbuild/LinkTarget.mk	2011-07-28 16:52:24.848874618 +0200
+@@ -400,7 +400,7 @@
+ $(call gb_LinkTarget_get_target,$(1)) : PCHOBJS :=
+ $(call gb_LinkTarget_get_headers_target,$(1)) \
+ $(call gb_LinkTarget_get_target,$(1)) : PDBFILE :=
+-$(call gb_LinkTarget_get_target,$(1)) : EXTRAOBJECTLISTS := 
++#$(call gb_LinkTarget_get_target,$(1)) : EXTRAOBJECTLISTS := 
+ 
+ ifeq ($(gb_FULLDEPS),$(true))
+ ifneq ($(wildcard $(call gb_LinkTarget_get_dep_target,$(1))),)
+@@ -593,7 +593,7 @@
+ define gb_LinkTarget_add_linktarget_objects
+ $(call gb_LinkTarget_get_target,$(1)) : $(foreach linktarget,$(2),$(call gb_LinkTarget_get_target,$(linktarget)))
+ $(info gb_LinkTarget_add_linktarget_objects,$(1),$(2))
+-$(call gb_LinkTarget_get_target,$(1)) : EXTRAOBJECTLISTS += $(foreach linktarget,$(2),$(call gb_LinkTarget_get_objects_list,$(linktarget)))
++$(call gb_LinkTarget_get_target,$(1)) : $(foreach linktarget,$(2),$(eval EXTRAOBJECTLISTS += $(call gb_LinkTarget_get_objects_list,$(linktarget))))
+ 
+ endef
+ 
+--- sfx2/Library_qstart.mk.orig	2011-07-28 12:34:37.896091722 +0200
++++ sfx2/Library_qstart.mk	2011-07-28 16:13:04.096755400 +0200
+@@ -49,6 +49,10 @@
+     $$(DEFS) \
+     -DENABLE_SYSTRAY_GTK \
+ ))
++
++LIB_QSTART_OBJLIST := $(gb_Library_SYSPRE)qstart_gtk$(gb_Library_DLLPOSTFIX).so
++$(eval $(shell echo "$(GTK_LIBS)" > $(gb_Library_DLLDIR)/$(LIB_QSTART_OBJLIST).objectlist))
++$(eval $(call gb_LinkTarget_add_linktarget_objects,qstart_gtk,Library/$(LIB_QSTART_OBJLIST)))
+ endif
+ 
+ $(eval $(call gb_Library_set_cflags,qstart_gtk,\
+@@ -58,7 +62,6 @@
+ 
+ $(eval $(call gb_Library_set_ldflags,qstart_gtk,\
+     $$(LDFLAGS) \
+-    $(GTK_LIBS) \
+ ))
+ 
+ $(eval $(call gb_Library_add_linked_libs,qstart_gtk,\
+--- sfx2/CppunitTest_sfx2_metadatable.mk.orig	2011-07-28 16:53:56.948881338 +0200
++++ sfx2/CppunitTest_sfx2_metadatable.mk	2011-07-28 16:54:15.476882327 +0200
+@@ -34,6 +34,7 @@
+ $(eval $(call gb_CppunitTest_add_linked_libs,sfx2_metadatable, \
+     sal \
+     sfx \
++    svt \
+     $(gb_STDLIBS) \
+ ))
+ 
