@@ -9,9 +9,14 @@
 
 #
 # TODO: fix eclass/git-2
-#		>=gnome-base/librsvg-2.32.1:2 for 3.5
-#		--enable-librsvg=system
 #		proper documentation of eclass like portage/eclass/xorg-2.eclass
+#
+
+# 3.5
+# TODO:	>=gnome-base/librsvg-2.32.1:2
+#		--enable-librsvg=system
+#
+# superfluous diff: as-needed, gbuild, ldflags, translate_toolkit-solenv
 #
 
 EAPI="4"

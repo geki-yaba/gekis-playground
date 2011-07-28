@@ -132,7 +132,7 @@ variant gentoodebug : debug : <optimization>none ;
 
 using ${compiler} : ${compilerVersion} : ${compilerExecutable} : <cxxflags>"${CXXFLAGS}" <linkflags>"${LDFLAGS}" ;
 
-${jam_options//using/\nusing}
+$(sed -e "s:;:;\n:g" <<< ${jam_options})
 __EOF__
 
 	# Maintainer information:
