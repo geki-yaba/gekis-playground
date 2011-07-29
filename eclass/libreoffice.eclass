@@ -528,6 +528,8 @@ libreoffice_src_configure() {
 	export ARCH_FLAGS="${CXXFLAGS}"
 
 	# linker flags
+	# FIXME: as-needed seems to be fixed in 3.5?!
+	append-ldflags "-Wl,--no-as-needed"
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
 	export LINKFLAGSDEFS="-Wl,-z,defs -L$(boost-utils_get_library_path)"
 
