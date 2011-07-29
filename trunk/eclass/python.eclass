@@ -1111,6 +1111,11 @@ fi
 # Space-separated list of Python ABIs patterns. Testing with Python ABIs matching any Python ABIs
 # patterns specified in this list is skipped.
 
+# @ECLASS-VARIABLE: PYTHON_TESTS_FAILURES_TOLERANT_ABIS
+# @DESCRIPTION:
+# Space-separated list of Python ABIs patterns. Failures of tests with Python ABIs matching any
+# Python ABIs patterns specified in this list are ignored.
+
 # @ECLASS-VARIABLE: PYTHON_EXPORT_PHASE_FUNCTIONS
 # @DESCRIPTION:
 # Set this to export phase functions for the following ebuild phases:
@@ -1551,7 +1556,7 @@ python_execute_function() {
 		_python[previous_directory_stack]="$(dirs -p)"
 		_python[previous_directory_stack_length]="$(dirs -p | wc -l)"
 
-		if ! has "${EAPI}" 0 1 2 3 && has "${PYTHON_ABI}" ${FAILURE_TOLERANT_PYTHON_ABIS}; then
+		if [[ "${EBUILD_PHASE}" == "test" ]] && ! has "${EAPI}" 0 1 2 3 && _python_check_python_abi_matching --patterns-list "${PYTHON_ABI}" "${PYTHON_TESTS_FAILURES_TOLERANT_ABIS}"; then
 			EPYTHON="$(PYTHON)" nonfatal "${_python[function]}" "$@"
 		else
 			EPYTHON="$(PYTHON)" "${_python[function]}" "$@"
@@ -1572,19 +1577,9 @@ python_execute_function() {
 				if [[ "${_python[quiet]}" == "0" ]]; then
 					ewarn "${_python[failure_message]}"
 				fi
-			elif [[ "${_python[final_ABI]}" == "0" ]] && has "${PYTHON_ABI}" ${FAILURE_TOLERANT_PYTHON_ABIS}; then
-				if [[ "${EBUILD_PHASE}" != "test" ]] || ! has test-fail-continue ${FEATURES}; then
-					local enabled_PYTHON_ABIS= other_PYTHON_ABI
-					for other_PYTHON_ABI in ${PYTHON_ABIS}; do
-						[[ "${other_PYTHON_ABI}" != "${PYTHON_ABI}" ]] && enabled_PYTHON_ABIS+="${enabled_PYTHON_ABIS:+ }${other_PYTHON_ABI}"
-					done
-					export PYTHON_ABIS="${enabled_PYTHON_ABIS}"
-				fi
+			elif [[ "${_python[final_ABI]}" == "0" && "${EBUILD_PHASE}" == "test" ]] && _python_check_python_abi_matching --patterns-list "${PYTHON_ABI}" "${PYTHON_TESTS_FAILURES_TOLERANT_ABIS}"; then
 				if [[ "${_python[quiet]}" == "0" ]]; then
 					ewarn "${_python[failure_message]}"
-				fi
-				if [[ -z "${PYTHON_ABIS}" ]]; then
-					die "${_python[function]}() function failed with all enabled Python ABIs"
 				fi
 			else
 				die "${_python[failure_message]}"
