@@ -259,25 +259,25 @@ libreoffice_pkg_setup() {
 
 	# lang conf (i103809)
 	if [ -z "${LINGUAS}" ] || [[ ${LINGUAS} == en ]]; then
-		LINGUAS_OOO=
+		lo_languages=
 	# but if localized we want en-US for broken code and sdk
 	# case: en lingua already set
 	elif [[ ${LINGUAS} =~ en( |$) ]]; then
-		LINGUAS_OOO="$(echo ${LINGUAS} | sed -e 's/\ben\b/en_US/;s/_/-/g')"
+		lo_languages="$(sed -e 's/\ben\b/en_US/;s/_/-/g' <<< ${LINGUAS})"
 	# case: en_US lingua not set, add
 	else
-		LINGUAS_OOO="en-US ${LINGUAS//_/-}"
+		lo_languages="en-US ${LINGUAS//_/-}"
 	fi
 
 	# kde
 	use kde && kde4-base_pkg_setup
 
 	# python
-	local lo_pyver=2
+	local lo_python_version=2
 	# python 3 if skipping translate-toolkit
-	[ -z "${LINGUAS}" ] && lo_pyver=3
+	[ -z "${LINGUAS}" ] && lo_python_version=3
 
-	python_set_active_version ${lo_pyver}
+	python_set_active_version ${lo_python_version}
 	python_pkg_setup
 }
 
@@ -355,11 +355,13 @@ libreoffice_src_prepare() {
 		-i "${S}"/bridges/source/cpp_uno/*/makefile.mk \
 		|| die
 
+	# FIXME: 3.5 done
 	# disable printeradmin
 	sed -e "s:.*printeradmin:#\0:" \
 		-i "${S}"/sysui/desktop/share/create_tree.sh \
 		|| die
 
+	# FIXME: 3.5 done
 	# honour linker hash-style
 	sed -r -e "s:(hash-style)=both:\1=\$(WITH_LINKER_HASH_STYLE):" \
 		-i "${S}"/solenv/gbuild/platform/unxgcc.mk
@@ -379,13 +381,12 @@ libreoffice_src_prepare() {
 	echo "--docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${config}
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${config}
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
-	echo "--with-lang=${LINGUAS_OOO}" >> ${config}
+	echo "--with-lang=${lo_languages}" >> ${config}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
 	use branding && echo "--with-about-bitmap=${S}/src/branding-about.png" >> ${config}
 	use branding && echo "--with-intro-bitmap=${S}/src/branding-intro.png" >> ${config}
 	echo "$(use_enable gtk)" >> ${config}
 	echo "$(use_enable kde kde4)" >> ${config}
-	echo "$(use_enable !debug strip-solver)" >> ${config}
 #	echo "$(use_enable mono)" >> ${config}
 	echo "$(use_enable odk)" >> ${config}
 	echo "$(use_with java)" >> ${config}
@@ -433,7 +434,7 @@ libreoffice_src_prepare() {
 	echo "$(use_enable gtk gio)" >> ${config}
 	echo "$(use_enable gnome lockdown)" >> ${config}
 	echo "$(use_enable gnome gconf)" >> ${config}
-	echo "$(use_enable gtk systray)" >> ${config}
+	echo "$(use_enable gnome systray)" >> ${config}
 	echo "$(use_enable gstreamer)" >> ${config}
 
 	# java
@@ -538,6 +539,7 @@ libreoffice_src_configure() {
 }
 
 libreoffice_src_compile() {
+	# FIXME: necessary for 3.5?!
 	# no need to download external sources
 	# although we set two configure flags already for this ...
 	touch src.downloaded
