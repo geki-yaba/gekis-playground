@@ -16,25 +16,4 @@ LIBRARIES="date_time filesystem graph graph_parallel iostreams math mpi
 program_options python random regex serialization signals system test thread
 wave"
 
-for library in ${LIBRARIES} ; do
-	IUSE+=" ${library}"
-done
-
-DEPEND="!dev-libs/boost-date_time
-	!dev-libs/boost-filesystem
-	!dev-libs/boost-graph
-	!dev-libs/boost-graph_parallel
-	!dev-libs/boost-iostreams
-	!dev-libs/boost-math
-	!dev-libs/boost-mpi
-	!dev-libs/boost-program_options
-	!dev-libs/boost-python
-	!dev-libs/boost-random
-	!dev-libs/boost-regex
-	!dev-libs/boost-serialization
-	!dev-libs/boost-signals
-	!dev-libs/boost-system
-	!dev-libs/boost-test
-	!dev-libs/boost-thread
-	!dev-libs/boost-wave
-	!dev-util/boost-tools"
+IUSE+=" ${LIBRARIES}"
