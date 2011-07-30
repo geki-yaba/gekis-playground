@@ -15,12 +15,10 @@ SLOT="0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 IUSE="bzip2 debug lzo pch wxwidgets"
 
-BOOST_SLOT="$(boost-utils_get_slot)"
-
 RDEPEND="
 	>=dev-libs/libebml-1.2.0
 	>=media-libs/libmatroska-1.1.0
-	dev-libs/boost:${BOOST_SLOT}[filesystem,regex]
+	dev-libs/boost[filesystem,regex]
 	dev-libs/expat
 	media-libs/flac
 	media-libs/libogg
