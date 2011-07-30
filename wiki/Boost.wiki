@@ -2,8 +2,7 @@
 
 === What the ... happened? ===
 
- * code moved from ebuild to eclasses
- * multiple ebuilds as descriptors for eclasses
+ * code moved from ebuilds to eclasses
  * created tarball for generic diff files
  * no eselect code necessary
  * *not* supported is unversioned libraries in LIBDIR with SLOTing => automagic is evil(tm)
@@ -32,7 +31,7 @@ for f in $(find /usr/lib/ -type f -perm -111 ! -name '*.so*'); do echo $f; ldd $
 
 === What now? ===
 
-Install the respective split packages and/or install _dev-libs/boost_ with its respective useflags!
+Install _dev-libs/boost_ with its respective useflags!
 
 === How to fix packages from Gentoo repository? ===
 
@@ -49,7 +48,7 @@ _... or ..._
 
  * fix configure options in ebuilds like the example of mkvtoolnix:
 
-http://gekis-playground.googlecode.com/files/mkvtoolnix_boost.diff
+http://code.google.com/p/gekis-playground/source/browse/trunk/media-video/mkvtoolnix/mkvtoolnix-4.9.1.ebuild#61
 
 _... or ..._
 
