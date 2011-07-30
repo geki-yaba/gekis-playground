@@ -4,7 +4,7 @@
 
 BOOST_PATCHSET="gentoo-boost-1.47.0-r1.tar.bz2"
 
-inherit boost-monolithic
+inherit boost
 
 DESCRIPTION="boost.org libraries for C++"
 HOMEPAGE="http://www.boost.org/"

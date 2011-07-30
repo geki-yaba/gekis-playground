@@ -44,14 +44,14 @@ REQUIRED_USE="graph_parallel? ( mpi )"
 
 S="${WORKDIR}/${BOOST_P}"
 
-boost-monolithic_pkg_pretend() {
+boost_pkg_pretend() {
 	if use test ; then
 		CHECKREQS_DISK_BUILD="15120"
 		check_reqs
 	fi
 }
 
-boost-monolithic_pkg_setup() {
+boost_pkg_setup() {
 	# use regular expression to read last job count or default to 1 :D
 	jobs="$(sed -r -e "s:.*[-]{1,2}j(obs)?[=]?([0-9]+):\2:" <<< "${MAKEOPTS}")"
 	jobs="-j${jobs:=1}"
@@ -77,7 +77,7 @@ boost-monolithic_pkg_setup() {
 	use python && python_pkg_setup
 }
 
-boost-monolithic_src_prepare() {
+boost_src_prepare() {
 	EPATCH_SUFFIX="diff"
 	EPATCH_FORCE="yes"
 	epatch "${BOOST_PATCHDIR}"
@@ -97,7 +97,7 @@ boost-monolithic_src_prepare() {
 	_boost_fix_jamtest
 }
 
-boost-monolithic_src_configure() {
+boost_src_configure() {
 	local compiler compilerVersion compilerExecutable
 	if [[ ${CHOST} == *-darwin* ]] ; then
 		compiler=darwin
@@ -142,7 +142,7 @@ __EOF__
 	# add "-O0" and override "-O2" set by the user.
 }
 
-boost-monolithic_src_compile() {
+boost_src_compile() {
 	local options="$(_boost_options)"
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
@@ -165,7 +165,7 @@ boost-monolithic_src_compile() {
 	fi
 }
 
-boost-monolithic_src_install() {
+boost_src_install() {
 	local options="$(_boost_options)"
 	local link_opts="$(_boost_link_options)"
 	local library_targets="$(_boost_library_targets)"
@@ -307,7 +307,7 @@ boost-monolithic_src_install() {
 	fi
 }
 
-boost-monolithic_src_test() {
+boost_src_test() {
 	if use test ; then
 		local options="$(_boost_options)"
 
