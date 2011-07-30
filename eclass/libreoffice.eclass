@@ -8,8 +8,7 @@
 #
 
 #
-# TODO: fix eclass/git-2
-#		proper documentation of eclass like portage/eclass/xorg-2.eclass
+# TODO: proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
 # 3.5
@@ -33,8 +32,7 @@ inherit autotools bash-completion boost-utils check-reqs db-use eutils \
 	nsplugins
 # inherit mono
 
-# git-2 just hangs after first unpack?!
-[[ ${PV} == *_pre ]] && inherit git
+[[ ${PV} == *_pre ]] && inherit git-2
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_postrm
 
@@ -215,8 +213,6 @@ DEPEND="${CDEPEND}
 	x11-proto/xineramaproto
 	x11-proto/xproto"
 
-[[ ${PV} == *_pre ]] && DEPEND+=" dev-vcs/git"
-
 REQUIRED_USE="junit? ( java ) languagetool? ( java ) reportbuilder? ( java ) wiki? ( java ) gnome? ( gtk ) nsplugin? ( gtk )"
 
 libreoffice_pkg_pretend() {
@@ -299,8 +295,8 @@ libreoffice_src_unpack() {
 		# clone modules
 		for module in ${MODULES}; do
 			EGIT_PROJECT="${PN}/${module}"
-			EGIT_UNPACK_DIR="${clone}/${module}"
 			EGIT_REPO_URI="${root}/${module}"
+			EGIT_SOURCEDIR="${clone}/${module}"
 			git_src_unpack
 		done
 	else
