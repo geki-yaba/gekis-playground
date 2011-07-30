@@ -2,6 +2,8 @@
 
 === What the ... happened? ===
 
+ * enable boost libraries by useflags!
+
  * code moved from ebuilds to eclasses
  * created tarball for generic diff files
  * no eselect code necessary
