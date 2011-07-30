@@ -16,7 +16,6 @@ KEYWORDS="~amd64 ~ppc ~ppc64 ~x86 ~x86-fbsd"
 IUSE="bzip2 debug lzo pch wxwidgets"
 
 RDEPEND="
-	>=dev-libs/libebml-1.2.0
 	>=media-libs/libmatroska-1.1.0
 	dev-libs/boost[filesystem,regex]
 	dev-libs/expat
@@ -44,12 +43,12 @@ src_prepare() {
 src_configure() {
 	local myconf
 
-	use pch || myconf="${myconf} --disable-precompiled-headers"
+	use pch || myconf+=" --disable-precompiled-headers"
 
 	if use wxwidgets ; then
 		WX_GTK_VER="2.8"
 		need-wxwidgets unicode
-		myconf="${myconf} --with-wx-config=${WX_CONFIG}"
+		myconf+=" --with-wx-config=${WX_CONFIG}"
 	fi
 
 	econf \
