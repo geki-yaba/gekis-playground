@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # parameters
-EOLD=$1
-ENEW=$2
-TYPE=$3
-EREM=$4
+EOLD="${1}"
+ENEW="${2}"
+TYPE="${3}"
+EREM="${4}"
 
 # variables
 ECLASS_DIR=eclass
@@ -12,19 +12,44 @@ ECLASS="${ECLASS_DIR}/libreoffice.eclass"
 LIST="ooo.lst.in"
 TAG=$(basename $ENEW .ebuild)
 
+# types
+[ -z "${TYPE}" ] && TYPE="default"
+
+default_bump()
+{
+	grep -v "ADDONS_SRC" "${EOLD}" > "${ENEW}"
+
+	[ -n "${EREM}" ] && rm -f "${EOLD}"
+}
+
+default_clean() { :; }
+
+svn_bump()
+{
+	if [ -n "${EREM}" ]
+	then
+		svn mv "${EOLD}" "${ENEW}"
+	else
+		svn cp "${EOLD}" "${ENEW}"
+	fi
+	
+	sed /ADDONS_SRC/d -i "${ENEW}"
+}
+
+svn_clean()
+{
+	svn revert "${ENEW}"
+	rm -f "${ENEW}"
+}
+
 # functions
 die()
 {
 	echo "error: ${@}"
 
-	if [ -n ${TYPE} ]
-	then
-		case ${TYPE} in
-			svn) clean_svn
-				;;
-			*)	;;
-		esac
-	fi
+	local type="${TYPE}_clean"
+	type -p ${type}
+	[ ${?} ] || ${type}
 
 	exit 1
 }
@@ -90,24 +115,6 @@ filter_list()
 	return 0
 }
 
-clean_svn()
-{
-	svn revert "${ENEW}"
-	rm -f "${ENEW}"
-}
-
-bump_svn()
-{
-	if [ -n "${EREM}" ]
-	then
-		svn mv "${EOLD}" "${ENEW}"
-	else
-		svn cp "${EOLD}" "${ENEW}"
-	fi
-	
-	sed /ADDONS_SRC/d -i "${ENEW}"
-}
-
 bump_ebuild()
 {
 	[ -f "$ENEW" ] && rm -f "$ENEW"
@@ -116,22 +123,9 @@ bump_ebuild()
 		die "bump_ebuild() - missing parameters: bump_ebuild <old> <new> <list>)"
 	fi
 
-	if [ -n "${TYPE}" ]
-	then
-		case ${TYPE} in
-			svn) bump_svn
-				;;
-			*) help
-				;;
-		esac
-	else
-		grep -v "ADDONS_SRC" $EOLD >$ENEW
-
-		if [ -n "${EREM}" ]
-		then
-			rm -f "${EOLD}"
-		fi
-	fi
+	local type="${TYPE}_bump"
+	type -p ${type}
+	[ ${?} ] || ${type}
 
 	while read LINE
 	do
