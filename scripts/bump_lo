@@ -47,9 +47,9 @@ die()
 {
 	echo "error: ${@}"
 
-	local type="${TYPE}_clean"
-	type -p ${type}
-	[ ${?} ] || ${type}
+	local func="${TYPE}_clean"
+	type -p ${func}
+	[ ${?} ] || ${func}
 
 	exit 1
 }
@@ -123,9 +123,9 @@ bump_ebuild()
 		die "bump_ebuild() - missing parameters: bump_ebuild <old> <new> <list>)"
 	fi
 
-	local type="${TYPE}_bump"
-	type -p ${type}
-	[ ${?} ] || ${type}
+	local func="${TYPE}_bump"
+	type -p ${func}
+	[ ${?} ] || ${func}
 
 	while read LINE
 	do
