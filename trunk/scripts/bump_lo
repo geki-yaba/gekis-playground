@@ -43,13 +43,17 @@ svn_clean()
 }
 
 # functions
+call_function()
+{
+	[[ $(type -t ${1}) == function ]] && ${1} \
+		|| warn "function: ${1}: not found! code left in unknown state"
+}
+
 die()
 {
 	echo "error: ${@}"
 
-	local func="${TYPE}_clean"
-	type -p ${func}
-	[ ${?} ] || ${func}
+	call_function "${TYPE}_clean"
 
 	exit 1
 }
@@ -123,9 +127,7 @@ bump_ebuild()
 		die "bump_ebuild() - missing parameters: bump_ebuild <old> <new> <list>)"
 	fi
 
-	local func="${TYPE}_bump"
-	type -p ${func}
-	[ ${?} ] || ${func}
+	call_function "${TYPE}_bump"
 
 	while read LINE
 	do
