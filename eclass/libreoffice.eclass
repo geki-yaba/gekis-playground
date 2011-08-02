@@ -530,6 +530,10 @@ libreoffice_src_configure() {
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
 	export LINKFLAGSDEFS="-Wl,-z,defs -L$(boost-utils_get_library_path)"
 
+	# qt/kde --- yay
+	use kde && export KDE4DIR="${KDEDIR}"
+	use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
+
 	./autogen.sh --with-distro="GentooUnstable" \
 		|| die "configure failed"
 }
