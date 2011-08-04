@@ -171,7 +171,7 @@ CDEPEND="${SDEPEND}
 	  media-libs/fontconfig
 	  media-libs/freetype:2
 	  media-libs/libpng
-	  media-libs/libwpg:0.2
+	  app-text/libwpg:0.2
 	  media-libs/vigra
 	  net-misc/curl
 	>=sys-libs/db-4.7
@@ -321,6 +321,7 @@ libreoffice_src_unpack() {
 
 	# copy extension templates; o what fun ...
 	if use templates; then
+		local tmplfile tmplname
 		local dest="${S}/extras/source/extensions"
 		mkdir -p "${dest}"
 
@@ -345,11 +346,6 @@ libreoffice_src_prepare() {
 
 	# allow user to apply any additional patches without modifying ebuild
 	epatch_user
-
-	# disable avx for bridges
-	sed -e "s:^CFLAGSCXX.*:\0 -mno-avx:" \
-		-i "${S}"/bridges/source/cpp_uno/*/makefile.mk \
-		|| die
 
 	# FIXME: 3.5 done
 	# disable printeradmin
