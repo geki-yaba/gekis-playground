@@ -13,17 +13,17 @@
 
 EAPI="4"
 
-inherit eutils multilib versionator
+inherit base multilib versionator
 
-EXPORT_FUNCTIONS pkg_pretend src_unpack src_prepare src_configure src_compile src_install
+EXPORT_FUNCTIONS pkg_pretend src_unpack src_configure src_compile src_install
 
-MY_P="boost_$(replace_all_version_separators _)"
-LIB="${PN/boost-}"
-VER="$(get_version_component_range 1-2)"
+BOOST_P="boost_$(replace_all_version_separators _)"
+BOOST_PATCHDIR="${WORKDIR}/patches"
 
-DESCRIPTION="boost.org ${LIB} libraries for C++"
+DESCRIPTION="boost.org header libraries for C++"
 HOMEPAGE="http://www.boost.org/"
-SRC_URI="mirror://sourceforge/boost/${MY_P}.tar.bz2"
+SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
+	http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
 SLOT="0"
@@ -35,7 +35,9 @@ RDEPEND="!app-admin/eselect-boost"
 DEPEND="${RDEPEND}"
 PDEPEND="~dev-libs/boost-${PV}"
 
-S="${WORKDIR}/${MY_P}"
+S="${WORKDIR}/${BOOST_P}"
+
+PATCHES=( "${BOOST_PATCHDIR}/boost-exceptions-5731.diff" )
 
 boost-headers_pkg_pretend() {
 	local err=
@@ -58,13 +60,8 @@ boost-headers_pkg_pretend() {
 }
 
 boost-headers_src_unpack() {
-	tar xjpf "${DISTDIR}/${A}" "${MY_P}/boost"
-}
-
-boost-headers_src_prepare() {
-	if [[ ${PV} < 1.47.0 ]]; then
-		epatch "${FILESDIR}/boost-1.45.0-lambda_bind.patch"
-	fi
+	tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "${BOOST_P}/boost"
+	unpack "${BOOST_PATCHSET}"
 }
 
 boost-headers_src_configure() { :; }
