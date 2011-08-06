@@ -14,6 +14,14 @@
 # 3.5
 # TODO:	>=gnome-base/librsvg-2.32.1:2
 #		--enable-librsvg=system
+#		--enable-python - disabled: no translations!
+#		--with-system-python removed
+#		--disable-gtk3
+#		--enable-cairo => --enable-cairo-canvas
+#		--with-system-libvisio
+#		--with-system-gettext
+#		--with-system-libpng
+#		--enable-release-build: debug build by default, yay! :D
 #
 # superfluous diff: as-needed, gbuild, ldflags, translate_toolkit-solenv
 #
@@ -69,7 +77,7 @@ EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
 BRAND_URI="http://dev.gentooexperimental.org/~scarabeus"
 
 # branding
-BRAND_SRC="${PN}-branding-gentoo-0.2.tar.xz"
+BRAND_SRC="${PN}-branding-gentoo-0.3.tar.xz"
 
 # available templates
 # - en_* => en_US templates for simplicity; fix:
