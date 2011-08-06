@@ -6,8 +6,8 @@ EAPI="4"
 
 inherit alternatives
 
-DESCRIPTION="Microsoft Works format import library"
-HOMEPAGE="http://libwps.sf.net"
+DESCRIPTION="Microsoft Works file word processor format import filter library"
+HOMEPAGE="http://libwps.sourceforge.net/"
 SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
 
 LICENSE="LGPL-2.1"
@@ -24,6 +24,7 @@ src_configure() {
 	econf $(use_with doc docs) \
 		$(use_enable debug) \
 		$(use_enable static-libs static) \
+		--docdir="${EPREFIX%/}/usr/share/doc/${PF}" \
 		--program-suffix=-${SLOT} \
 		--disable-dependency-tracking
 }
@@ -33,6 +34,7 @@ src_install() {
 
 	find "${ED}" -name '*.la' -delete
 }
+
 pkg_postinst() {
 	alternatives_auto_makesym /usr/bin/wps2html "/usr/bin/wps2html-[0-9].[0-9]"
 	alternatives_auto_makesym /usr/bin/wps2text "/usr/bin/wps2text-[0-9].[0-9]"

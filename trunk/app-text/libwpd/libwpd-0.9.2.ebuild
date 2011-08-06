@@ -25,6 +25,7 @@ src_configure() {
 	econf $(use_with doc docs) \
 		$(use_enable debug) \
 		$(use_enable static-libs static) \
+		--docdir="${EPREFIX%/}/usr/share/doc/${PF}" \
 		--program-suffix=-${SLOT} \
 		--disable-dependency-tracking
 }
