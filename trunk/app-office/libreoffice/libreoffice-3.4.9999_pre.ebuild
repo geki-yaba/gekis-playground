@@ -8,10 +8,11 @@ inherit libreoffice
 KEYWORDS=""
 
 # root
-S="${WORKDIR}/bootstrap"
+S="${WORKDIR}/core"
 
 # config
-CONFFILE="3.4.1"
+CONFFILE="3.5"
+EGIT_BRANCH="master"
 
 # addons
 ADDONS_URI="http://dev-www.libreoffice.org/src/"
