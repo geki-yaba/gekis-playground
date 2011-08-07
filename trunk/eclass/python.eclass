@@ -2915,8 +2915,8 @@ _python_test_hook() {
 		die "${FUNCNAME}() requires 1 argument"
 	fi
 
-	if _python_package_supporting_installation_for_multiple_python_abis && [[ "$(type -t "${FUNCNAME[3]}_$1_hook")" == "function" ]]; then
-		"${FUNCNAME[3]}_$1_hook"
+	if _python_package_supporting_installation_for_multiple_python_abis && [[ "$(type -t "${_PYTHON_TEST_FUNCTION}_$1_hook")" == "function" ]]; then
+		"${_PYTHON_TEST_FUNCTION}_$1_hook"
 	fi
 }
 
@@ -2971,7 +2971,7 @@ python_execute_nosetests() {
 
 		eval "evaluated_PYTHONPATH=\"${PYTHONPATH_template}\""
 
-		_python_test_hook pre
+		_PYTHON_TEST_FUNCTION="python_execute_nosetests" _python_test_hook pre
 
 		if [[ -n "${evaluated_PYTHONPATH}" ]]; then
 			echo ${_BOLD}PYTHONPATH="${evaluated_PYTHONPATH}" nosetests --verbosity="${PYTHON_TEST_VERBOSITY}" "${arguments[@]}"${_NORMAL}
@@ -2981,7 +2981,7 @@ python_execute_nosetests() {
 			nosetests --verbosity="${PYTHON_TEST_VERBOSITY}" "${arguments[@]}" || return "$?"
 		fi
 
-		_python_test_hook post
+		_PYTHON_TEST_FUNCTION="python_execute_nosetests" _python_test_hook post
 	}
 	if _python_package_supporting_installation_for_multiple_python_abis; then
 		python_execute_function ${separate_build_dirs:+-s} python_test_function "$@"
@@ -3046,7 +3046,7 @@ python_execute_py.test() {
 
 		eval "evaluated_PYTHONPATH=\"${PYTHONPATH_template}\""
 
-		_python_test_hook pre
+		_PYTHON_TEST_FUNCTION="python_execute_py.test" _python_test_hook pre
 
 		if [[ -n "${evaluated_PYTHONPATH}" ]]; then
 			echo ${_BOLD}PYTHONPATH="${evaluated_PYTHONPATH}" py.test $([[ "${PYTHON_TEST_VERBOSITY}" -ge 2 ]] && echo -v) "${arguments[@]}"${_NORMAL}
@@ -3056,7 +3056,7 @@ python_execute_py.test() {
 			py.test $([[ "${PYTHON_TEST_VERBOSITY}" -gt 1 ]] && echo -v) "${arguments[@]}" || return "$?"
 		fi
 
-		_python_test_hook post
+		_PYTHON_TEST_FUNCTION="python_execute_py.test" _python_test_hook post
 	}
 	if _python_package_supporting_installation_for_multiple_python_abis; then
 		python_execute_function ${separate_build_dirs:+-s} python_test_function "$@"
@@ -3121,7 +3121,7 @@ python_execute_trial() {
 
 		eval "evaluated_PYTHONPATH=\"${PYTHONPATH_template}\""
 
-		_python_test_hook pre
+		_PYTHON_TEST_FUNCTION="python_execute_trial" _python_test_hook pre
 
 		if [[ -n "${evaluated_PYTHONPATH}" ]]; then
 			echo ${_BOLD}PYTHONPATH="${evaluated_PYTHONPATH}" trial $([[ "${PYTHON_TEST_VERBOSITY}" -ge 4 ]] && echo --spew) "${arguments[@]}"${_NORMAL}
@@ -3131,7 +3131,7 @@ python_execute_trial() {
 			trial $([[ "${PYTHON_TEST_VERBOSITY}" -ge 4 ]] && echo --spew) "${arguments[@]}" || return "$?"
 		fi
 
-		_python_test_hook post
+		_PYTHON_TEST_FUNCTION="python_execute_trial" _python_test_hook post
 	}
 	if _python_package_supporting_installation_for_multiple_python_abis; then
 		python_execute_function ${separate_build_dirs:+-s} python_test_function "$@"
