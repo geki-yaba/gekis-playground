@@ -12,16 +12,6 @@
 #
 
 # 3.5
-# TODO:	>=gnome-base/librsvg-2.32.1:2
-#		--enable-librsvg=system
-#		--enable-python - disabled: no translations!
-#		--with-system-python removed
-#		--disable-gtk3
-#		--enable-cairo => --enable-cairo-canvas
-#		--with-system-libvisio
-#		--with-system-gettext
-#		--with-system-libpng
-#		--enable-release-build: debug build by default, yay! :D
 #
 # superfluous diff: as-needed, gbuild, ldflags, translate_toolkit-solenv
 #
@@ -54,8 +44,10 @@ RESTRICT="binchecks mirror"
 
 IUSE="+branding cups custom-cflags dbus debug eds gnome graphite gstreamer gtk
 jemalloc junit kde languagetool ldap mysql nsplugin odbc odk offlinehelp opengl
-+python reportbuilder templates +vba webdav wiki"
++python reportbuilder templates webdav wiki"
 # mono, postgres - system only diff available - no chance to choose! :(
+
+[[ ${PV} == *_pre ]] && IUSE+=" gtk3"
 
 # available languages
 LANGUAGES="af ar as ast be_BY bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
@@ -97,16 +89,18 @@ SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )
 	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
+if [[ ${PV} != *_pre ]]; then
 MODULES="artwork base calc components extensions extras filters help impress
 libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
 writer translations"
 
-if [[ ${PV} != *_pre ]]; then
 	SRC_URI+=" ${LIBRE_URI}/${PN}-bootstrap-${PV}.tar.bz2"
 
 	for module in ${MODULES}; do
 		SRC_URI+=" ${LIBRE_URI}/${PN}-${module}-${PV}.tar.bz2"
 	done
+else
+MODULES="core help translations"
 fi
 
 # available app-dicts/myspell dictionaries
@@ -175,7 +169,6 @@ CDEPEND="${SDEPEND}
 	  dev-libs/libxslt
 	  dev-libs/openssl
 	  dev-libs/redland[ssl]
-	  dev-util/gperf
 	  media-libs/fontconfig
 	  media-libs/freetype:2
 	  media-libs/libpng
@@ -192,6 +185,12 @@ CDEPEND="${SDEPEND}
 	  x11-libs/startup-notification
 	  virtual/jpeg"
 
+if [[ ${PV} == *_pre ]]; then
+CDEPEND+=" gtk3? ( x11-libs/gtk+:3 )
+	>=gnome-base/librsvg-2.32.1:2
+	  sys-devel/gettext"
+fi
+
 RDEPEND="${CDEPEND}
 	java? ( >=virtual/jre-1.5 )"
 
@@ -207,6 +206,7 @@ DEPEND="${CDEPEND}
 	dev-libs/boost-headers
 	dev-perl/Archive-Zip
 	dev-util/cppunit
+	dev-util/gperf
 	dev-util/intltool
 	dev-util/mdds
 	dev-util/pkgconfig
@@ -221,7 +221,15 @@ DEPEND="${CDEPEND}
 	x11-proto/xineramaproto
 	x11-proto/xproto"
 
-REQUIRED_USE="junit? ( java ) languagetool? ( java ) reportbuilder? ( java ) wiki? ( java ) gnome? ( gtk ) nsplugin? ( gtk )"
+_libreoffice_use_gtk="gtk"
+[[ ${PV} == *_pre ]] && _libreoffice_use_gtk="|| ( gtk gtk3 )"
+
+REQUIRED_USE="gnome? ( ${_libreoffice_use_gtk} )
+	junit? ( java )
+	languagetool? ( java )
+	nsplugin? ( ${_libreoffice_use_gtk} )
+	reportbuilder? ( java )
+	wiki? ( java )"
 
 libreoffice_pkg_pretend() {
 	# welcome
@@ -274,8 +282,6 @@ libreoffice_pkg_setup() {
 }
 
 libreoffice_src_unpack() {
-	local clone="${S}/clone"
-
 	# layered clone/build process - fun! :)
 	if [[ ${PV} == *_pre ]]; then
 		local root="git://anongit.freedesktop.org/${PN}"
@@ -283,35 +289,30 @@ libreoffice_src_unpack() {
 		# eclass/git feature: if not equal use EGIT_COMMIT, which defaults to master
 		EGIT_COMMIT="${EGIT_BRANCH}"
 
-		# unpack build tools
-		EGIT_PROJECT="${PN}/bootstrap"
-		EGIT_REPO_URI="${root}/bootstrap"
-		git_src_unpack
-
 		# clone modules
 		for module in ${MODULES}; do
 			EGIT_PROJECT="${PN}/${module}"
 			EGIT_REPO_URI="${root}/${module}"
-			EGIT_SOURCEDIR="${clone}/${module}"
 			git_src_unpack
 		done
 	else
 		unpack "${PN}-bootstrap-${PV}.tar.bz2"
 
+		local clone="${S}/clone"
 		cd "${clone}"
 
 		# unpack modules
 		for module in ${MODULES}; do
 			unpack "${PN}-${module}-${PV}.tar.bz2"
 		done
-	fi
 
-	# link source into tree
-	ln -sf "${clone}"/*/* "${S}"
+		# link source into tree
+		ln -sf "${clone}"/*/* "${S}"
+	fi
 
 	# branding
 	if use branding; then
-		cd "${S}"/src
+		cd "${WORKDIR}"
 		unpack "${BRAND_SRC}"
 	fi
 
@@ -340,19 +341,23 @@ libreoffice_src_prepare() {
 	EPATCH_FORCE="yes"
 	epatch "${FILESDIR}"
 
+	# version specifics
+	[ -d "${FILESDIR}/${MY_PV}" ] && epatch "${FILESDIR}/${MY_PV}"
+
 	# allow user to apply any additional patches without modifying ebuild
 	epatch_user
 
-	# FIXME: 3.5 done
-	# disable printeradmin
-	sed -e "s:.*printeradmin:#\0:" \
-		-i "${S}"/sysui/desktop/share/create_tree.sh \
-		|| die
+	if [[ ${PV} != *_pre ]]; then
+		# disable printeradmin
+		sed -e "s:.*printeradmin:#\0:" \
+			-i "${S}"/sysui/desktop/share/create_tree.sh \
+			|| die
 
-	# FIXME: 3.5 done
-	# honour linker hash-style
-	sed -r -e "s:(hash-style)=both:\1=\$(WITH_LINKER_HASH_STYLE):" \
-		-i "${S}"/solenv/gbuild/platform/unxgcc.mk
+		# honour linker hash-style
+		sed -r -e "s:(hash-style)=both:\1=\$(WITH_LINKER_HASH_STYLE):" \
+			-i "${S}"/solenv/gbuild/platform/unxgcc.mk \
+			|| die
+	fi
 
 	# lang conf (i103809)
 	local languages
@@ -384,14 +389,20 @@ libreoffice_src_prepare() {
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
 	echo "--with-lang=${languages}" >> ${config}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
-	use branding && echo "--with-about-bitmap=${S}/src/branding-about.png" >> ${config}
-	use branding && echo "--with-intro-bitmap=${S}/src/branding-intro.png" >> ${config}
+	use branding && echo "--with-about-bitmap=${WORKDIR}/branding-about.png" >> ${config}
+	use branding && echo "--with-intro-bitmap=${WORKDIR}/branding-intro.png" >> ${config}
 	echo "$(use_enable gtk)" >> ${config}
 	echo "$(use_enable kde kde4)" >> ${config}
 #	echo "$(use_enable mono)" >> ${config}
 	echo "$(use_enable odk)" >> ${config}
 	echo "$(use_with java)" >> ${config}
 	echo "$(use_with templates sun-templates)" >> ${config}
+
+	# 3.5
+	if [[ ${PV} == *_pre ]]; then
+		echo "$(use_enable !debug release-build)" >> ${config}
+		echo "$(use_enable gtk3)" >> ${config}
+	fi
 
 	# extensions
 	echo "$(use_enable reportbuilder ext-report-builder)" >> ${config}
@@ -404,7 +415,6 @@ libreoffice_src_prepare() {
 	echo "$(use_enable dbus)" >> ${config}
 	echo "$(use_enable debug symbols)" >> ${config}
 	echo "$(use_with offlinehelp helppack-integration)" >> ${config}
-	echo "$(use_enable vba)" >> ${config}
 	use jemalloc && echo "--with-alloc=jemalloc" >> ${config}
 
 	# system
@@ -417,10 +427,13 @@ libreoffice_src_prepare() {
 	echo "$(use_with odbc system-odbc)" >> ${config}
 	echo "$(use_enable opengl)" >> ${config}
 	echo "$(use_with opengl system-mesa-headers)" >> ${config}
-	# FIXME: lo 3.5 fubared :(
-	echo "$(use_enable python)" >> ${config}
 	echo "$(use_enable webdav neon)" >> ${config}
 	echo "$(use_with webdav system-neon)" >> ${config}
+
+	# 3.4
+	if [[ ${PV} != *_pre ]]; then
+		echo "$(use_enable python)" >> ${config}
+	fi
 
 	# mysql
 	echo "$(use_with mysql system-mysql)" >> ${config}
@@ -544,10 +557,9 @@ libreoffice_src_configure() {
 }
 
 libreoffice_src_compile() {
-	# FIXME: necessary for 3.5?!
 	# no need to download external sources
 	# although we set two configure flags already for this ...
-	touch src.downloaded
+	[[ ${PV} != *_pre ]] && touch src.downloaded
 
 	# build
 	make || die "make failed"
@@ -562,7 +574,7 @@ libreoffice_src_install() {
 
 	if use branding; then
 		insinto /usr/$(get_libdir)/${PN}/program
-		newins "${S}/src/branding-sofficerc" sofficerc || die
+		newins "${WORKDIR}/branding-sofficerc" sofficerc || die
 	fi
 
 	use nsplugin && inst_plugin \
