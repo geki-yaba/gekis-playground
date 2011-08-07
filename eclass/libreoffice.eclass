@@ -258,21 +258,6 @@ libreoffice_pkg_setup() {
 	# java
 	java-pkg-opt-2_pkg_setup
 
-	# lang setup
-	strip-linguas ${LANGUAGES}
-
-	# lang conf (i103809)
-	if [ -z "${LINGUAS}" ] || [[ ${LINGUAS} == en ]]; then
-		lo_languages=
-	# but if localized we want en-US for broken code and sdk
-	# case: en lingua already set
-	elif [[ ${LINGUAS} =~ en( |$) ]]; then
-		lo_languages="$(sed -e 's/\ben\b/en_US/;s/_/-/g' <<< ${LINGUAS})"
-	# case: en_US lingua not set, add
-	else
-		lo_languages="en-US ${LINGUAS//_/-}"
-	fi
-
 	# kde
 	use kde && kde4-base_pkg_setup
 
@@ -283,6 +268,9 @@ libreoffice_pkg_setup() {
 
 	python_set_active_version ${lo_python_version}
 	python_pkg_setup
+
+	# lang setup
+	strip-linguas ${LANGUAGES}
 }
 
 libreoffice_src_unpack() {
@@ -366,6 +354,19 @@ libreoffice_src_prepare() {
 	sed -r -e "s:(hash-style)=both:\1=\$(WITH_LINKER_HASH_STYLE):" \
 		-i "${S}"/solenv/gbuild/platform/unxgcc.mk
 
+	# lang conf (i103809)
+	local languages
+	if [ -z "${LINGUAS}" ] || [[ ${LINGUAS} == en ]]; then
+		languages=
+	# but if localized we want en-US for broken code and sdk
+	# case: en lingua already set
+	elif [[ ${LINGUAS} =~ en( |$) ]]; then
+		languages="$(sed -e 's/\ben\b/en_US/;s/_/-/g' <<< ${LINGUAS})"
+	# case: en_US lingua not set, add
+	else
+		languages="en-US ${LINGUAS//_/-}"
+	fi
+
 	# create distro config
 	local config="${S}/distro-configs/GentooUnstable.conf"
 	sed -e /^#/d \
@@ -381,7 +382,7 @@ libreoffice_src_prepare() {
 	echo "--docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${config}
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${config}
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
-	echo "--with-lang=${lo_languages}" >> ${config}
+	echo "--with-lang=${languages}" >> ${config}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
 	use branding && echo "--with-about-bitmap=${S}/src/branding-about.png" >> ${config}
 	use branding && echo "--with-intro-bitmap=${S}/src/branding-intro.png" >> ${config}

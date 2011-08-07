@@ -1,0 +1,67 @@
+--- src/torrentfilesmodel.h	2011-02-20 20:58:03.440013794 +0100
++++ src/torrentfilesmodel.h	2011-02-20 20:58:21.000013276 +0100
+@@ -72,7 +72,7 @@
+     QString name = misc::fileName(misc::toQStringU(t.files().file_path(f)));
+ #else
+     Q_UNUSED(t);
+-    QString name = misc::toQStringU(f.path.filename());
++    QString name = misc::toQStringU(f.path.filename().string());
+ #endif
+     // Do not display incomplete extensions
+     if(name.endsWith(".!qB"))
+--- src/qtlibtorrent/qbtsession.cpp	2011-02-20 20:53:57.336013604 +0100
++++ src/qtlibtorrent/qbtsession.cpp	2011-02-20 20:55:51.364013659 +0100
+@@ -98,8 +98,6 @@
+   BigRatioTimer->setInterval(10000);
+   connect(BigRatioTimer, SIGNAL(timeout()), SLOT(processBigRatios()));
+   Preferences pref;
+-  // To avoid some exceptions
+-  boost::filesystem::path::default_name_check(boost::filesystem::no_check);
+   // Creating Bittorrent session
+   QList<int> version;
+   version << VERSION_MAJOR;
+--- src/qtlibtorrent/qtorrenthandle.cpp	2011-02-20 20:53:14.940013130 +0100
++++ src/qtlibtorrent/qtorrenthandle.cpp	2011-02-20 20:53:41.640016856 +0100
+@@ -228,7 +228,7 @@
+ #if LIBTORRENT_VERSION_MINOR > 15
+   return misc::fileName(filepath_at(index));
+ #else
+-  return misc::toQStringU(torrent_handle::get_torrent_info().file_at(index).path.leaf());
++  return misc::toQStringU(torrent_handle::get_torrent_info().file_at(index).path.leaf().string());
+ #endif
+ }
+ 
+--- src/torrentcreator/torrentcreatorthread.cpp	2011-02-20 20:59:23.548013572 +0100
++++ src/torrentcreator/torrentcreatorthread.cpp	2011-02-20 21:00:09.936013220 +0100
+@@ -54,7 +54,7 @@
+ // name starts with a .
+ bool file_filter(boost::filesystem::path const& filename)
+ {
+-  if (filename.leaf()[0] == '.') return false;
++  if (filename.leaf().string()[0] == '.') return false;
+   std::cerr << filename << std::endl;
+   return true;
+ }
+@@ -70,7 +70,6 @@
+   comment = _comment;
+   is_private = _is_private;
+   piece_size = _piece_size;
+-  path::default_name_check(no_check);
+   abort = false;
+   start();
+ }
+--- src/torrentimportdlg.cpp	2011-04-10 14:26:32.111134103 +0200
++++ src/torrentimportdlg.cpp	2011-04-10 14:27:03.847132952 +0200
+@@ -81,11 +81,7 @@
+   const QString default_dir = settings.value(QString::fromUtf8("TorrentImport/LastContentDir"), QDir::homePath()).toString();
+   if(t->num_files() == 1) {
+     // Single file torrent
+-#if LIBTORRENT_VERSION_MINOR > 15
+-    const QString file_name = misc::fileName(misc::toQStringU(t->file_at(0).path));
+-#else
+-    const QString file_name = misc::toQStringU(t->file_at(0).path.filename());
+-#endif
++    const QString file_name = misc::toQStringU(t->file_at(0).path.filename().string());
+     qDebug("Torrent has only one file: %s", qPrintable(file_name));
+     QString extension = misc::file_extension(file_name);
+     qDebug("File extension is : %s", qPrintable(extension));

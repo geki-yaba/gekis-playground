@@ -1,0 +1,41 @@
+--- src/torrentadditiondlg.cpp.orig	2011-06-02 10:47:48.315141657 +0200
++++ src/torrentadditiondlg.cpp	2011-06-02 12:26:32.811139049 +0200
+@@ -771,18 +771,19 @@
+   // Get current history
+   QStringList history = settings.value("TorrentAdditionDlg/save_path_history").toStringList();
+ #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
+-  if(!history.contains(current_save_path, Qt::CaseSensitive)) {
++  if(history.contains(current_save_path, Qt::CaseSensitive)) {
+ #else
+-  if(!history.contains(current_save_path, Qt::CaseInsensitive)) {
++  if(history.contains(current_save_path, Qt::CaseInsensitive)) {
+ #endif
+-    // Add save path to history
+-    history << current_save_path;
+-    // Limit list size
+-    if(history.size() > 8)
+-      history.removeFirst();
+-    // Save history
+-    settings.setValue("TorrentAdditionDlg/save_path_history", history);
++    history.removeOne(current_save_path);
+   }
++  // Add save path to history
++  history << current_save_path;
++  // Limit list size
++  if(history.size() > 16)
++    history.removeFirst();
++  // Save history
++  settings.setValue("TorrentAdditionDlg/save_path_history", history);
+ }
+ 
+ void torrentAdditionDialog::loadSavePathHistory() {
+@@ -796,7 +797,8 @@
+       dsp = dsp.replace("/", "\\");
+ #endif
+       path_history << sp;
+-      savePathTxt->addItem(dsp);
++      savePathTxt->insertItem(0, dsp);
+     }
+   }
++  savePathTxt->setCurrentIndex(0);
+ }
