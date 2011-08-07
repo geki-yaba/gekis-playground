@@ -341,13 +341,10 @@ libreoffice_src_prepare() {
 	EPATCH_FORCE="yes"
 	epatch "${FILESDIR}"
 
-	# version specifics
-	[ -d "${FILESDIR}/${MY_PV}" ] && epatch "${FILESDIR}/${MY_PV}"
-
-	# allow user to apply any additional patches without modifying ebuild
-	epatch_user
-
 	if [[ ${PV} != *_pre ]]; then
+		# version specifics
+		[ -d "${FILESDIR}/${MY_PV}" ] && epatch "${FILESDIR}/${MY_PV}"
+
 		# disable printeradmin
 		sed -e "s:.*printeradmin:#\0:" \
 			-i "${S}"/sysui/desktop/share/create_tree.sh \
@@ -358,6 +355,9 @@ libreoffice_src_prepare() {
 			-i "${S}"/solenv/gbuild/platform/unxgcc.mk \
 			|| die
 	fi
+
+	# allow user to apply any additional patches without modifying ebuild
+	epatch_user
 
 	# lang conf (i103809)
 	local languages
