@@ -53,7 +53,7 @@ boost_pkg_pretend() {
 
 boost_pkg_setup() {
 	# use regular expression to read last job count or default to 1 :D
-	jobs="$(sed -r -e "s:.*[-]{1,2}j(obs)?[=]?([0-9]+):\2:" <<< "${MAKEOPTS}")"
+	jobs="$(sed -r -e "s:.*[-]{1,2}j(obs)?[ =]?([0-9]+):\2:" <<< "${MAKEOPTS}")"
 	jobs="-j${jobs:=1}"
 
 	if use test ; then
@@ -82,14 +82,15 @@ boost_src_prepare() {
 	EPATCH_FORCE="yes"
 	epatch "${BOOST_PATCHDIR}"
 
-	# This enables building the boost.random library with /dev/urandom support
+	# boost.random library: /dev/urandom support
 	if use random && [[ -e /dev/urandom ]] ; then
-		local random="${S}/libs/random"
-		mkdir -p "${random}"/build
-		cp -v "${FILESDIR}"/random-Jamfile "${random}"/build
-		# yeah, we WANT it to work on non-Linux too
+		local lib_random="${S}/libs/random"
+
+		mkdir -p "${lib_random}"/build
+		cp -v "${FILESDIR}"/random-Jamfile "${lib_random}"/build
+
 		sed -e 's/#ifdef __linux__/#if 1/' \
-			-i "${random}"/src/random_device.cpp \
+			-i "${lib_random}"/src/random_device.cpp \
 			|| die
 	fi
 
@@ -98,21 +99,20 @@ boost_src_prepare() {
 }
 
 boost_src_configure() {
-	local compiler compilerVersion compilerExecutable
+	local compiler="gcc"
+	local compilerVersion="$(gcc-version)"
+	local compilerExecutable="$(tc-getCXX)"
+
 	if [[ ${CHOST} == *-darwin* ]] ; then
-		compiler=darwin
+		compiler="darwin"
 		compilerVersion=$(gcc-fullversion)
-		compilerExecutable=$(tc-getCXX)
+
 		# we need to add the prefix, and in two cases this exceeds, so prepare
 		# for the largest possible space allocation
 		append-ldflags -Wl,-headerpad_max_install_names
-	else
-		compiler=gcc
-		compilerVersion=$(gcc-version)
-		compilerExecutable=$(tc-getCXX)
 	fi
 
-	# Using -fno-strict-aliasing to prevent possible creation of invalid code.
+	# -fno-strict-aliasing: prevent invalid code
 	append-flags "-fno-strict-aliasing"
 
 	# bug 298489
@@ -195,7 +195,7 @@ boost_src_install() {
 		insinto /usr/share
 		doins -r share/boostbook
 
-		# Append version postfix for slotting
+		# slotting
 		mv "${ED}/usr/share/boostbook" "${ED}/usr/share/boostbook-${BOOST_MAJOR}" || die
 	fi
 
@@ -213,6 +213,7 @@ boost_src_install() {
 
 	if use doc ; then
 		local docdir="/usr/share/doc/${PF}/html"
+
 		find libs/*/* -iname "test" -or -iname "src" | xargs rm -rf
 
 		insinto ${docdir}
@@ -268,6 +269,7 @@ boost_src_install() {
 	if use mpi && use python ; then
 		exeinto "$(python_get_sitedir)/boost_${BOOST_MAJOR}"
 		doexe "${ED}/usr/$(get_libdir)/mpi.so"
+
 		touch "${ED}$(python_get_sitedir)/boost_${BOOST_MAJOR}/__init__.py" || die
 		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
 
@@ -287,19 +289,19 @@ boost_src_install() {
 			if [[ -f ${d} ]] ; then
 				# fix the "soname"
 				ebegin "  correcting install_name of ${d#${ED}}"
-				install_name_tool -id "/${d#${ED}}" "${d}"
+					install_name_tool -id "/${d#${ED}}" "${d}"
 				eend $?
+
 				# fix references to other libs
 				refs=$(otool -XL "${d}" | \
 					sed -e '1d' -e 's/^\t//' | \
 					grep "^libboost_" | \
 					cut -f1 -d' ')
+
 				for r in ${refs} ; do
 					ebegin "    correcting reference to ${r}"
-					install_name_tool -change \
-						"${r}" \
-						"${EPREFIX}/usr/lib/${r}" \
-						"${d}"
+						install_name_tool -change "${r}" \
+							"${EPREFIX}/usr/lib/${r}" "${d}"
 					eend $?
 				done
 			fi
@@ -352,6 +354,7 @@ _boost_execute() {
 		# pretty print
 		einfo "${@//--/\n\t--}"
 		${@}
+
 		return ${?}
 	else
 		return -1
@@ -372,11 +375,9 @@ _boost_options() {
 		use ${library} && options+=" --with-${library}"
 	done
 
-	if use regex && use icu ; then
-		options+=" --enable-icu"
-	else
-		options+=" --disable-icu"
-	fi
+	local use_icu="disable"
+	use regex && use icu && use_icu="enable"
+	options+=" --${use_icu}-icu"
 
 	echo -n ${options}
 }
