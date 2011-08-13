@@ -40,7 +40,7 @@ HOMEPAGE="http://www.libreoffice.org/"
 SLOT="0"
 
 LICENSE="LGPL-3"
-RESTRICT="binchecks mirror"
+RESTRICT="binchecks mirror test"
 
 IUSE="+branding cups custom-cflags dbus debug eds gnome graphite gstreamer gtk
 jemalloc junit kde languagetool ldap mysql nsplugin odbc odk offlinehelp opengl
@@ -74,7 +74,6 @@ BRAND_SRC="${PN}-branding-gentoo-0.3.tar.xz"
 # available templates
 # - en_* => en_US templates for simplicity; fix:
 # https://forums.gentoo.org/viewtopic-p-6449940.html#6449940
-# FIXME: assoc arrays in global namespace impossible?! anyone enlighten me, please!
 TDEPEND=""
 TDEPEND+=" linguas_de? ( ${EXT_URI}/53ca5e56ccd4cab3693ad32c6bd13343-Sun-ODF-Template-Pack-de_1.0.0.oxt )"
 TDEPEND+=" linguas_en? ( ${EXT_URI}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
@@ -188,6 +187,7 @@ CDEPEND="${SDEPEND}
 if [[ ${PV} == *_pre ]]; then
 CDEPEND+=" gtk3? ( x11-libs/gtk+:3 )
 	>=gnome-base/librsvg-2.32.1:2
+	>=media-libs/libvisio-0.0.3
 	  sys-devel/gettext"
 fi
 
@@ -444,12 +444,17 @@ libreoffice_src_prepare() {
 	echo "$(use_with nsplugin system-mozilla libxul)" >> ${config}
 
 	# gnome
-	echo "--disable-gnome-vfs" >> ${config}
-	echo "$(use_enable gtk gio)" >> ${config}
 	echo "$(use_enable gnome lockdown)" >> ${config}
 	echo "$(use_enable gnome gconf)" >> ${config}
 	echo "$(use_enable gnome systray)" >> ${config}
 	echo "$(use_enable gstreamer)" >> ${config}
+
+	# gio
+	local gtk="disable"
+	use gtk && gtk="enable"
+	[[ ${PV} == *_pre ]] && use gtk3 && gtk="enable"
+	echo "--${gtk}-gio" >> ${config}
+	echo "--disable-gnome-vfs" >> ${config}
 
 	# java
 	if use java; then
@@ -536,15 +541,14 @@ libreoffice_src_configure() {
 	use debug || filter-flags "-g*"
 	append-flags "-w"
 
-	# silent miscompiles; LO/OOo adds -O2/1/0 where appropriate
+	# silent miscompiles; LO adds -O2/1/0 where appropriate
 	filter-flags "-O*"
 
 	# optimize
 	export ARCH_FLAGS="${CXXFLAGS}"
 
 	# linker flags
-	# FIXME: as-needed seems to be fixed in 3.5?!
-	append-ldflags "-Wl,--no-as-needed"
+	[[ ${PV} != *_pre ]] && append-ldflags "-Wl,--no-as-needed"
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
 	export LINKFLAGSDEFS="-Wl,-z,defs -L$(boost-utils_get_library_path)"
 
