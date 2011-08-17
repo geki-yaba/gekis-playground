@@ -187,7 +187,7 @@ CDEPEND="${SDEPEND}
 if [[ ${PV} == *_pre ]]; then
 CDEPEND+=" gtk3? ( x11-libs/gtk+:3 )
 	>=gnome-base/librsvg-2.32.1:2
-	>=media-libs/libvisio-0.0.3
+	  media-libs/libvisio
 	  sys-devel/gettext"
 fi
 
@@ -270,11 +270,11 @@ libreoffice_pkg_setup() {
 	use kde && kde4-base_pkg_setup
 
 	# python
-	local lo_python_version=2
+	local python_version=2
 	# python 3 if skipping translate-toolkit
-	[ -z "${LINGUAS}" ] && lo_python_version=3
+	[ -z "${LINGUAS}" ] && python_version=3
 
-	python_set_active_version ${lo_python_version}
+	python_set_active_version ${python_version}
 	python_pkg_setup
 
 	# lang setup
@@ -598,7 +598,7 @@ libreoffice_pkg_postinst() {
 	_libreoffice_pax_fix
 
 	# bash-completion postinst
-	BASHCOMPLETION_NAME="libreoffice" \
+	BASHCOMPLETION_NAME="libreoffice"
 	bash-completion_pkg_postinst
 
 	# info

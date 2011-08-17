@@ -43,10 +43,10 @@ boost-headers_pkg_pretend() {
 	local err=
 
 	ls -1 /usr/$(get_libdir)/libboost_* | grep -v boost_*_*
-	[[ -z ${?} ]] && err=1
+	[ -z ${?} ] && err=1
 
 	ls -1 /usr/include/boost_* >/dev/null 2>&1
-	[[ -z ${?} ]] && err=1
+	[ -z ${?} ] && err=1
 
 	if [ ${err} ] ; then
 		eerror
