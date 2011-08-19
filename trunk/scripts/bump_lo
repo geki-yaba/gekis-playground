@@ -38,6 +38,7 @@ svn_bump()
 
 svn_clean()
 {
+	svn revert "${EOLD}"
 	svn revert "${ENEW}"
 	rm -f "${ENEW}"
 }
@@ -124,7 +125,7 @@ bump_ebuild()
 	[ -f "$ENEW" ] && rm -f "$ENEW"
 	if [ -z "$EOLD" -o -z "$ENEW" -o -z "$LIST" ]
 	then
-		die "bump_ebuild() - missing parameters: bump_ebuild <old> <new> <list>)"
+		die "bump_ebuild() - missing parameters: bump_ebuild <old> <new> <list>"
 	fi
 
 	call_function "${TYPE}_bump"
@@ -165,6 +166,9 @@ fi
 if [ -f "$ENEW" ]
 then
 	warn "Removing previous ebuild: $ENEW"
+	warn "Waiting 5 seconds for Ctrl+C"
+
+	sleep 5
 fi
 
 # bumping
