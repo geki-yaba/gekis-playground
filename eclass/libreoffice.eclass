@@ -42,12 +42,13 @@ SLOT="0"
 LICENSE="LGPL-3"
 RESTRICT="binchecks mirror test"
 
-IUSE="+branding cups custom-cflags dbus debug eds gnome graphite gstreamer gtk
+IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk
 jemalloc junit kde languagetool ldap mysql nsplugin odbc odk offlinehelp opengl
 +python reportbuilder templates webdav wiki"
 # mono, postgres - system only diff available - no chance to choose! :(
 
 [[ ${PV} == *_pre ]] && IUSE+=" gtk3"
+[[ ${PV} != *_pre ]] && IUSE+=" cups"
 
 # available languages
 LANGUAGES="af ar as ast be_BY bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
@@ -111,6 +112,8 @@ for language in ${MYSPELLS}; do
 	SDEPEND+=" linguas_${language}? ( app-dicts/myspell-${language} )"
 done
 
+PDEPEND="${SDEPEND}"
+
 #	>=dev-libs/xmlsec-1.2.14
 #	reportbuilder? ( dev-java/sac
 #		dev-java/flute-jfree
@@ -128,8 +131,7 @@ done
 #		dev-java/saxon:9
 #		dev-db/hsqldb
 #	mono? ( dev-lang/mono )
-CDEPEND="${SDEPEND}
-	cups? ( net-print/cups )
+CDEPEND="
 	dbus? ( dev-libs/dbus-glib )
 	eds? ( gnome-extra/evolution-data-server )
 	gnome? ( gnome-base/gconf:2 )
@@ -188,7 +190,10 @@ if [[ ${PV} == *_pre ]]; then
 CDEPEND+=" gtk3? ( x11-libs/gtk+:3 )
 	>=gnome-base/librsvg-2.32.1:2
 	  media-libs/libvisio
+	  net-print/cups
 	  sys-devel/gettext"
+else
+CDEPEND+=" cups? ( net-print/cups )"
 fi
 
 RDEPEND="${CDEPEND}
@@ -418,7 +423,6 @@ libreoffice_src_prepare() {
 	use jemalloc && echo "--with-alloc=jemalloc" >> ${config}
 
 	# system
-	echo "$(use_enable cups)" >> ${config}
 	echo "$(use_enable eds evolution2)" >> ${config}
 	echo "$(use_enable graphite)" >> ${config}
 	echo "$(use_with graphite system-graphite)" >> ${config}
@@ -433,6 +437,7 @@ libreoffice_src_prepare() {
 	# 3.4
 	if [[ ${PV} != *_pre ]]; then
 		echo "$(use_enable python)" >> ${config}
+		echo "$(use_enable cups)" >> ${config}
 	fi
 
 	# mysql
