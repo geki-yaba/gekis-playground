@@ -193,6 +193,7 @@ void xcb_config_set_atom(xcb_config_t* config, char const* atom)
     xcb_intern_atom_reply_t* reply;
 
     list = (xcb_atom_list_t*)malloc(sizeof(xcb_atom_list_t));
+    list->next = NULL;
 
     list->cookie = xcb_intern_atom(config->connection, 1, strlen(atom), atom);
     reply = xcb_intern_atom_reply(config->connection, list->cookie, NULL);
