@@ -1,17 +1,25 @@
 /*
- * Author:    Hanno Meyer-Thurow <h.mth@web.de>
+ *         Author: Hanno Meyer-Thurow <h.mth@web.de>
  *
- * Purpose:    Set opacity for all windows.
- *         The focused window is opaque.
+ *        Purpose: Set opacity for all windows.
+ *                 The focused window is opaque.
+ *
+ * Contributor(s): None
  *
  * Based on the work of ADcomp <david.madbox@gmail.com> [ http://www.ad-comp.be/ ]
  * with extra bits by Benj1 <holroyd.ben@gmail.com>
  *
- *         http://crunchbanglinux.org/forums/post/33142/#p33142
+ *     http://crunchbanglinux.org/forums/post/33142/#p33142
  *
  * This program is distributed under the terms of the GNU General Public License.
  * For more info see http://www.gnu.org/licenses/gpl.txt.
+ */
+
+/*
+ * COMPILE
  *
+ *     gcc -O2 -march=native -pipe scripts/trans_follow_xcb.c \
+ *         -o /usr/local/bin/trans-follow $(pkg-config --libs xcb)
  */
 
 /*
@@ -23,12 +31,11 @@
  * Your changes must be stored as a unified diff.
  * The easiest way to do so is to checkout this subversion reposity and do a:
  *
- * 	svn diff scripts/trans_follow_xcb.c > changes.diff
+ *     svn diff scripts/trans_follow_xcb.c > changes.diff
  *
  * This is necessary to integrate your work smoothly.
  *
  * Please send your changes with description to my email address above.
- *
  */
 
 #include <stdio.h>
@@ -39,6 +46,12 @@
 #include <xcb/xcb_event.h>
 #include <xcb/xproto.h>
 
+typedef struct xcb_atom_list_t {
+    xcb_intern_atom_cookie_t cookie;
+    xcb_atom_t atom;
+    struct xcb_atom_list_t* next;
+} xcb_atom_list_t;
+
 typedef struct xcb_config_t {
     int error;
     float opacity;
@@ -46,11 +59,11 @@ typedef struct xcb_config_t {
     xcb_connection_t* connection;
     xcb_screen_t* screen;
     xcb_window_t window;
-    xcb_intern_atom_cookie_t cookie;
-    xcb_atom_t atom;
+    xcb_atom_list_t* list;
 } xcb_config_t;
 
 int  xcb_config_run(float opacity);
+int  xcb_config_valid_window(xcb_window_t window);
 int  xcb_config_error(xcb_config_t* config);
 void xcb_config_command(char const* command);
 int  xcb_config_init(xcb_config_t* config);
@@ -102,6 +115,7 @@ int  xcb_config_run(float opacity)
 
         xcb_config_set_event_mask(&config, mask, values, size);
         xcb_config_set_atom(&config, "_NET_ACTIVE_WINDOW");
+        xcb_config_set_atom(&config, "_NET_CURRENT_DESKTOP");
 
         xcb_config_event_loop(&config);
     }
@@ -111,6 +125,13 @@ int  xcb_config_run(float opacity)
     return error;
 }
 
+int  xcb_config_valid_window(xcb_window_t window)
+{
+    if (window == 0xffffffff)
+        return 0;
+    else
+        return 1;
+}
 int xcb_config_error(xcb_config_t* config)
 {
     return config->error;
@@ -130,7 +151,7 @@ int  xcb_config_init(xcb_config_t* config)
 
     config->screen = NULL;
     config->window = 0;
-    config->atom = 0;
+    config->list = NULL;
 
     if (! xcb_config_error(config))
     {
@@ -151,24 +172,47 @@ int  xcb_config_init(xcb_config_t* config)
 
 void xcb_config_uninit(xcb_config_t* config)
 {
+    xcb_atom_list_t* list;
+
+    while(config->list)
+    {
+        list = config->list;
+        config->list = list->next;
+
+	free(list);
+    }
+
     if (config->connection)
         xcb_disconnect(config->connection);
 }
 
 void xcb_config_set_atom(xcb_config_t* config, char const* atom)
 {
+    xcb_atom_list_t* list;
+    xcb_atom_list_t* iterator;
     xcb_intern_atom_reply_t* reply;
 
-    config->cookie = xcb_intern_atom(config->connection, 1, strlen(atom), atom);
-    reply = xcb_intern_atom_reply(config->connection, config->cookie, NULL);
+    list = (xcb_atom_list_t*)malloc(sizeof(xcb_atom_list_t));
+
+    list->cookie = xcb_intern_atom(config->connection, 1, strlen(atom), atom);
+    reply = xcb_intern_atom_reply(config->connection, list->cookie, NULL);
 
     if (reply)
     {
-        config->atom = reply->atom;
+        list->atom = reply->atom;
+
+        iterator = config->list;
+	while(iterator && iterator->next)
+            iterator = iterator->next;
+
+        if (iterator)
+            iterator->next = list;
+        else
+            config->list = list;
 
         xcb_get_property_cookie_t cookie_property =
             xcb_get_property_unchecked(config->connection, 0, config->screen->root,
-                config->atom, XCB_ATOM_WINDOW, 0, UINT32_MAX);
+                list->atom, XCB_ATOM_WINDOW, 0, UINT32_MAX);
         xcb_get_property_reply_t* reply_property =
             xcb_get_property_reply(config->connection, cookie_property, NULL);
 
@@ -183,6 +227,8 @@ void xcb_config_set_atom(xcb_config_t* config, char const* atom)
 
         free(reply);
     }
+    else
+    	free(list);
 }
 
 void xcb_config_set_event_mask(xcb_config_t* config,
@@ -216,8 +262,11 @@ void xcb_config_event_property_notify(xcb_config_t* config, xcb_generic_event_t*
     xcb_property_notify_event_t const* property = 
         (xcb_property_notify_event_t const*)event;
 
-    if (property->atom == config->atom)
-        xcb_config_event_property_update(config);
+    xcb_atom_list_t* list;
+
+    for (list = config->list; list; list = list->next)
+        if (property->atom == list->atom)
+            xcb_config_event_property_update(config);
 }
 
 void xcb_config_event_property_update(xcb_config_t* config)
@@ -232,16 +281,19 @@ void xcb_config_event_property_update(xcb_config_t* config)
 
     if (reply)
     {
-        if (config->window == reply->focus)
-            count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
-                config->window, 1.0f);
-        else
-            count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
-                config->window, config->opacity);
+        if (xcb_config_valid_window(config->window))
+	{
+            if (config->window == reply->focus)
+                count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
+                    config->window, 1.0f);
+            else
+                count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
+                    config->window, config->opacity);
 
-        buffer[count] = '\0';
+            buffer[count] = '\0';
 
-        xcb_config_command(buffer);
+            xcb_config_command(buffer);
+        }
 
         config->window = reply->focus;
 
