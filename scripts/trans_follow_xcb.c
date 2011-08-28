@@ -19,7 +19,7 @@
  * COMPILE
  *
  *     gcc -O2 -march=native -pipe scripts/trans_follow_xcb.c \
- *         -o /usr/local/bin/trans-follow $(pkg-config --libs xcb)
+ *         -o /usr/local/bin/trans-follow $(pkg-config --libs xcb xcb-icccm)
  */
 
 /*
@@ -44,7 +44,14 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
+#include <xcb/xcb_icccm.h>
 #include <xcb/xproto.h>
+
+typedef struct xcb_config_ignore_list_t {
+    unsigned int length;
+    char* name;
+    struct xcb_config_ignore_list_t* next;
+} xcb_config_ignore_list_t;
 
 typedef struct xcb_atom_list_t {
     xcb_intern_atom_cookie_t cookie;
@@ -60,10 +67,11 @@ typedef struct xcb_config_t {
     xcb_screen_t* screen;
     xcb_window_t window;
     xcb_atom_list_t* list;
+    xcb_config_ignore_list_t* ignore;
 } xcb_config_t;
 
-int  xcb_config_run(float opacity);
-int  xcb_config_valid_window(xcb_window_t window);
+int  xcb_config_run(int argc, char* argv[]);
+void xcb_config_parse(xcb_config_t* config, int argc, char* argv[]);
 int  xcb_config_error(xcb_config_t* config);
 void xcb_config_command(char const* command);
 int  xcb_config_init(xcb_config_t* config);
@@ -72,30 +80,16 @@ void xcb_config_set_atom(xcb_config_t* config, char const* atom);
 void xcb_config_set_event_mask(xcb_config_t* config,
     uint16_t mask, uint32_t* values, unsigned int size);
 void xcb_config_event_loop(xcb_config_t* config);
-void xcb_config_event_property_notify(xcb_config_t* config, xcb_generic_event_t* event);
+void xcb_config_event_property_notify(xcb_config_t* config,
+    xcb_generic_event_t* event);
 void xcb_config_event_property_update(xcb_config_t* config);
 
 int main(int argc, char* argv[])
 {
-    int error;
-    float opacity;
-
-    if (argc > 1)
-    {
-        sscanf(argv[1], "%5f", &opacity);
-
-        if ((0.0f > opacity) ||( opacity > 1.0f))
-            opacity = 1.0f;
-    }
-    else
-        opacity = 0.75f;
-
-    error = xcb_config_run(opacity);
-
-    return error;
+    return xcb_config_run(argc, argv);
 }
 
-int  xcb_config_run(float opacity)
+int  xcb_config_run(int argc, char* argv[])
 {
     const unsigned int size = 1;
 
@@ -108,7 +102,7 @@ int  xcb_config_run(float opacity)
 
     if (! error)
     {
-        config.opacity = opacity;
+        xcb_config_parse(&config, argc, argv);
 
         mask = XCB_CW_EVENT_MASK;
         values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
@@ -125,13 +119,41 @@ int  xcb_config_run(float opacity)
     return error;
 }
 
-int  xcb_config_valid_window(xcb_window_t window)
+void xcb_config_parse(xcb_config_t* config, int argc, char* argv[])
 {
-    if (window == 0xffffffff)
-        return 0;
+    int i;
+    float opacity;
+
+    xcb_config_ignore_list_t* ignore;
+
+    if (argc > 1)
+    {
+        sscanf(argv[1], "%5f", &opacity);
+
+        if ((0.0f > opacity) || (opacity > 1.0f))
+            opacity = 1.0f;
+    }
     else
-        return 1;
+        opacity = 0.75f;
+
+    config->opacity = opacity;
+
+    if (argc > 2)
+    {
+        for (i = 2; i < argc; i++)
+        {
+            ignore = (xcb_config_ignore_list_t*)
+                malloc(sizeof(xcb_config_ignore_list_t));
+
+            /* evil? feel free to improve! :) */
+            ignore->length = sizeof(argv[i]);
+            ignore->name = argv[i];
+            ignore->next = config->ignore;
+	    config->ignore = ignore;
+        }
+    }
 }
+
 int xcb_config_error(xcb_config_t* config)
 {
     return config->error;
@@ -152,6 +174,7 @@ int  xcb_config_init(xcb_config_t* config)
     config->screen = NULL;
     config->window = 0;
     config->list = NULL;
+    config->ignore = NULL;
 
     if (! xcb_config_error(config))
     {
@@ -173,6 +196,7 @@ int  xcb_config_init(xcb_config_t* config)
 void xcb_config_uninit(xcb_config_t* config)
 {
     xcb_atom_list_t* list;
+    xcb_config_ignore_list_t* ignore;
 
     while(config->list)
     {
@@ -180,6 +204,14 @@ void xcb_config_uninit(xcb_config_t* config)
         config->list = list->next;
 
 	free(list);
+    }
+
+    while(config->ignore)
+    {
+        ignore = config->ignore;
+        config->ignore = ignore->next;
+
+	free(ignore);
     }
 
     if (config->connection)
@@ -258,7 +290,8 @@ void xcb_config_event_loop(xcb_config_t* config)
     }
 }
 
-void xcb_config_event_property_notify(xcb_config_t* config, xcb_generic_event_t* event)
+void xcb_config_event_property_notify(xcb_config_t* config,
+    xcb_generic_event_t* event)
 {
     xcb_property_notify_event_t const* property = 
         (xcb_property_notify_event_t const*)event;
@@ -272,8 +305,11 @@ void xcb_config_event_property_notify(xcb_config_t* config, xcb_generic_event_t*
 
 void xcb_config_event_property_update(xcb_config_t* config)
 {
+    float opacity;
     char buffer[40];
     int count;
+
+    xcb_config_ignore_list_t* ignore;
 
     xcb_get_input_focus_cookie_t cookie =
         xcb_get_input_focus_unchecked(config->connection);
@@ -282,19 +318,44 @@ void xcb_config_event_property_update(xcb_config_t* config)
 
     if (reply)
     {
-        if (xcb_config_valid_window(config->window))
-	{
-            if (config->window == reply->focus)
-                count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
-                    config->window, 1.0f);
+        xcb_get_property_cookie_t cookie_wm_class =
+            xcb_icccm_get_wm_class_unchecked(config->connection, config->window);
+        xcb_icccm_get_wm_class_reply_t reply_wm_class;
+
+        if (xcb_icccm_get_wm_class_reply(config->connection,
+                cookie_wm_class, &reply_wm_class, NULL))
+        {
+            /* workaround: desktop window was active
+             *             set focused window opaque
+             */
+            if (strlen(reply_wm_class.class_name) == 0)
+                config->window = reply->focus;
             else
-                count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
-                    config->window, config->opacity);
+            {
+                for (ignore = config->ignore; ignore; ignore = ignore->next)
+                {
+                    if (strncmp(ignore->name, reply_wm_class.class_name, ignore->length) == 0)
+                    {
+                        config->window = reply->focus;
 
-            buffer[count] = '\0';
+                        break;
+                    }
+                }
+            }
 
-            xcb_config_command(buffer);
+            xcb_icccm_get_wm_class_reply_wipe(&reply_wm_class);
         }
+
+        opacity = 1.0f;
+        if (config->window != reply->focus)
+            opacity = config->opacity;
+
+        count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
+            config->window, opacity);
+
+        buffer[count] = '\0';
+
+        xcb_config_command(buffer);
 
         config->window = reply->focus;
 
