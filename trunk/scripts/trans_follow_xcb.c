@@ -95,10 +95,12 @@ int  xcb_config_run(int argc, char* argv[]);
 void xcb_config_parse(xcb_config_t* config, int argc, char* argv[]);
 int  xcb_config_error(xcb_config_t* config);
 void xcb_config_command(char const* command);
+void xcb_config_command_wrapper(xcb_window_t window, float opacity);
 int  xcb_config_init(xcb_config_t* config);
 void xcb_config_uninit(xcb_config_t* config);
 int  xcb_config_valid_window(xcb_config_t* config, xcb_window_t window);
 void xcb_config_find_parent(xcb_config_t* config, xcb_window_t* child);
+void xcb_config_set_all_opaque(xcb_config_t* config);
 void xcb_config_set_atom(xcb_config_t* config, char const* atom);
 void xcb_config_set_event_mask(xcb_config_t* config,
     uint16_t mask, uint32_t* values, unsigned int size);
@@ -187,6 +189,18 @@ void xcb_config_command(char const* command)
     int ignore = system(command);
 }
 
+void xcb_config_command_wrapper(xcb_window_t window, float opacity)
+{
+    char buffer[40];
+    int count;
+
+    count = sprintf(buffer, "transset-df -i 0x%x %1.3f", window, opacity);
+
+    buffer[count] = '\0';
+
+    xcb_config_command(buffer);
+}
+
 int  xcb_config_init(xcb_config_t* config)
 {
     int i;
@@ -237,6 +251,8 @@ void xcb_config_uninit(xcb_config_t* config)
         free(ignore);
     }
 
+    xcb_config_set_all_opaque(config);
+
     if (config->connection)
         xcb_disconnect(config->connection);
 }
@@ -286,6 +302,32 @@ void xcb_config_find_parent(xcb_config_t* config, xcb_window_t* child)
 
         cookie = xcb_query_tree_unchecked(config->connection, *child);
         reply = xcb_query_tree_reply(config->connection, cookie, NULL);
+    }
+}
+
+void xcb_config_set_all_opaque(xcb_config_t* config)
+{
+    unsigned int i;
+    unsigned int children;
+
+    xcb_query_tree_cookie_t cookie =
+        xcb_query_tree_unchecked(config->connection, config->screen->root);
+    xcb_query_tree_reply_t *tree =
+        xcb_query_tree_reply(config->connection, cookie, NULL);
+
+    if (tree)
+    {
+        children = xcb_query_tree_children_length(tree);
+
+        if (children > 0)
+        {
+            xcb_window_t* window = xcb_query_tree_children(tree);
+
+            for (i = 0; i < children; i++)
+                xcb_config_command_wrapper(window[i], 1.0f);
+        }
+
+	free(tree);
     }
 }
 
@@ -379,8 +421,6 @@ void xcb_config_event_property_notify(xcb_config_t* config,
 void xcb_config_event_property_update(xcb_config_t* config)
 {
     float opacity;
-    char buffer[40];
-    int count;
 
     xcb_config_ignore_list_t* ignore;
 
@@ -437,12 +477,7 @@ void xcb_config_event_property_update(xcb_config_t* config)
             if (config->window != reply->focus)
                 opacity = config->opacity;
 
-            count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
-                config->window, opacity);
-
-            buffer[count] = '\0';
-
-            xcb_config_command(buffer);
+            xcb_config_command_wrapper(config->window, opacity);
         }
 
         config->window = reply->focus;
