@@ -23,6 +23,27 @@
  */
 
 /*
+ * EXECUTE
+ *
+ * trans-follow
+ *
+ *     sets opacity to 0.75, no programs to ignore
+ *
+ * trans-follow <opacity>
+ *
+ *     sets opacity to <opacity>, no programs to ignore
+ *
+ * trans-follow <opacity> [ <ignore program> | ... ]
+ *
+ *     sets opacity to <opacity>, programs to ignore
+ *
+ *
+ * Example:
+ *
+ *     trans-follow 0.654 Firefox MPlayer
+ */
+
+/*
  * HACKING
  *
  * If you feel like hacking on this code, please follow current coding style.
@@ -76,6 +97,8 @@ int  xcb_config_error(xcb_config_t* config);
 void xcb_config_command(char const* command);
 int  xcb_config_init(xcb_config_t* config);
 void xcb_config_uninit(xcb_config_t* config);
+int  xcb_config_valid_window(xcb_config_t* config, xcb_window_t window);
+void xcb_config_find_parent(xcb_config_t* config, xcb_window_t* child);
 void xcb_config_set_atom(xcb_config_t* config, char const* atom);
 void xcb_config_set_event_mask(xcb_config_t* config,
     uint16_t mask, uint32_t* values, unsigned int size);
@@ -149,7 +172,7 @@ void xcb_config_parse(xcb_config_t* config, int argc, char* argv[])
             ignore->length = sizeof(argv[i]);
             ignore->name = argv[i];
             ignore->next = config->ignore;
-	    config->ignore = ignore;
+            config->ignore = ignore;
         }
     }
 }
@@ -203,7 +226,7 @@ void xcb_config_uninit(xcb_config_t* config)
         list = config->list;
         config->list = list->next;
 
-	free(list);
+        free(list);
     }
 
     while(config->ignore)
@@ -211,11 +234,59 @@ void xcb_config_uninit(xcb_config_t* config)
         ignore = config->ignore;
         config->ignore = ignore->next;
 
-	free(ignore);
+        free(ignore);
     }
 
     if (config->connection)
         xcb_disconnect(config->connection);
+}
+
+int  xcb_config_valid_window(xcb_config_t* config, xcb_window_t window)
+{
+    xcb_get_geometry_cookie_t cookie =
+        xcb_get_geometry_unchecked(config->connection, window);
+    xcb_get_geometry_reply_t* reply =
+        xcb_get_geometry_reply(config->connection, cookie, NULL);
+
+    if (reply)
+    {
+        free(reply);
+
+        return 1;
+    }
+    else
+        return 0;
+}
+
+void xcb_config_find_parent(xcb_config_t* config, xcb_window_t* child)
+{
+    uint32_t class = 0xffff0000;
+    uint32_t class_child, class_parent;
+
+    xcb_window_t parent;
+
+    xcb_query_tree_cookie_t cookie =
+        xcb_query_tree_unchecked(config->connection, *child);
+    xcb_query_tree_reply_t* reply =
+        xcb_query_tree_reply(config->connection, cookie, NULL);
+
+    while(reply)
+    {
+        parent = reply->parent;
+
+        free(reply);
+
+        class_child = *child & class;
+        class_parent = parent & class;
+
+        if (class_child == class_parent)
+            *child  = parent;
+        else
+            break;
+
+        cookie = xcb_query_tree_unchecked(config->connection, *child);
+        reply = xcb_query_tree_reply(config->connection, cookie, NULL);
+    }
 }
 
 void xcb_config_set_atom(xcb_config_t* config, char const* atom)
@@ -235,7 +306,7 @@ void xcb_config_set_atom(xcb_config_t* config, char const* atom)
         list->atom = reply->atom;
 
         iterator = config->list;
-	while(iterator && iterator->next)
+        while(iterator && iterator->next)
             iterator = iterator->next;
 
         if (iterator)
@@ -261,7 +332,7 @@ void xcb_config_set_atom(xcb_config_t* config, char const* atom)
         free(reply);
     }
     else
-    	free(list);
+        free(list);
 }
 
 void xcb_config_set_event_mask(xcb_config_t* config,
@@ -288,6 +359,8 @@ void xcb_config_event_loop(xcb_config_t* config)
 
         free(event);
     }
+
+    printf("closing\n");
 }
 
 void xcb_config_event_property_notify(xcb_config_t* config,
@@ -319,14 +392,25 @@ void xcb_config_event_property_update(xcb_config_t* config)
     if (reply)
     {
         xcb_get_property_cookie_t cookie_wm_class =
-            xcb_icccm_get_wm_class_unchecked(config->connection, config->window);
+            xcb_icccm_get_wm_class_unchecked(config->connection, reply->focus);
         xcb_icccm_get_wm_class_reply_t reply_wm_class;
 
         if (xcb_icccm_get_wm_class_reply(config->connection,
                 cookie_wm_class, &reply_wm_class, NULL))
+            xcb_icccm_get_wm_class_reply_wipe(&reply_wm_class);
+        else
+            /* focus is set to a child window
+             */
+            xcb_config_find_parent(config, &reply->focus);
+
+        cookie_wm_class =
+            xcb_icccm_get_wm_class_unchecked(config->connection,
+                config->window);
+
+        if (xcb_icccm_get_wm_class_reply(config->connection,
+                cookie_wm_class, &reply_wm_class, NULL))
         {
-            /* workaround: desktop window was active
-             *             set focused window opaque
+            /* root window was active set focused window opaque
              */
             if (strlen(reply_wm_class.class_name) == 0)
                 config->window = reply->focus;
@@ -334,7 +418,8 @@ void xcb_config_event_property_update(xcb_config_t* config)
             {
                 for (ignore = config->ignore; ignore; ignore = ignore->next)
                 {
-                    if (strncmp(ignore->name, reply_wm_class.class_name, ignore->length) == 0)
+                    if (strncmp(ignore->name, reply_wm_class.class_name,
+                        ignore->length) == 0)
                     {
                         config->window = reply->focus;
 
@@ -346,16 +431,19 @@ void xcb_config_event_property_update(xcb_config_t* config)
             xcb_icccm_get_wm_class_reply_wipe(&reply_wm_class);
         }
 
-        opacity = 1.0f;
-        if (config->window != reply->focus)
-            opacity = config->opacity;
+        if (xcb_config_valid_window(config, config->window))
+        {
+            opacity = 1.0f;
+            if (config->window != reply->focus)
+                opacity = config->opacity;
 
-        count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
-            config->window, opacity);
+            count = sprintf(buffer, "transset-df -i 0x%x %1.3f",
+                config->window, opacity);
 
-        buffer[count] = '\0';
+            buffer[count] = '\0';
 
-        xcb_config_command(buffer);
+            xcb_config_command(buffer);
+        }
 
         config->window = reply->focus;
 
