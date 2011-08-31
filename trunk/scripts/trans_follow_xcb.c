@@ -535,7 +535,7 @@ void register_signal_handlers()
 
 void signal_handler(int signal)
 {
-    if (global)
-        xcb_config_uninit(global);
+//    if (global)
+//        xcb_config_uninit(global);
 }
 
