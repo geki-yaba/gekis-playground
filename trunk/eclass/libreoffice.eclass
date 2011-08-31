@@ -581,6 +581,10 @@ libreoffice_src_install() {
 	# access
 	use prefix || chown -RP root:0 "${ED}"
 
+	# bash completion
+	dobashcompletion "${ED}"/etc/bash_completion.d/libreoffice.sh ${PN}
+	rm -rf "${ED}"/etc/
+
 	if use branding; then
 		insinto /usr/$(get_libdir)/${PN}/program
 		newins "${WORKDIR}/branding-sofficerc" sofficerc || die
@@ -601,10 +605,6 @@ libreoffice_pkg_postinst() {
 
 	# hardened
 	_libreoffice_pax_fix
-
-	# bash-completion postinst
-	BASHCOMPLETION_NAME="libreoffice"
-	bash-completion_pkg_postinst
 
 	# info
 	elog " To start LibreOffice, run:"

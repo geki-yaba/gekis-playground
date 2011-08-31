@@ -59,6 +59,7 @@
  * Please send your changes with description to my email address above.
  */
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -91,23 +92,30 @@ typedef struct xcb_config_t {
     xcb_config_ignore_list_t* ignore;
 } xcb_config_t;
 
+/* signal handler data */
+static xcb_config_t* global = NULL;
+
 int  xcb_config_run(int argc, char* argv[]);
 void xcb_config_parse(xcb_config_t* config, int argc, char* argv[]);
 int  xcb_config_error(xcb_config_t* config);
 void xcb_config_command(char const* command);
 void xcb_config_command_wrapper(xcb_window_t window, float opacity);
 int  xcb_config_init(xcb_config_t* config);
-void xcb_config_uninit(xcb_config_t* config);
+static void xcb_config_uninit(xcb_config_t* config);
 int  xcb_config_valid_window(xcb_config_t* config, xcb_window_t window);
 void xcb_config_find_parent(xcb_config_t* config, xcb_window_t* child);
 void xcb_config_set_all_opaque(xcb_config_t* config);
 void xcb_config_set_atom(xcb_config_t* config, char const* atom);
+void xcb_config_set_error(xcb_config_t* config, int error);
 void xcb_config_set_event_mask(xcb_config_t* config,
     uint16_t mask, uint32_t* values, unsigned int size);
 void xcb_config_event_loop(xcb_config_t* config);
 void xcb_config_event_property_notify(xcb_config_t* config,
     xcb_generic_event_t* event);
 void xcb_config_event_property_update(xcb_config_t* config);
+
+void register_signal_handlers();
+static void signal_handler(int signal);
 
 int main(int argc, char* argv[])
 {
@@ -122,6 +130,8 @@ int  xcb_config_run(int argc, char* argv[])
     uint32_t values[size];
 
     xcb_config_t config;
+
+    register_signal_handlers();
 
     int error = xcb_config_init(&config);
 
@@ -206,7 +216,7 @@ int  xcb_config_init(xcb_config_t* config)
     int i;
 
     config->connection = xcb_connect(NULL, &config->screen_no);
-    config->error = xcb_connection_has_error(config->connection);
+    xcb_config_set_error(config, xcb_connection_has_error(config->connection));
 
     config->screen = NULL;
     config->window = 0;
@@ -215,6 +225,9 @@ int  xcb_config_init(xcb_config_t* config)
 
     if (! xcb_config_error(config))
     {
+        /* register as global for signal handler */
+        global = config;
+
         xcb_setup_t const* setup = xcb_get_setup(config->connection);
         xcb_screen_iterator_t iterator = xcb_setup_roots_iterator(setup);  
 
@@ -224,7 +237,7 @@ int  xcb_config_init(xcb_config_t* config)
         config->screen = iterator.data;
 
         if (! config->screen)
-            config->error = 1;
+            xcb_config_set_error(config, 1);
     }
 
     return xcb_config_error(config);
@@ -233,28 +246,42 @@ int  xcb_config_init(xcb_config_t* config)
 void xcb_config_uninit(xcb_config_t* config)
 {
     xcb_atom_list_t* list;
+    xcb_atom_list_t* list_tmp;
     xcb_config_ignore_list_t* ignore;
+    xcb_config_ignore_list_t* ignore_tmp;
+    xcb_connection_t* connection;
 
-    while(config->list)
+    list = config->list;
+    config->list = NULL;
+
+    while(list)
     {
-        list = config->list;
-        config->list = list->next;
+        list_tmp = list;
+        list = list_tmp->next;
 
-        free(list);
+        free(list_tmp);
     }
 
-    while(config->ignore)
+    ignore = config->ignore;
+    config->ignore = NULL;
+
+    while(ignore)
     {
-        ignore = config->ignore;
-        config->ignore = ignore->next;
+        ignore_tmp = ignore;
+        ignore = ignore_tmp->next;
 
         free(ignore);
     }
 
-    xcb_config_set_all_opaque(config);
+    connection = config->connection;
+    config->connection = NULL;
 
-    if (config->connection)
-        xcb_disconnect(config->connection);
+    if (connection)
+    {
+        xcb_config_set_all_opaque(config);
+
+        xcb_disconnect(connection);
+    }
 }
 
 int  xcb_config_valid_window(xcb_config_t* config, xcb_window_t window)
@@ -276,7 +303,7 @@ int  xcb_config_valid_window(xcb_config_t* config, xcb_window_t window)
 
 void xcb_config_find_parent(xcb_config_t* config, xcb_window_t* child)
 {
-    uint32_t class = 0xffff0000;
+    const uint32_t class = 0xffff0000;
     uint32_t class_child, class_parent;
 
     xcb_window_t parent;
@@ -295,6 +322,7 @@ void xcb_config_find_parent(xcb_config_t* config, xcb_window_t* child)
         class_child = *child & class;
         class_parent = parent & class;
 
+        /* not proper but simple :) */
         if (class_child == class_parent)
             *child  = parent;
         else
@@ -324,7 +352,8 @@ void xcb_config_set_all_opaque(xcb_config_t* config)
             xcb_window_t* window = xcb_query_tree_children(tree);
 
             for (i = 0; i < children; i++)
-                xcb_config_command_wrapper(window[i], 1.0f);
+                if (xcb_config_valid_window(config, window[i]))
+                    xcb_config_command_wrapper(window[i], 1.0f);
         }
 
 	free(tree);
@@ -377,6 +406,11 @@ void xcb_config_set_atom(xcb_config_t* config, char const* atom)
         free(list);
 }
 
+void xcb_config_set_error(xcb_config_t* config, int error)
+{
+    config->error = error;
+}
+
 void xcb_config_set_event_mask(xcb_config_t* config,
     uint16_t mask, uint32_t* values, unsigned int size)
 {
@@ -390,6 +424,9 @@ void xcb_config_event_loop(xcb_config_t* config)
 
     while(event = xcb_wait_for_event(config->connection))
     {
+        if (xcb_connection_has_error(config->connection))
+            break;
+
         switch(event->response_type & XCB_EVENT_RESPONSE_TYPE_MASK)
         {
             case XCB_PROPERTY_NOTIFY:
@@ -401,6 +438,9 @@ void xcb_config_event_loop(xcb_config_t* config)
 
         free(event);
     }
+
+    if (event)
+        free(event);
 
     printf("closing\n");
 }
@@ -484,5 +524,18 @@ void xcb_config_event_property_update(xcb_config_t* config)
 
         free(reply);
     }
+}
+
+void register_signal_handlers()
+{
+    signal(SIGKILL, signal_handler);
+    signal(SIGSEGV, signal_handler);
+    signal(SIGTERM, signal_handler);
+}
+
+void signal_handler(int signal)
+{
+    if (global)
+        xcb_config_uninit(global);
 }
 
