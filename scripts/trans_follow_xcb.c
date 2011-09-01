@@ -4,6 +4,8 @@
  *        Purpose: Set opacity for all windows.
  *                 The focused window is opaque.
  *
+ *        Version: 0.1
+ *
  * Contributor(s): None
  *
  * Based on the work of ADcomp <david.madbox@gmail.com> [ http://www.ad-comp.be/ ]
@@ -143,8 +145,8 @@ int  xcb_config_run(int argc, char* argv[])
         values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
 
         xcb_config_set_event_mask(&config, mask, values, size);
-        xcb_config_set_atom(&config, "_NET_ACTIVE_WINDOW");
         xcb_config_set_atom(&config, "_NET_CURRENT_DESKTOP");
+        xcb_config_set_atom(&config, "_NET_ACTIVE_WINDOW");
 
         xcb_config_event_loop(&config);
     }
@@ -334,15 +336,11 @@ void xcb_config_set_all_opaque(xcb_config_t* config)
     if (tree)
     {
         children = xcb_query_tree_children_length(tree);
+        xcb_window_t* window = xcb_query_tree_children(tree);
 
-        if (children > 0)
-        {
-            xcb_window_t* window = xcb_query_tree_children(tree);
-
-            for (i = 0; i < children; i++)
-                if (xcb_config_valid_window(config, window[i]))
-                    xcb_config_command_wrapper(window[i], 1.0f);
-        }
+        for (i = 0; i < children; i++)
+            if (xcb_config_valid_window(config, window[i]))
+                xcb_config_command_wrapper(window[i], 1.0f);
 
         free(tree);
     }
@@ -355,23 +353,16 @@ void xcb_config_set_atom(xcb_config_t* config, char const* atom)
     xcb_intern_atom_reply_t* reply;
 
     list = (xcb_atom_list_t*)malloc(sizeof(xcb_atom_list_t));
-    list->next = NULL;
 
-    list->cookie = xcb_intern_atom_unchecked(config->connection, 1, strlen(atom), atom);
+    list->cookie =
+        xcb_intern_atom_unchecked(config->connection, 1, strlen(atom), atom);
     reply = xcb_intern_atom_reply(config->connection, list->cookie, NULL);
 
     if (reply)
     {
         list->atom = reply->atom;
-
-        iterator = config->list;
-        while(iterator && iterator->next)
-            iterator = iterator->next;
-
-        if (iterator)
-            iterator->next = list;
-        else
-            config->list = list;
+        list->next = config->list;
+        config->list = list;
 
         xcb_get_property_cookie_t cookie_property =
             xcb_get_property_unchecked(config->connection, 0, config->screen->root,
@@ -434,8 +425,6 @@ void xcb_config_event_loop(xcb_config_t* config)
 
     if (event)
         free(event);
-
-    printf("closing\n");
 }
 
 int  xcb_config_event_property_notify(xcb_config_t* config,
