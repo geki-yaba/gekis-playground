@@ -101,7 +101,7 @@ int  xcb_config_error(xcb_config_t* config);
 void xcb_config_command(char const* command);
 void xcb_config_command_wrapper(xcb_window_t window, float opacity);
 int  xcb_config_init(xcb_config_t* config);
-static void xcb_config_uninit(xcb_config_t* config);
+void xcb_config_uninit(xcb_config_t* config);
 int  xcb_config_valid_window(xcb_config_t* config, xcb_window_t window);
 void xcb_config_find_parent(xcb_config_t* config, xcb_window_t* child);
 void xcb_config_set_all_opaque(xcb_config_t* config);
@@ -110,7 +110,7 @@ void xcb_config_set_error(xcb_config_t* config, int error);
 void xcb_config_set_event_mask(xcb_config_t* config,
     uint16_t mask, uint32_t* values, unsigned int size);
 void xcb_config_event_loop(xcb_config_t* config);
-void xcb_config_event_property_notify(xcb_config_t* config,
+int  xcb_config_event_property_notify(xcb_config_t* config,
     xcb_generic_event_t* event);
 void xcb_config_event_property_update(xcb_config_t* config);
 
@@ -246,41 +246,29 @@ int  xcb_config_init(xcb_config_t* config)
 void xcb_config_uninit(xcb_config_t* config)
 {
     xcb_atom_list_t* list;
-    xcb_atom_list_t* list_tmp;
     xcb_config_ignore_list_t* ignore;
-    xcb_config_ignore_list_t* ignore_tmp;
-    xcb_connection_t* connection;
 
-    list = config->list;
-    config->list = NULL;
-
-    while(list)
+    while(config->list)
     {
-        list_tmp = list;
-        list = list_tmp->next;
+        list = config->list;
+        config->list = list->next;
 
-        free(list_tmp);
+        free(list);
     }
 
-    ignore = config->ignore;
-    config->ignore = NULL;
-
-    while(ignore)
+    while(config->ignore)
     {
-        ignore_tmp = ignore;
-        ignore = ignore_tmp->next;
+        ignore = config->ignore;
+        config->ignore = ignore->next;
 
         free(ignore);
     }
 
-    connection = config->connection;
-    config->connection = NULL;
-
-    if (connection)
+    if (config->connection)
     {
         xcb_config_set_all_opaque(config);
 
-        xcb_disconnect(connection);
+        xcb_disconnect(config->connection);
     }
 }
 
@@ -356,7 +344,7 @@ void xcb_config_set_all_opaque(xcb_config_t* config)
                     xcb_config_command_wrapper(window[i], 1.0f);
         }
 
-	free(tree);
+        free(tree);
     }
 }
 
@@ -420,6 +408,7 @@ void xcb_config_set_event_mask(xcb_config_t* config,
 
 void xcb_config_event_loop(xcb_config_t* config)
 {
+    int done = 0;
     xcb_generic_event_t* event;
 
     while(event = xcb_wait_for_event(config->connection))
@@ -430,13 +419,17 @@ void xcb_config_event_loop(xcb_config_t* config)
         switch(event->response_type & XCB_EVENT_RESPONSE_TYPE_MASK)
         {
             case XCB_PROPERTY_NOTIFY:
-                xcb_config_event_property_notify(config, event);
+                done = xcb_config_event_property_notify(config, event);
                 break;
             default:
                 break;
         }
 
         free(event);
+        event = NULL;
+
+        if (done)
+            break;
     }
 
     if (event)
@@ -445,17 +438,22 @@ void xcb_config_event_loop(xcb_config_t* config)
     printf("closing\n");
 }
 
-void xcb_config_event_property_notify(xcb_config_t* config,
+int  xcb_config_event_property_notify(xcb_config_t* config,
     xcb_generic_event_t* event)
 {
     xcb_property_notify_event_t const* property = 
         (xcb_property_notify_event_t const*)event;
+
+    if (property->window == 0)
+        return 1;
 
     xcb_atom_list_t* list;
 
     for (list = config->list; list; list = list->next)
         if (property->atom == list->atom)
             xcb_config_event_property_update(config);
+
+    return 0;
 }
 
 void xcb_config_event_property_update(xcb_config_t* config)
@@ -479,8 +477,7 @@ void xcb_config_event_property_update(xcb_config_t* config)
                 cookie_wm_class, &reply_wm_class, NULL))
             xcb_icccm_get_wm_class_reply_wipe(&reply_wm_class);
         else
-            /* focus is set to a child window
-             */
+            /* focus is set to a child window */
             xcb_config_find_parent(config, &reply->focus);
 
         cookie_wm_class =
@@ -490,8 +487,7 @@ void xcb_config_event_property_update(xcb_config_t* config)
         if (xcb_icccm_get_wm_class_reply(config->connection,
                 cookie_wm_class, &reply_wm_class, NULL))
         {
-            /* root window was active set focused window opaque
-             */
+            /* root window was active set focused window opaque */
             if (strlen(reply_wm_class.class_name) == 0)
                 config->window = reply->focus;
             else
@@ -518,7 +514,9 @@ void xcb_config_event_property_update(xcb_config_t* config)
                 opacity = config->opacity;
 
             xcb_config_command_wrapper(config->window, opacity);
-        }
+        /* window was closed */
+        } else if (xcb_config_valid_window(config, reply->focus))
+            xcb_config_command_wrapper(reply->focus, 1.0f);
 
         config->window = reply->focus;
 
@@ -529,13 +527,22 @@ void xcb_config_event_property_update(xcb_config_t* config)
 void register_signal_handlers()
 {
     signal(SIGKILL, signal_handler);
-    signal(SIGSEGV, signal_handler);
     signal(SIGTERM, signal_handler);
 }
 
 void signal_handler(int signal)
 {
-//    if (global)
-//        xcb_config_uninit(global);
+    if (global)
+    {
+        xcb_property_notify_event_t* event = (xcb_property_notify_event_t*)
+            malloc(sizeof(xcb_property_notify_event_t));
+        memset(event, 0, sizeof(xcb_property_notify_event_t));
+
+        event->response_type = XCB_PROPERTY_NOTIFY;
+
+        xcb_send_event(global->connection, 0, global->screen->root,
+            XCB_EVENT_MASK_PROPERTY_CHANGE, (char const*)event);
+        xcb_flush(global->connection);
+    }
 }
 
