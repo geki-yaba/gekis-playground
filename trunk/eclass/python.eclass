@@ -2131,7 +2131,9 @@ else:
 	# Python 2
 	stdout = sys.stdout
 
-files = set(open('${T}/python_wrapper_scripts', 'rb').read().rstrip(${b}'\x00').split(${b}'\x00'))
+python_wrapper_scripts_file = open('${T}/python_wrapper_scripts', 'rb')
+files = set(python_wrapper_scripts_file.read().rstrip(${b}'\x00').split(${b}'\x00'))
+python_wrapper_scripts_file.close()
 
 for file in sorted(files):
 	stdout.write(file)
@@ -2206,8 +2208,8 @@ python_set_active_version() {
 }
 
 # @FUNCTION: python_need_rebuild
-# @DESCRIPTION: Mark current package for rebuilding by python-updater after
-# switching of active version of Python.
+# @DESCRIPTION:
+# Mark current package for rebuilding by python-updater after switching of active version of Python.
 python_need_rebuild() {
 	if _python_package_supporting_installation_for_multiple_python_abis; then
 		die "${FUNCNAME}() cannot be used in ebuilds of packages supporting installation for multiple Python ABIs"
