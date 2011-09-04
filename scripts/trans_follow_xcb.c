@@ -4,7 +4,7 @@
  *        Purpose: Set opacity for all windows.
  *                 The focused window is opaque.
  *
- *        Version: 0.1
+ *        Version: 0.1.x
  *
  * Contributor(s): None
  *

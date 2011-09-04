@@ -18,7 +18,7 @@
 
 EAPI="4"
 
-_libreoffice_python="<<*:2.6:3.1[threads,xml]>>"
+_libreoffice_python="<<*:3.1:3.1[threads,xml]>>"
 PYTHON_BDEPEND="${_libreoffice_python}"
 PYTHON_DEPEND="python? ( ${_libreoffice_python} )"
 
@@ -43,19 +43,15 @@ LICENSE="LGPL-3"
 RESTRICT="binchecks mirror test"
 
 IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk
-jemalloc junit kde languagetool ldap mysql nsplugin odbc odk offlinehelp opengl
-+python reportbuilder templates webdav wiki"
+jemalloc junit kde languagetool ldap mysql nsplugin odbc odk opengl +python
+reportbuilder templates webdav wiki"
 # mono, postgres - system only diff available - no chance to choose! :(
 
 [[ ${PV} == *_pre ]] && IUSE+=" gtk3"
 [[ ${PV} != *_pre ]] && IUSE+=" cups"
 
-# available languages
-LANGUAGES="af ar as ast be_BY bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
-en en_GB en_ZA eo es et eu fa fi fr ga gd gl gu he hi hr hu id is it ja ka kk km
-kn kok ko ks ku ky lo lt lv mai mk ml mn mni mr ms my nb ne nl nn nr ns oc om or
-pa pap pl ps pt pt_BR ro ru rw sat sd sh si sk sl sq sr ss st sv sw_TZ ta te tg
-th ti tn tr ts ug uk uz ve vi xh zh_CN zh_TW zu"
+# available template languages
+LANGUAGES="de en en_GB en_ZA es fr hu it"
 
 for language in ${LANGUAGES}; do
 	IUSE+=" linguas_${language}"
@@ -92,7 +88,7 @@ SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )
 if [[ ${PV} != *_pre ]]; then
 MODULES="artwork base calc components extensions extras filters help impress
 libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
-writer translations"
+writer"
 
 	SRC_URI+=" ${LIBRE_URI}/${PN}-bootstrap-${PV}.tar.bz2"
 
@@ -100,19 +96,8 @@ writer translations"
 		SRC_URI+=" ${LIBRE_URI}/${PN}-${module}-${PV}.tar.bz2"
 	done
 else
-MODULES="core help translations"
+MODULES="core help"
 fi
-
-# available app-dicts/myspell dictionaries
-MYSPELLS="af bg ca cs cy da de el en eo es et fr ga gl he hr hu it ku lt mk nb
-nl nn pl pt ru sk sl sv tn zu"
-
-SDEPEND=""
-for language in ${MYSPELLS}; do
-	SDEPEND+=" linguas_${language}? ( app-dicts/myspell-${language} )"
-done
-
-PDEPEND="${SDEPEND}"
 
 #	>=dev-libs/xmlsec-1.2.14
 #	reportbuilder? ( dev-java/sac
@@ -196,12 +181,14 @@ else
 CDEPEND+=" cups? ( net-print/cups )"
 fi
 
+PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
+
 RDEPEND="${CDEPEND}
-	java? ( >=virtual/jre-1.5 )"
+	java? ( >=virtual/jre-1.6 )"
 
 DEPEND="${CDEPEND}
 	!dev-util/dmake
-	java? ( >=virtual/jdk-1.5
+	java? ( >=virtual/jdk-1.6
 		dev-java/ant-core )
 	junit? ( dev-java/junit:4 )
 	odbc? ( dev-db/unixODBC )
@@ -275,15 +262,8 @@ libreoffice_pkg_setup() {
 	use kde && kde4-base_pkg_setup
 
 	# python
-	local python_version=2
-	# python 3 if skipping translate-toolkit
-	[ -z "${LINGUAS}" ] && python_version=3
-
-	python_set_active_version ${python_version}
+	python_set_active_version 3
 	python_pkg_setup
-
-	# lang setup
-	strip-linguas ${LANGUAGES}
 }
 
 libreoffice_src_unpack() {
@@ -364,19 +344,6 @@ libreoffice_src_prepare() {
 	# allow user to apply any additional patches without modifying ebuild
 	epatch_user
 
-	# lang conf (i103809)
-	local languages
-	if [ -z "${LINGUAS}" ] || [[ ${LINGUAS} == en ]]; then
-		languages=
-	# but if localized we want en-US for broken code and sdk
-	# case: en lingua already set
-	elif [[ ${LINGUAS} =~ en( |$) ]]; then
-		languages="$(sed -e 's/\ben\b/en_US/;s/_/-/g' <<< ${LINGUAS})"
-	# case: en_US lingua not set, add
-	else
-		languages="en-US ${LINGUAS//_/-}"
-	fi
-
 	# create distro config
 	local config="${S}/distro-configs/GentooUnstable.conf"
 	sed -e /^#/d \
@@ -392,7 +359,6 @@ libreoffice_src_prepare() {
 	echo "--docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${config}
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${config}
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
-	echo "--with-lang=${languages}" >> ${config}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
 	use branding && echo "--with-about-bitmap=${WORKDIR}/branding-about.png" >> ${config}
 	use branding && echo "--with-intro-bitmap=${WORKDIR}/branding-intro.png" >> ${config}
@@ -419,7 +385,6 @@ libreoffice_src_prepare() {
 	# internal
 	echo "$(use_enable dbus)" >> ${config}
 	echo "$(use_enable debug symbols)" >> ${config}
-	echo "$(use_with offlinehelp helppack-integration)" >> ${config}
 	use jemalloc && echo "--with-alloc=jemalloc" >> ${config}
 
 	# system
@@ -678,3 +643,4 @@ _libreoffice_die() {
 	# python version
 	echo "Python: $(python_get_version)"
 }
+
