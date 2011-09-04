@@ -4,7 +4,7 @@
  *        Purpose: Set opacity for all windows.
  *                 The focused window is opaque.
  *
- *        Version: 0.1.x
+ *        Version: 0.1.1
  *
  * Contributor(s): None
  *
@@ -168,7 +168,7 @@ void xcb_config_parse(xcb_config_t* config, int argc, char* argv[])
         sscanf(argv[1], "%5f", &opacity);
 
         if ((0.0f > opacity) || (opacity > 1.0f))
-            opacity = 1.0f;
+            opacity = .999f;
     }
     else
         opacity = 0.75f;
@@ -338,7 +338,7 @@ void xcb_config_set_all_opaque(xcb_config_t* config)
 
         for (i = 0; i < children; i++)
             if (xcb_config_valid_window(config, window[i]))
-                xcb_config_command_wrapper(window[i], 1.0f);
+                xcb_config_command_wrapper(window[i], .999f);
 
         free(tree);
     }
@@ -503,7 +503,7 @@ void xcb_config_event_property_update(xcb_config_t* config)
 
         if (xcb_config_valid_window(config, config->window))
         {
-            opacity = 1.0f;
+            opacity = .999f;
             if (config->window != reply->focus)
                 opacity = config->opacity;
 
@@ -511,7 +511,7 @@ void xcb_config_event_property_update(xcb_config_t* config)
         }
         /* window was closed */
         else if (xcb_config_valid_window(config, reply->focus))
-            xcb_config_command_wrapper(reply->focus, 1.0f);
+            xcb_config_command_wrapper(reply->focus, .999f);
 
         config->window = reply->focus;
 
