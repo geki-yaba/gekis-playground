@@ -4,14 +4,15 @@
 
 EAPI="4"
 
-inherit alternatives base
+inherit alternatives
 
 DESCRIPTION="WordPerfect Document import/export library"
 HOMEPAGE="http://libwpd.sf.net"
 SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
 
-LICENSE="LGPL-2.1"
 SLOT="0.9"
+
+LICENSE="LGPL-2.1"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd ~x86-freebsd ~amd64-linux ~x86-linux ~ppc-macos ~sparc-solaris ~x64-solaris ~x86-solaris"
 IUSE="doc debug static-libs test tools"
 
@@ -19,15 +20,14 @@ DEPEND="dev-util/pkgconfig
 	doc? ( app-doc/doxygen )
 	test? ( dev-util/cppunit )"
 
-PATCHES=( "${FILESDIR}/${PN}-0.9.1-test-build.diff" )
-
 src_configure() {
 	econf $(use_with doc docs) \
 		$(use_enable debug) \
 		$(use_enable static-libs static) \
 		--docdir="${EPREFIX%/}/usr/share/doc/${PF}" \
 		--program-suffix=-${SLOT} \
-		--disable-dependency-tracking
+		--disable-dependency-tracking \
+		--disable-werror
 }
 
 src_install() {

@@ -8,7 +8,7 @@ LIBRE_URI="http://dev-builds.libreoffice.org/pre-releases/src"
 inherit libreoffice
 
 # keywords
-KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86"
+KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux"
 
 # root
 S="${WORKDIR}/${PN}-bootstrap-${PV}"

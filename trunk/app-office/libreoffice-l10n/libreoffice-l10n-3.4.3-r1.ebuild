@@ -1,0 +1,101 @@
+# Copyright 1999-2011 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+EAPI="4"
+
+inherit eutils rpm versionator
+
+DESCRIPTION="Translations for LibreOffice"
+HOMEPAGE="http://www.libreoffice.org"
+
+SLOT="0"
+
+LICENSE="LGPL-3"
+KEYWORDS="~amd64 ~ppc ~ppc64 +sparc ~x86 ~amd64-linux ~x86-linux"
+IUSE="offlinehelp"
+
+RESTRICT="strip"
+
+LANGUAGES="af ar as ast be bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
+en en_GB en_ZA eo es et eu fa fi fr ga gl gu he hi hr hu id is it ja ka kk km
+kn kok ko ks ku lo lt lv mai mk ml mn mni mr my nb ne nl nn nr nso oc om or
+pa_IN pl pt pt_BR ro ru rw sat sd sh si sk sl sq sr ss st sv sw_TZ ta te tg
+th tn tr ts ug uk uz ve vi xh zh_CN zh_TW zu"
+LANGUAGES_HELP="bg bn bo bs ca ca_XV cs da de dz el en-US en-GB en-ZA eo es et
+eu fi fr gl gu he hi hr hu id is it ja ka km ko mk nb ne nl nn om pl pt pt_BR ru
+si sk sl sq sv tg tr ug uk vi zh_CN zh_TW"
+
+MY_PN="${PN/-l10n/}"
+BASE_URI="http://download.documentfoundation.org/${MY_PN}/stable/${PV}/rpm"
+RPM_LANG_URI="${BASE_URI}/x86/LibO_${PV}_Linux_x86_langpack-rpm"
+RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"
+
+for language in ${LANGUAGES}; do
+	helppack="" langpack=""
+	lang="${language/_/-}"
+
+	[[ ${language} == en ]] && lang="en-US" \
+		|| langpack="${RPM_LANG_URI}_${lang}.tar.gz"
+	[[ "${LANGUAGES_HELP}" =~ "${language}" ]] \
+		&& helppack="offlinehelp? ( ${RPM_HELP_URI}_${lang}.tar.gz )"
+	IUSE+=" linguas_${language}"
+	SRC_URI+=" linguas_${language}? ( ${langpack} ${helppack} )"
+done
+
+# available app-dicts/myspell dictionaries
+MYSPELLS="af bg ca cs cy da de el en eo es et fr ga gl he hr hu it ku lt mk nb
+nl nn pl pt ru sk sl sv tn zu"
+
+SDEPEND=""
+for language in ${MYSPELLS}; do
+	SDEPEND+=" linguas_${language}? ( app-dicts/myspell-${language} )"
+done
+
+DEPEND="=app-office/libreoffice-${PV}*"
+PDEPEND="${SDEPEND}"
+
+S="${WORKDIR}"
+
+src_unpack() {
+	default
+
+	for language in ${LINGUAS//_/-}; do
+		lang_path="LibO_${PV}rc2_Linux_x86_langpack-rpm_${language}/RPMS/"
+		help_path=${lang_path/langpack/helppack}
+
+		if [[ ${language} != en ]]; then
+			[ -d "${S}"/${lang_path} ] || die "${S}/${lang_path} not found!"
+
+			# remove dictionaries
+			rm -v "${S}"/${lang_path}/*dict*.rpm
+
+			rpm_unpack ./${lang_path}/*.rpm
+		fi
+
+		if use offlinehelp; then
+			[[ ${language} == en ]] && language="en-US"
+
+			[ -d "${S}"/${help_path} ] || die "${S}/${help_path} not found!"
+
+			rpm_unpack ./${help_path}/*.rpm
+		fi
+	done
+}
+
+src_prepare() { :; }
+
+src_configure() { :; }
+
+src_compile() { :; }
+
+src_install() {
+	local version="$(get_version_component_range 1-2)"
+
+	# no linguas set or en without offlinehelp
+	if [ -d "${S}"/opt/${MY_PN}${version} ] ; then
+		insinto /usr/$(get_libdir)/${MY_PN}
+		doins -r "${S}"/opt/${MY_PN}${version}/*
+	fi
+}
+
