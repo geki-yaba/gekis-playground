@@ -282,13 +282,11 @@ int  xcb_config_valid_window(xcb_config_t* config, xcb_window_t window)
         xcb_get_geometry_reply(config->connection, cookie, NULL);
 
     if (reply)
-    {
         free(reply);
-
-        return 1;
-    }
     else
         return 0;
+
+    return 1;
 }
 
 void xcb_config_find_parent(xcb_config_t* config, xcb_window_t* child)
@@ -365,8 +363,9 @@ void xcb_config_set_atom(xcb_config_t* config, char const* atom)
         config->list = list;
 
         xcb_get_property_cookie_t cookie_property =
-            xcb_get_property_unchecked(config->connection, 0, config->screen->root,
-                list->atom, XCB_ATOM_WINDOW, 0, UINT32_MAX);
+            xcb_get_property_unchecked(config->connection, 0,
+                config->screen->root, list->atom,
+                XCB_ATOM_WINDOW, 0, UINT32_MAX);
         xcb_get_property_reply_t* reply_property =
             xcb_get_property_reply(config->connection, cookie_property, NULL);
 
@@ -433,14 +432,20 @@ int  xcb_config_event_property_notify(xcb_config_t* config,
     xcb_property_notify_event_t const* property = 
         (xcb_property_notify_event_t const*)event;
 
-    if (property->window == 0)
+    if (property->window == XCB_WINDOW_NONE)
         return 1;
 
     xcb_atom_list_t* list;
 
     for (list = config->list; list; list = list->next)
+    {
         if (property->atom == list->atom)
+        {
             xcb_config_event_property_update(config);
+
+            break;
+        }
+    }
 
     return 0;
 }
@@ -503,8 +508,9 @@ void xcb_config_event_property_update(xcb_config_t* config)
                 opacity = config->opacity;
 
             xcb_config_command_wrapper(config->window, opacity);
+        }
         /* window was closed */
-        } else if (xcb_config_valid_window(config, reply->focus))
+        else if (xcb_config_valid_window(config, reply->focus))
             xcb_config_command_wrapper(reply->focus, 1.0f);
 
         config->window = reply->focus;
@@ -521,17 +527,24 @@ void register_signal_handlers()
 
 void signal_handler(int signal)
 {
+    xcb_connection_t* connection;
+    xcb_window_t window;
+
     if (global)
     {
+        connection = global->connection;
+        window = global->screen->root;
+        global = NULL;
+
         xcb_property_notify_event_t* event = (xcb_property_notify_event_t*)
             malloc(sizeof(xcb_property_notify_event_t));
         memset(event, 0, sizeof(xcb_property_notify_event_t));
 
         event->response_type = XCB_PROPERTY_NOTIFY;
 
-        xcb_send_event(global->connection, 0, global->screen->root,
+        xcb_send_event(connection, 0, window,
             XCB_EVENT_MASK_PROPERTY_CHANGE, (char const*)event);
-        xcb_flush(global->connection);
+        xcb_flush(connection);
     }
 }
 
