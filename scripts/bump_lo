@@ -86,7 +86,8 @@ fetch_list ()
 	wget http://cgit.freedesktop.org/libreoffice/bootstrap/plain/${LIST}?id=${TAG} -O ${LIST}
 
 	# remove foo
-	sed -e /^$/d -e /^@/d -e /README/d -e /LICENSE/d -e /Python/d -e /seamonkey/d -i ${LIST}
+	sed -e /^$/d -e /^@/d -e /README/d -e /LICENSE/d -e /Python/d \
+		-e /seamonkey/d -e /xpdf/d -i ${LIST}
 
 	# update paths
 	sed -e "s#http://hg.services.openoffice.org/binaries#http://dev-www.libreoffice.org/src#" \
