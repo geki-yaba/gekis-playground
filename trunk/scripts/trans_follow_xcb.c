@@ -4,7 +4,7 @@
  *        Purpose: Set opacity for all windows.
  *                 The focused window is opaque.
  *
- *        Version: 0.1.1
+ *        Version: 0.1.x
  *
  * Contributor(s): None
  *
@@ -85,8 +85,8 @@ typedef struct xcb_atom_list_t {
 
 typedef struct xcb_config_t {
     int error;
-    float opacity;
     int screen_no;
+    float opacity;
     xcb_connection_t* connection;
     xcb_screen_t* screen;
     xcb_window_t window;
@@ -220,8 +220,9 @@ int  xcb_config_init(xcb_config_t* config)
     config->connection = xcb_connect(NULL, &config->screen_no);
     xcb_config_set_error(config, xcb_connection_has_error(config->connection));
 
+    config->opacity = .999f;
     config->screen = NULL;
-    config->window = 0;
+    config->window = XCB_WINDOW_NONE;
     config->list = NULL;
     config->ignore = NULL;
 

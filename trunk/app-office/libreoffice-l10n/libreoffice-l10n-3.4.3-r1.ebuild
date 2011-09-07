@@ -32,7 +32,7 @@ RPM_LANG_URI="${BASE_URI}/x86/LibO_${PV}_Linux_x86_langpack-rpm"
 RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"
 
 for language in ${LANGUAGES}; do
-	helppack="" langpack=""
+	langpack="" helppack=""
 	lang="${language/_/-}"
 
 	[[ ${language} == en ]] && lang="en-US" \
@@ -57,12 +57,16 @@ PDEPEND="${SDEPEND}"
 
 S="${WORKDIR}"
 
+pkg_setup() {
+	strip-linguas ${LANGUAGES}
+}
+
 src_unpack() {
 	default
 
 	for language in ${LINGUAS//_/-}; do
 		lang_path="LibO_${PV}rc2_Linux_x86_langpack-rpm_${language}/RPMS/"
-		help_path=${lang_path/langpack/helppack}
+		help_path="${lang_path/langpack/helppack}"
 
 		if [[ ${language} != en ]]; then
 			[ -d "${S}"/${lang_path} ] || die "${S}/${lang_path} not found!"
@@ -73,9 +77,8 @@ src_unpack() {
 			rpm_unpack ./${lang_path}/*.rpm
 		fi
 
-		if use offlinehelp; then
-			[[ ${language} == en ]] && language="en-US"
-
+		[[ ${language} == en ]] && language="en-US"
+		if [[ "${LANGUAGES_HELP}" =~ "${language}" ]] && use offlinehelp; then
 			[ -d "${S}"/${help_path} ] || die "${S}/${help_path} not found!"
 
 			rpm_unpack ./${help_path}/*.rpm
@@ -91,11 +94,12 @@ src_compile() { :; }
 
 src_install() {
 	local version="$(get_version_component_range 1-2)"
+	local path="${S}/opt/${MY_PN}${version}"
 
 	# no linguas set or en without offlinehelp
-	if [ -d "${S}"/opt/${MY_PN}${version} ] ; then
+	if [ -d "${path}" ] ; then
 		insinto /usr/$(get_libdir)/${MY_PN}
-		doins -r "${S}"/opt/${MY_PN}${version}/*
+		doins -r "${path}"/*
 	fi
 }
 
