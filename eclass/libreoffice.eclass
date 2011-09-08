@@ -238,12 +238,12 @@ libreoffice_pkg_pretend() {
 	_libreoffice_custom-cflags_message
 
 	# space
-	CHECKREQS_MEMORY="512"
-	use debug && CHECKREQS_DISK_BUILD="16000" \
-		|| CHECKREQS_DISK_BUILD="8000"
-	use debug && CHECKREQS_DISK_USR="1024" \
-		|| CHECKREQS_DISK_USR="512"
-	check_reqs
+	CHECKREQS_MEMORY="512M"
+	use debug && CHECKREQS_DISK_BUILD="16G" \
+		|| CHECKREQS_DISK_BUILD="8G"
+	use debug && CHECKREQS_DISK_USR="1G" \
+		|| CHECKREQS_DISK_USR="512M"
+	check-reqs_pkg_pretend
 
 	if ! use java; then
 		elog

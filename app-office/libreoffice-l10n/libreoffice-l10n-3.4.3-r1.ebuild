@@ -33,12 +33,12 @@ RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"
 
 for language in ${LANGUAGES}; do
 	langpack="" helppack=""
-	lang="${language/_/-}"
+	lingua="${language/_/-}"
 
-	[[ ${language} == en ]] && lang="en-US" \
-		|| langpack="${RPM_LANG_URI}_${lang}.tar.gz"
+	[[ ${language} == en ]] && lingua="en-US" \
+		|| langpack="${RPM_LANG_URI}_${lingua}.tar.gz"
 	[[ "${LANGUAGES_HELP}" =~ "${language}" ]] \
-		&& helppack="offlinehelp? ( ${RPM_HELP_URI}_${lang}.tar.gz )"
+		&& helppack="offlinehelp? ( ${RPM_HELP_URI}_${lingua}.tar.gz )"
 	IUSE+=" linguas_${language}"
 	SRC_URI+=" linguas_${language}? ( ${langpack} ${helppack} )"
 done
