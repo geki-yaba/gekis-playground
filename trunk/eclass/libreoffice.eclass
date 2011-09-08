@@ -25,7 +25,7 @@ PYTHON_DEPEND="python? ( ${_libreoffice_python} )"
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
-inherit autotools bash-completion boost-utils check-reqs db-use eutils \
+inherit autotools bash-completion-r1 boost-utils check-reqs db-use eutils \
 	flag-o-matic java-pkg-opt-2 kde4-base multilib pax-utils python versionator \
 	nsplugins
 # inherit mono
@@ -547,12 +547,13 @@ libreoffice_src_install() {
 	use prefix || chown -RP root:0 "${ED}"
 
 	# bash completion
-	dobashcompletion "${ED}"/etc/bash_completion.d/libreoffice.sh ${PN}
+	newbashcomp "${ED}"/etc/bash_completion.d/libreoffice.sh ${PN}
 	rm -rf "${ED}"/etc/
 
 	if use branding; then
 		insinto /usr/$(get_libdir)/${PN}/program
-		newins "${WORKDIR}/branding-sofficerc" sofficerc || die
+		newins "${WORKDIR}/branding-sofficerc" sofficerc \
+			|| ewarn "branding config failed"
 	fi
 
 	use nsplugin && inst_plugin \
