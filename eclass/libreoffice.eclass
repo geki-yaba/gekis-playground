@@ -18,6 +18,7 @@
 
 EAPI="4"
 
+_libreoffice_java="1.6"
 _libreoffice_python="<<*:3.1:3.1[threads,xml]>>"
 PYTHON_BDEPEND="${_libreoffice_python}"
 PYTHON_DEPEND="python? ( ${_libreoffice_python} )"
@@ -184,11 +185,11 @@ fi
 PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
 
 RDEPEND="${CDEPEND}
-	java? ( >=virtual/jre-1.6 )"
+	java? ( >=virtual/jre-${_libreoffice_java} )"
 
 DEPEND="${CDEPEND}
 	!dev-util/dmake
-	java? ( >=virtual/jdk-1.6
+	java? ( >=virtual/jdk-${_libreoffice_java}
 		dev-java/ant-core )
 	junit? ( dev-java/junit:4 )
 	odbc? ( dev-db/unixODBC )
@@ -430,7 +431,7 @@ libreoffice_src_prepare() {
 	if use java; then
 		echo "--with-ant-home=${ANT_HOME}" >> ${config}
 		echo "--with-jdk-home=$(java-config --jdk-home 2>/dev/null)" >> ${config}
-		echo "--with-java-target-version=1.5" >> ${config}
+		echo "--with-java-target-version=${_libreoffice_java}" >> ${config}
 		echo "--with-jvm-path=/usr/$(get_libdir)/" >> ${config}
 		echo "--with-system-beanshell" >> ${config}
 #		echo "--with-system-hsqldb" >> ${config}
