@@ -1,0 +1,48 @@
+--- jvmfwk/distributions/OpenOfficeorg/javavendors_linux.xml.orig	2011-09-11 02:37:15.990447967 +0200
++++ jvmfwk/distributions/OpenOfficeorg/javavendors_linux.xml	2011-09-11 02:46:49.090476982 +0200
+@@ -9,6 +9,9 @@
+   <vendor name="Sun Microsystems Inc.">
+     <minVersion>1.5.0</minVersion>
+   </vendor>
++  <vendor name="Oracle Corporation">
++    <minVersion>1.7.0</minVersion>
++  </vendor>
+   <vendor name="IBM Corporation">
+     <minVersion>1.5.0</minVersion>
+   </vendor>
+@@ -25,6 +28,7 @@
+ 
+  <plugins>
+   <library vendor="Sun Microsystems Inc.">vnd.sun.star.expand:$URE_INTERNAL_LIB_DIR/sunjavaplugin.so</library>
++  <library vendor="Oracle Corporation">vnd.sun.star.expand:$URE_INTERNAL_LIB_DIR/sunjavaplugin.so</library>
+   <library vendor="IBM Corporation">vnd.sun.star.expand:$URE_INTERNAL_LIB_DIR/sunjavaplugin.so</library>
+   <library vendor="Blackdown Java-Linux Team">vnd.sun.star.expand:$URE_INTERNAL_LIB_DIR/sunjavaplugin.so</library>
+   <library vendor="Free Software Foundation, Inc.">vnd.sun.star.expand:$URE_INTERNAL_LIB_DIR/sunjavaplugin.so</library>
+--- jvmfwk/plugins/sunmajor/pluginlib/vendorlist.cxx.orig	2011-09-11 02:44:54.878471200 +0200
++++ jvmfwk/plugins/sunmajor/pluginlib/vendorlist.cxx	2011-09-11 02:46:22.306475654 +0200
+@@ -52,6 +52,7 @@
+  */
+ BEGIN_VENDOR_MAP()
+     VENDOR_MAP_ENTRY("Sun Microsystems Inc.", SunInfo)
++    VENDOR_MAP_ENTRY("Oracle Corporation", SunInfo)
+     VENDOR_MAP_ENTRY("IBM Corporation", OtherInfo)
+     VENDOR_MAP_ENTRY("Blackdown Java-Linux Team", OtherInfo)
+     VENDOR_MAP_ENTRY("Apple Inc.", OtherInfo)
+--- jvmfwk/plugins/sunmajor/javaenvsetup/javaldx.cxx.orig	2011-09-11 02:44:11.342469062 +0200
++++ jvmfwk/plugins/sunmajor/javaenvsetup/javaldx.cxx	2011-09-11 02:53:36.122498268 +0200
+@@ -112,6 +112,7 @@
+     
+     //Only do something if the sunjavaplugin created this JavaInfo
+     rtl::OUString sVendor1(RTL_CONSTASCII_USTRINGPARAM("Sun Microsystems Inc."));
++    rtl::OUString sVendor9(RTL_CONSTASCII_USTRINGPARAM("Oracle Corporation"));
+     rtl::OUString sVendor2(RTL_CONSTASCII_USTRINGPARAM("IBM Corporation"));
+     rtl::OUString sVendor3(RTL_CONSTASCII_USTRINGPARAM("Blackdown Java-Linux Team"));
+     rtl::OUString sVendor4(RTL_CONSTASCII_USTRINGPARAM("Apple Inc."));
+@@ -121,6 +122,7 @@
+     rtl::OUString sVendor8(RTL_CONSTASCII_USTRINGPARAM("The FreeBSD Foundation"));
+     if ( ! (sVendor1.equals(pInfo->sVendor) == sal_True
+             || sVendor2.equals(pInfo->sVendor) == sal_True
++            || sVendor9.equals(pInfo->sVendor) == sal_True
+             || sVendor3.equals(pInfo->sVendor) == sal_True
+             || sVendor4.equals(pInfo->sVendor) == sal_True
+             || sVendor5.equals(pInfo->sVendor) == sal_True
