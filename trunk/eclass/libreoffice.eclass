@@ -189,7 +189,7 @@ RDEPEND="${CDEPEND}
 
 DEPEND="${CDEPEND}
 	!dev-util/dmake
-	java? ( >=virtual/jdk-${_libreoffice_java}
+	java? ( virtual/jdk:${_libreoffice_java}
 		dev-java/ant-core )
 	junit? ( dev-java/junit:4 )
 	odbc? ( dev-db/unixODBC )
