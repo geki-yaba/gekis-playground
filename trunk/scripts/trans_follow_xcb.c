@@ -110,7 +110,7 @@ void xcb_config_set_all_opaque(xcb_config_t* config);
 void xcb_config_set_atom(xcb_config_t* config, char const* atom);
 void xcb_config_set_error(xcb_config_t* config, int error);
 void xcb_config_set_event_mask(xcb_config_t* config,
-    uint16_t mask, uint32_t* values, unsigned int size);
+    uint16_t mask, uint32_t* values);
 void xcb_config_event_loop(xcb_config_t* config);
 int  xcb_config_event_property_notify(xcb_config_t* config,
     xcb_generic_event_t* event);
@@ -144,7 +144,7 @@ int  xcb_config_run(int argc, char* argv[])
         mask = XCB_CW_EVENT_MASK;
         values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
 
-        xcb_config_set_event_mask(&config, mask, values, size);
+        xcb_config_set_event_mask(&config, mask, values);
         xcb_config_set_atom(&config, "_NET_CURRENT_DESKTOP");
         xcb_config_set_atom(&config, "_NET_ACTIVE_WINDOW");
 
@@ -167,7 +167,7 @@ void xcb_config_parse(xcb_config_t* config, int argc, char* argv[])
     {
         sscanf(argv[1], "%5f", &opacity);
 
-        if ((0.0f > opacity) || (opacity > 1.0f))
+        if ((0.0f > opacity) || (opacity > .999f))
             opacity = .999f;
     }
     else
@@ -267,7 +267,7 @@ void xcb_config_uninit(xcb_config_t* config)
         free(ignore);
     }
 
-    if (config->connection)
+    if (! xcb_connection_has_error(config->connection))
     {
         xcb_config_set_all_opaque(config);
 
@@ -391,7 +391,7 @@ void xcb_config_set_error(xcb_config_t* config, int error)
 }
 
 void xcb_config_set_event_mask(xcb_config_t* config,
-    uint16_t mask, uint32_t* values, unsigned int size)
+    uint16_t mask, uint32_t* values)
 {
     xcb_change_window_attributes(config->connection,
         config->screen->root, mask, values);

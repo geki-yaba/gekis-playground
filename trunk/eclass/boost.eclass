@@ -53,7 +53,7 @@ boost_pkg_pretend() {
 
 boost_pkg_setup() {
 	# use regular expression to read last job count or default to 1 :D
-	jobs="$(sed -r -e "s:.*[-]{1,2}j(obs)?[ =]?([0-9]+):\2:" <<< "${MAKEOPTS}")"
+	jobs="$(sed -r -e "s:.*[-]{1,2}j(obs)?[ =]?([0-9]*).*:\2:" <<< "${MAKEOPTS}")"
 	jobs="-j${jobs:=1}"
 
 	if use test ; then
