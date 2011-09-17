@@ -16,7 +16,7 @@ EAPI="4"
 _boost_python="<<*:2.6>>"
 PYTHON_DEPEND="python? ( ${_boost_python} )"
 
-inherit check-reqs flag-o-matic multilib python toolchain-funcs versionator
+inherit check-reqs eutils flag-o-matic multilib python toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test
 
@@ -46,8 +46,8 @@ S="${WORKDIR}/${BOOST_P}"
 
 boost_pkg_pretend() {
 	if use test ; then
-		CHECKREQS_DISK_BUILD="15120"
-		check_reqs
+		CHECKREQS_DISK_BUILD="15G"
+		check-reqs_pkg_pretend
 	fi
 }
 
@@ -419,3 +419,4 @@ _boost_fix_jamtest() {
 		fi
 	done
 }
+
