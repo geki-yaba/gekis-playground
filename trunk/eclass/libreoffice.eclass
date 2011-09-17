@@ -62,7 +62,7 @@ done
 MY_PV="$(get_version_component_range 1-2)"
 
 # paths
-LIBRE_URI="${LIBRE_URI:="http://download.documentfoundation.org/libreoffice/src"}"
+LIBRE_URI="${LIBRE_URI:="http://download.documentfoundation.org/libreoffice/src/$(get_version_component_range 1-3)"}"
 EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
 BRAND_URI="http://dev.gentooexperimental.org/~scarabeus"
 

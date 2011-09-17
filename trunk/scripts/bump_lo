@@ -87,7 +87,8 @@ fetch_list ()
 
 	# remove foo
 	sed -e /^$/d -e /^@/d -e /README/d -e /LICENSE/d -e /Python/d \
-		-e /seamonkey/d -e /xpdf/d -i ${LIST}
+		-e /seamonkey/d -e /xpdf/d -e /translate-toolkit/d \
+		-e /nss/d -i ${LIST}
 
 	# update paths
 	sed -e "s#http://hg.services.openoffice.org/binaries#http://dev-www.libreoffice.org/src#" \
