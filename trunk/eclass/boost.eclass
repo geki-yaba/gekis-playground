@@ -32,6 +32,8 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
 	http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 IUSE="debug doc icu static test +threads tools"
+# add available libraries of boost version 
+IUSE+=" ${BOOST_LIBRARIES}"
 
 RDEPEND="sys-libs/zlib
 	regex? ( icu? ( dev-libs/icu ) )
@@ -371,7 +373,7 @@ _boost_options() {
 		options+=" --disable-long-double"
 	fi
 
-	for library in ${LIBRARIES} ; do
+	for library in ${BOOST_LIBRARIES} ; do
 		use ${library} && options+=" --with-${library}"
 	done
 
