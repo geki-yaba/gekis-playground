@@ -26,7 +26,7 @@ LANGUAGES_HELP="bg bn bo bs ca ca_XV cs da de dz el en-US en-GB en-ZA eo es et
 eu fi fr gl gu he hi hr hu id is it ja ka km ko mk nb ne nl nn om pl pt pt_BR ru
 si sk sl sq sv tg tr ug uk vi zh_CN zh_TW"
 
-MY_PN="${PN/-l10n/}"
+MY_PN="${PN/-l10n}"
 BASE_URI="http://download.documentfoundation.org/${MY_PN}/stable/${PV}/rpm"
 RPM_LANG_URI="${BASE_URI}/x86/LibO_${PV}_Linux_x86_langpack-rpm"
 RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"
@@ -94,11 +94,11 @@ src_compile() { :; }
 
 src_install() {
 	local version="$(get_version_component_range 1-2)"
-	local path="${S}/opt/${MY_PN}${version}"
+	local path="${S}/opt/${MY_PN}${version}/basis${version}"
 
 	# no linguas set or en without offlinehelp
 	if [ -d "${path}" ] ; then
-		insinto /usr/$(get_libdir)/${MY_PN}
+		insinto /usr/$(get_libdir)/${MY_PN}/basis-link
 		doins -r "${path}"/*
 	fi
 }

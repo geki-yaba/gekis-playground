@@ -1,6 +1,6 @@
 # Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/net-p2p/qbittorrent/qbittorrent-2.8.3.ebuild,v 1.1 2011/08/03 09:43:16 hwoarang Exp $
+# $Header: $
 
 EAPI="2"
 
@@ -54,9 +54,7 @@ src_configure() {
 	append-flags "-DBOOST_FILESYSTEM_NARROW_ONLY"
 
 	# econf fails, since this uses qconf
-	./configure --prefix=/usr \
-		--qtdir=/usr \
-		${myconf} \
+	./configure --prefix=/usr --qtdir=/usr ${myconf} \
 		|| die "configure failed"
 
 	eqmake4
