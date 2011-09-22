@@ -144,14 +144,14 @@ int main(int argc, char* argv[])
 
 void analyze(char* iset)
 {
+#include "analyze_instruction_set.generated"
+
     /* go up one line, clear line */
     fprintf(stdout, "\033[A\033[2K");
 
     /* do the magic */
     rewind(stdout);
     ftruncate(stdout, 0);
-
-#include "analyze_instruction_set.generated"
 
     if (data.i486)
         fprintf(stdout, "i486:%4u ", data.i486);
