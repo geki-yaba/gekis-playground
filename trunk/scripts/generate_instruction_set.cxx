@@ -17,8 +17,23 @@
 /*
  * COMPILE
  *
- *     g++ -O2 -march=native -pipe scripts/generate_instruction_set.cxx \
- *         -o /usr/local/bin/generate-instruction-set
+ *     cd scripts/
+ *     g++ -O2 -march=native -pipe generate_instruction_set.cxx \
+ *         -o generate-instruction-set
+ */
+
+/*
+ * EXECUTE
+ *
+ *     cd scripts/
+ *     ./generate-instruction-set
+ */
+
+/*
+ * NOTE
+ *
+ *     Since this is just a helper tool you may compile and execute this script
+ *     in the scripts/ directory. Just be lazy and do change into the directory.
  */
 
 /*
