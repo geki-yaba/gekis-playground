@@ -67,6 +67,7 @@ public:
 private:
     blobmap blobs;
 
+    std::string parse;
     std::string data;
 
     unsigned int indent;
@@ -77,8 +78,22 @@ private:
     bool fix;
 
 public:
+    // root
     blob(unsigned int i, char k)
      : blobs(),
+       parse(),
+       data(),
+       indent(i),
+       c(k),
+       back(false),
+       fix(false)
+    {
+    }
+
+    // children
+    blob(unsigned int i, char k, std::string& p)
+     : blobs(),
+       parse(p + k),
        data(),
        indent(i),
        c(k),
@@ -118,7 +133,7 @@ public:
                 blobmap::iterator m = blobs.find(i);
     
                 if (m == blobs.end())
-                    m = blobs.insert(std::make_pair(i, blob(indent + 1, i)));
+                    m = blobs.insert(std::make_pair(i, blob(indent + 1, i, name())));
 
                 blob& b = m->second;
 
@@ -163,7 +178,12 @@ public:
             os << "unsigned int i = 0;" << std::endl;
         else
         {
-            os << "case '" << c << "':" << std::endl;
+            os << "case '" << c << "':";
+
+            if (! data.empty())
+                os << " /* " << name() << " */";
+
+            os << std::endl;
 
             indent++;
         }
@@ -224,7 +244,7 @@ public:
         }
     }
 
-    std::string& str() { return data; }
+    std::string& name() { return parse; }
 
     bool rewind() { return back; }
     bool fill() { return fix; }

@@ -47,6 +47,7 @@
 
 typedef struct data_t {
     char* vendor;
+    unsigned int count;
     unsigned int i486;
     unsigned int i586;
     unsigned int ppro;
@@ -68,6 +69,7 @@ data_t data;
 
 void analyze(char* iset);
 void init();
+void printcount();
 void summary();
 void uninit();
 int  vendor();
@@ -146,13 +148,14 @@ void analyze(char* iset)
 {
 #include "analyze_instruction_set.generated"
 
-    /* go up one line, clear line */
-    fprintf(stdout, "\033[A\033[2K");
+    data.count++;
 
-    /* do the magic */
-    rewind(stdout);
-    ftruncate(stdout, 0);
+    if ((data.count % 100000) == 0)
+        printcount();
+}
 
+void printcount()
+{
     if (data.i486)
         fprintf(stdout, "i486:%4u ", data.i486);
     if (data.i586)
@@ -189,6 +192,7 @@ void analyze(char* iset)
 void init()
 {
     data.vendor = NULL;
+    data.count  = 0;
     data.i486   = 0;
     data.i586   = 0;
     data.ppro   = 0;
@@ -210,6 +214,10 @@ void summary()
 {
     const unsigned int size = 80;
     char buffer[size];
+
+    printcount();
+
+    fprintf(stdout, "\n\n");
 
     if (data.cpuid)
     {
@@ -265,7 +273,7 @@ void summary()
     else if (data.i586)
         sprintf(buffer, "Pentium or compatible (i586) (i586 or pentium)");
     else if (data.i486)
-        sprintf(buffer, "80486 or comaptible (i486)");
+        sprintf(buffer, "80486 or compatible (i486)");
     else
         sprintf(buffer, "80386 or compatible (i386)");
 

@@ -13,10 +13,10 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* addpd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* addps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -27,10 +27,10 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* addsd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* addss */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         case 'u':
@@ -42,10 +42,10 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* addsubpd */
                                         if (iset[i] == '\0') { ++data.sse3; }
                                         break;
-                                    case 's':
+                                    case 's': /* addsubps */
                                         if (iset[i] == '\0') { ++data.sse3; }
                                         break;
                                     default:
@@ -90,10 +90,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* andnpd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 's':
+                            case 's': /* andnps */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -109,10 +109,10 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* andpd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* andps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -153,10 +153,10 @@
                             case 'p':
                                 switch(iset[i++])
                                 {
-                                case 'd':
+                                case 'd': /* blendpd */
                                     if (iset[i] == '\0') { ++data.sse4_1; }
                                     break;
-                                case 's':
+                                case 's': /* blendps */
                                     if (iset[i] == '\0') { ++data.sse4_1; }
                                     break;
                                 default:
@@ -170,10 +170,10 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* blendvpd */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
-                                    case 's':
+                                    case 's': /* blendvps */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -215,7 +215,7 @@
                     case 'a':
                         switch(iset[i++])
                         {
-                        case 'p':
+                        case 'p': /* bswap */
                             if (iset[i] == '\0') { ++data.i486; }
                             break;
                         default:
@@ -256,7 +256,7 @@
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'h':
+                                case 'h': /* clflush */
                                     if (iset[i] == '\0') { ++data.sse2; }
                                     break;
                                 default:
@@ -296,7 +296,7 @@
                         case 'c':
                             switch(iset[i++])
                             {
-                            case 'c':
+                            case 'c': /* cmovcc */
                                 if (iset[i] == '\0') { ++data.ppro; }
                                 break;
                             default:
@@ -320,10 +320,10 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* cmppd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* cmpps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -334,10 +334,10 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* cmpsd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* cmpss */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -357,7 +357,7 @@
                                 case '8':
                                     switch(iset[i++])
                                     {
-                                    case 'b':
+                                    case 'b': /* cmpxch8b */
                                         if (iset[i] == '\0') { ++data.i586; }
                                         break;
                                     default:
@@ -365,7 +365,7 @@
                                         break;
                                     }
                                     break;
-                                case 'g':
+                                case 'g': /* cmpxchg */
                                     if (iset[i] == '\0') { ++data.i486; }
                                     break;
                                 default:
@@ -405,10 +405,10 @@
                         case 's':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* comisd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 's':
+                            case 's': /* comiss */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -440,7 +440,7 @@
                     case 'i':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* cpuid */
                             if (iset[i] == '\0') { ++data.cpuid;++data.i586; }
                             break;
                         default:
@@ -467,7 +467,7 @@
                     case '3':
                         switch(iset[i++])
                         {
-                        case '2':
+                        case '2': /* crc32 */
                             if (iset[i] == '\0') { ++data.sse4_2; }
                             break;
                         default:
@@ -503,10 +503,10 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* cvtdq2pd */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 's':
+                                    case 's': /* cvtdq2ps */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
                                     default:
@@ -541,13 +541,13 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 'i':
+                                    case 'i': /* cvtpd2pi */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 'q':
+                                    case 'q': /* cvtpd2pq */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 's':
+                                    case 's': /* cvtpd2ps */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
                                     default:
@@ -574,10 +574,10 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* cvtpi2pd */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 's':
+                                    case 's': /* cvtpi2ps */
                                         if (iset[i] == '\0') { ++data.sse; }
                                         break;
                                     default:
@@ -604,7 +604,7 @@
                                 case 'd':
                                     switch(iset[i++])
                                     {
-                                    case 'q':
+                                    case 'q': /* cvtps2dq */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
                                     default:
@@ -615,10 +615,10 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* cvtps2pd */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 'i':
+                                    case 'i': /* cvtps2pi */
                                         if (iset[i] == '\0') { ++data.sse; }
                                         break;
                                     default:
@@ -653,10 +653,10 @@
                                 case 's':
                                     switch(iset[i++])
                                     {
-                                    case 'i':
+                                    case 'i': /* cvtsd2si */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 's':
+                                    case 's': /* cvtsd2ss */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
                                     default:
@@ -683,10 +683,10 @@
                                 case 's':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* cvtsi2sd */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 's':
+                                    case 's': /* cvtsi2ss */
                                         if (iset[i] == '\0') { ++data.sse; }
                                         break;
                                     default:
@@ -713,10 +713,10 @@
                                 case 's':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* cvtss2sd */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 'i':
+                                    case 'i': /* cvtss2si */
                                         if (iset[i] == '\0') { ++data.sse; }
                                         break;
                                     default:
@@ -754,7 +754,7 @@
                                     case 'd':
                                         switch(iset[i++])
                                         {
-                                        case 'q':
+                                        case 'q': /* cvttpd2dq */
                                             if (iset[i] == '\0') { ++data.sse2; }
                                             break;
                                         default:
@@ -765,7 +765,7 @@
                                     case 'p':
                                         switch(iset[i++])
                                         {
-                                        case 'i':
+                                        case 'i': /* cvttpd2pi */
                                             if (iset[i] == '\0') { ++data.sse2; }
                                             break;
                                         default:
@@ -792,7 +792,7 @@
                                     case 'd':
                                         switch(iset[i++])
                                         {
-                                        case 'q':
+                                        case 'q': /* cvttps2dq */
                                             if (iset[i] == '\0') { ++data.sse2; }
                                             break;
                                         default:
@@ -803,7 +803,7 @@
                                     case 'p':
                                         switch(iset[i++])
                                         {
-                                        case 'i':
+                                        case 'i': /* cvttps2pi */
                                             if (iset[i] == '\0') { ++data.sse; }
                                             break;
                                         default:
@@ -838,7 +838,7 @@
                                     case 's':
                                         switch(iset[i++])
                                         {
-                                        case 'i':
+                                        case 'i': /* cvttsd2si */
                                             if (iset[i] == '\0') { ++data.sse2; }
                                             break;
                                         default:
@@ -865,7 +865,7 @@
                                     case 's':
                                         switch(iset[i++])
                                         {
-                                        case 'i':
+                                        case 'i': /* cvttss2si */
                                             if (iset[i] == '\0') { ++data.sse; }
                                             break;
                                         default:
@@ -920,10 +920,10 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* divpd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* divps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -934,10 +934,10 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* divsd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* divss */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -961,10 +961,10 @@
                 case 'p':
                     switch(iset[i++])
                     {
-                    case 'd':
+                    case 'd': /* dppd */
                         if (iset[i] == '\0') { ++data.sse4_1; }
                         break;
-                    case 's':
+                    case 's': /* dpps */
                         if (iset[i] == '\0') { ++data.sse4_1; }
                         break;
                     default:
@@ -991,7 +991,7 @@
                 case 'm':
                     switch(iset[i++])
                     {
-                    case 's':
+                    case 's': /* emms */
                         if (iset[i] == '\0') { ++data.mmx; }
                         break;
                     default:
@@ -1025,7 +1025,7 @@
                                     case 'p':
                                         switch(iset[i++])
                                         {
-                                        case 's':
+                                        case 's': /* extractps */
                                             if (iset[i] == '\0') { ++data.sse4_1; }
                                             break;
                                         default:
@@ -1048,7 +1048,7 @@
                                 break;
                             }
                             break;
-                        case 'q':
+                        case 'q': /* extrq */
                             if (iset[i] == '\0') { ++data.sse4a; }
                             break;
                         default:
@@ -1089,7 +1089,7 @@
                             case 'c':
                                 switch(iset[i++])
                                 {
-                                case 'c':
+                                case 'c': /* fcmovcc */
                                     if (iset[i] == '\0') { ++data.ppro; }
                                     break;
                                 default:
@@ -1118,12 +1118,12 @@
                     case 'm':
                         switch(iset[i++])
                         {
-                        case 'i':
+                        case 'i': /* fcomi */
                             if (iset[i] == '\0') { ++data.ppro; }
                             else
                             switch(iset[i++])
                             {
-                            case 'p':
+                            case 'p': /* fcomip */
                                 if (iset[i] == '\0') { ++data.ppro; }
                                 break;
                             default:
@@ -1155,7 +1155,7 @@
                     case 'm':
                         switch(iset[i++])
                         {
-                        case 's':
+                        case 's': /* femms */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             break;
                         default:
@@ -1185,7 +1185,7 @@
                         case 't':
                             switch(iset[i++])
                             {
-                            case 'p':
+                            case 'p': /* fisttp */
                                 if (iset[i] == '\0') { ++data.sse3; }
                                 break;
                             default:
@@ -1220,12 +1220,12 @@
                         case 'm':
                             switch(iset[i++])
                             {
-                            case 'i':
+                            case 'i': /* fucomi */
                                 if (iset[i] == '\0') { ++data.ppro; }
                                 else
                                 switch(iset[i++])
                                 {
-                                case 'p':
+                                case 'p': /* fucomip */
                                     if (iset[i] == '\0') { ++data.ppro; }
                                     break;
                                 default:
@@ -1268,7 +1268,7 @@
                             case 'o':
                                 switch(iset[i++])
                                 {
-                                case 'r':
+                                case 'r': /* fxrstor */
                                     if (iset[i] == '\0') { ++data.sse; }
                                     break;
                                 default:
@@ -1300,7 +1300,7 @@
                         case 'v':
                             switch(iset[i++])
                             {
-                            case 'e':
+                            case 'e': /* fxsave */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -1343,10 +1343,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* haddpd */
                                 if (iset[i] == '\0') { ++data.sse3; }
                                 break;
-                            case 's':
+                            case 's': /* haddps */
                                 if (iset[i] == '\0') { ++data.sse3; }
                                 break;
                             default:
@@ -1381,10 +1381,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* hsubpd */
                                 if (iset[i] == '\0') { ++data.sse3; }
                                 break;
-                            case 's':
+                            case 's': /* hsubps */
                                 if (iset[i] == '\0') { ++data.sse3; }
                                 break;
                             default:
@@ -1433,7 +1433,7 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 's':
+                                    case 's': /* insertps */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -1441,7 +1441,7 @@
                                         break;
                                     }
                                     break;
-                                case 'q':
+                                case 'q': /* insertq */
                                     if (iset[i] == '\0') { ++data.sse4a; }
                                     break;
                                 default:
@@ -1467,7 +1467,7 @@
                 case 'v':
                     switch(iset[i++])
                     {
-                    case 'd':
+                    case 'd': /* invd */
                         if (iset[i] == '\0') { ++data.i486; }
                         break;
                     case 'l':
@@ -1476,7 +1476,7 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'g':
+                            case 'g': /* invlpg */
                                 if (iset[i] == '\0') { ++data.i486; }
                                 break;
                             default:
@@ -1516,7 +1516,7 @@
                     case 'q':
                         switch(iset[i++])
                         {
-                        case 'u':
+                        case 'u': /* lddqu */
                             if (iset[i] == '\0') { ++data.sse3; }
                             break;
                         default:
@@ -1541,7 +1541,7 @@
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'r':
+                                case 'r': /* ldmxcsr */
                                     if (iset[i] == '\0') { ++data.sse; }
                                     break;
                                 default:
@@ -1581,7 +1581,7 @@
                         case 'c':
                             switch(iset[i++])
                             {
-                            case 'e':
+                            case 'e': /* lfence */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
                             default:
@@ -1613,7 +1613,7 @@
                     case 'n':
                         switch(iset[i++])
                         {
-                        case 't':
+                        case 't': /* lzcnt */
                             if (iset[i] == '\0') { ++data.sse4a; }
                             break;
                         default:
@@ -1663,7 +1663,7 @@
                                         case 'q':
                                             switch(iset[i++])
                                             {
-                                            case 'u':
+                                            case 'u': /* maskmovdqu */
                                                 if (iset[i] == '\0') { ++data.sse2; }
                                                 break;
                                             default:
@@ -1676,7 +1676,7 @@
                                             break;
                                         }
                                         break;
-                                    case 'q':
+                                    case 'q': /* maskmovq */
                                         if (iset[i] == '\0') { ++data.sse;++data.tdnow2; }
                                         break;
                                     default:
@@ -1710,10 +1710,10 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* maxpd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* maxps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -1724,10 +1724,10 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* maxsd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* maxss */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -1757,7 +1757,7 @@
                         case 'c':
                             switch(iset[i++])
                             {
-                            case 'e':
+                            case 'e': /* mfence */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
                             default:
@@ -1789,10 +1789,10 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* minpd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* minps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -1803,10 +1803,10 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* minsd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* minss */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -1839,7 +1839,7 @@
                             case 'o':
                                 switch(iset[i++])
                                 {
-                                case 'r':
+                                case 'r': /* monitor */
                                     if (iset[i] == '\0') { ++data.sse3; }
                                     break;
                                 default:
@@ -1871,10 +1871,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* movapd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 's':
+                            case 's': /* movaps */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -1887,7 +1887,7 @@
                             break;
                         }
                         break;
-                    case 'd':
+                    case 'd': /* movd */
                         if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                         else
                         switch(iset[i++])
@@ -1898,7 +1898,7 @@
                             case 'u':
                                 switch(iset[i++])
                                 {
-                                case 'p':
+                                case 'p': /* movddup */
                                     if (iset[i] == '\0') { ++data.sse3; }
                                     break;
                                 default:
@@ -1917,7 +1917,7 @@
                             case '2':
                                 switch(iset[i++])
                                 {
-                                case 'q':
+                                case 'q': /* movdq2q */
                                     if (iset[i] == '\0') { ++data.sse2; }
                                     break;
                                 default:
@@ -1925,10 +1925,10 @@
                                     break;
                                 }
                                 break;
-                            case 'a':
+                            case 'a': /* movdqa */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 'u':
+                            case 'u': /* movdqu */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
                             default:
@@ -1950,7 +1950,7 @@
                             case 'p':
                                 switch(iset[i++])
                                 {
-                                case 's':
+                                case 's': /* movhlps */
                                     if (iset[i] == '\0') { ++data.sse; }
                                     break;
                                 default:
@@ -1966,10 +1966,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* movhpd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 's':
+                            case 's': /* movhps */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -1991,7 +1991,7 @@
                             case 'p':
                                 switch(iset[i++])
                                 {
-                                case 's':
+                                case 's': /* movlhps */
                                     if (iset[i] == '\0') { ++data.sse; }
                                     break;
                                 default:
@@ -2007,10 +2007,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* movlpd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 's':
+                            case 's': /* movlps */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -2035,10 +2035,10 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* movmskpd */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 's':
+                                    case 's': /* movmskps */
                                         if (iset[i] == '\0') { ++data.sse; }
                                         break;
                                     default:
@@ -2070,12 +2070,12 @@
                             case 'd':
                                 switch(iset[i++])
                                 {
-                                case 'q':
+                                case 'q': /* movntdq */
                                     if (iset[i] == '\0') { ++data.sse2; }
                                     else
                                     switch(iset[i++])
                                     {
-                                    case 'a':
+                                    case 'a': /* movntdqa */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -2088,16 +2088,16 @@
                                     break;
                                 }
                                 break;
-                            case 'i':
+                            case 'i': /* movnti */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
                             case 'p':
                                 switch(iset[i++])
                                 {
-                                case 'd':
+                                case 'd': /* movntpd */
                                     if (iset[i] == '\0') { ++data.sse2; }
                                     break;
-                                case 's':
+                                case 's': /* movntps */
                                     if (iset[i] == '\0') { ++data.sse; }
                                     break;
                                 default:
@@ -2105,16 +2105,16 @@
                                     break;
                                 }
                                 break;
-                            case 'q':
+                            case 'q': /* movntq */
                                 if (iset[i] == '\0') { ++data.sse;++data.tdnow2; }
                                 break;
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'd':
+                                case 'd': /* movntsd */
                                     if (iset[i] == '\0') { ++data.sse4a; }
                                     break;
-                                case 's':
+                                case 's': /* movntss */
                                     if (iset[i] == '\0') { ++data.sse4a; }
                                     break;
                                 default:
@@ -2132,7 +2132,7 @@
                             break;
                         }
                         break;
-                    case 'q':
+                    case 'q': /* movq */
                         if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                         else
                         switch(iset[i++])
@@ -2143,7 +2143,7 @@
                             case 'd':
                                 switch(iset[i++])
                                 {
-                                case 'q':
+                                case 'q': /* movq2dq */
                                     if (iset[i] == '\0') { ++data.sse2; }
                                     break;
                                 default:
@@ -2164,7 +2164,7 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* movsd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
                         case 'h':
@@ -2176,7 +2176,7 @@
                                 case 'u':
                                     switch(iset[i++])
                                     {
-                                    case 'p':
+                                    case 'p': /* movshdup */
                                         if (iset[i] == '\0') { ++data.sse3; }
                                         break;
                                     default:
@@ -2203,7 +2203,7 @@
                                 case 'u':
                                     switch(iset[i++])
                                     {
-                                    case 'p':
+                                    case 'p': /* movsldup */
                                         if (iset[i] == '\0') { ++data.sse3; }
                                         break;
                                     default:
@@ -2221,7 +2221,7 @@
                                 break;
                             }
                             break;
-                        case 's':
+                        case 's': /* movss */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -2235,10 +2235,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* movupd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 's':
+                            case 's': /* movups */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -2276,7 +2276,7 @@
                             case 'b':
                                 switch(iset[i++])
                                 {
-                                case 'w':
+                                case 'w': /* mpsadbw */
                                     if (iset[i] == '\0') { ++data.sse4_1; }
                                     break;
                                 default:
@@ -2313,10 +2313,10 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* mulpd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* mulps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -2327,10 +2327,10 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* mulsd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* mulss */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -2357,7 +2357,7 @@
                     case 'i':
                         switch(iset[i++])
                         {
-                        case 't':
+                        case 't': /* mwait */
                             if (iset[i] == '\0') { ++data.sse3; }
                             break;
                         default:
@@ -2389,10 +2389,10 @@
                 case 'p':
                     switch(iset[i++])
                     {
-                    case 'd':
+                    case 'd': /* orpd */
                         if (iset[i] == '\0') { ++data.sse2; }
                         break;
-                    case 's':
+                    case 's': /* orps */
                         if (iset[i] == '\0') { ++data.sse; }
                         break;
                     default:
@@ -2422,13 +2422,13 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'b':
+                        case 'b': /* pabsb */
                             if (iset[i] == '\0') { ++data.ssse3; }
                             break;
-                        case 'd':
+                        case 'd': /* pabsd */
                             if (iset[i] == '\0') { ++data.ssse3; }
                             break;
-                        case 'w':
+                        case 'w': /* pabsw */
                             if (iset[i] == '\0') { ++data.ssse3; }
                             break;
                         default:
@@ -2456,7 +2456,7 @@
                                 case 'd':
                                     switch(iset[i++])
                                     {
-                                    case 'w':
+                                    case 'w': /* packssdw */
                                         if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                         break;
                                     default:
@@ -2467,7 +2467,7 @@
                                 case 'w':
                                     switch(iset[i++])
                                     {
-                                    case 'b':
+                                    case 'b': /* packsswb */
                                         if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                         break;
                                     default:
@@ -2494,7 +2494,7 @@
                                 case 'd':
                                     switch(iset[i++])
                                     {
-                                    case 'w':
+                                    case 'w': /* packusdw */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -2505,7 +2505,7 @@
                                 case 'w':
                                     switch(iset[i++])
                                     {
-                                    case 'b':
+                                    case 'b': /* packuswb */
                                         if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                         break;
                                     default:
@@ -2539,22 +2539,22 @@
                     case 'd':
                         switch(iset[i++])
                         {
-                        case 'b':
+                        case 'b': /* paddb */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
-                        case 'd':
+                        case 'd': /* paddd */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
-                        case 'q':
+                        case 'q': /* paddq */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
                         case 's':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* paddsb */
                                 if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                 break;
-                            case 'w':
+                            case 'w': /* paddsw */
                                 if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                 break;
                             default:
@@ -2568,10 +2568,10 @@
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'b':
+                                case 'b': /* paddusb */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
-                                case 'w':
+                                case 'w': /* paddusw */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
                                 default:
@@ -2584,7 +2584,7 @@
                                 break;
                             }
                             break;
-                        case 'w':
+                        case 'w': /* paddw */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
                         default:
@@ -2609,7 +2609,7 @@
                             case 'n':
                                 switch(iset[i++])
                                 {
-                                case 'r':
+                                case 'r': /* palignr */
                                     if (iset[i] == '\0') { ++data.ssse3; }
                                     break;
                                 default:
@@ -2635,12 +2635,12 @@
                 case 'n':
                     switch(iset[i++])
                     {
-                    case 'd':
+                    case 'd': /* pand */
                         if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                         else
                         switch(iset[i++])
                         {
-                        case 'n':
+                        case 'n': /* pandn */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
                         default:
@@ -2659,7 +2659,7 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'e':
+                        case 'e': /* pause */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
                         default:
@@ -2678,7 +2678,7 @@
                     case 'g':
                         switch(iset[i++])
                         {
-                        case 'b':
+                        case 'b': /* pavgb */
                             if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                             break;
                         case 'u':
@@ -2687,7 +2687,7 @@
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'b':
+                                case 'b': /* pavgusb */
                                     if (iset[i] == '\0') { ++data.tdnow1; }
                                     break;
                                 default:
@@ -2700,7 +2700,7 @@
                                 break;
                             }
                             break;
-                        case 'w':
+                        case 'w': /* pavgw */
                             if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                             break;
                         default:
@@ -2736,7 +2736,7 @@
                                 case 'v':
                                     switch(iset[i++])
                                     {
-                                    case 'b':
+                                    case 'b': /* pblendvb */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -2744,7 +2744,7 @@
                                         break;
                                     }
                                     break;
-                                case 'w':
+                                case 'w': /* pblendw */
                                     if (iset[i] == '\0') { ++data.sse4_1; }
                                     break;
                                 default:
@@ -2787,16 +2787,16 @@
                             case 'q':
                                 switch(iset[i++])
                                 {
-                                case 'b':
+                                case 'b': /* pcmpeqb */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
-                                case 'd':
+                                case 'd': /* pcmpeqd */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
-                                case 'q':
+                                case 'q': /* pcmpeqq */
                                     if (iset[i] == '\0') { ++data.sse4_1; }
                                     break;
-                                case 'w':
+                                case 'w': /* pcmpeqw */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
                                 default:
@@ -2813,10 +2813,10 @@
                                     case 'r':
                                         switch(iset[i++])
                                         {
-                                        case 'i':
+                                        case 'i': /* pcmpestri */
                                             if (iset[i] == '\0') { ++data.sse4_2; }
                                             break;
-                                        case 'm':
+                                        case 'm': /* pcmpestrm */
                                             if (iset[i] == '\0') { ++data.sse4_2; }
                                             break;
                                         default:
@@ -2845,16 +2845,16 @@
                             case 't':
                                 switch(iset[i++])
                                 {
-                                case 'b':
+                                case 'b': /* pcmpgtb */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
-                                case 'd':
+                                case 'd': /* pcmpgtd */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
-                                case 'q':
+                                case 'q': /* pcmpgtq */
                                     if (iset[i] == '\0') { ++data.sse4_2; }
                                     break;
-                                case 'w':
+                                case 'w': /* pcmpgtw */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
                                 default:
@@ -2879,10 +2879,10 @@
                                     case 'r':
                                         switch(iset[i++])
                                         {
-                                        case 'i':
+                                        case 'i': /* pcmpistri */
                                             if (iset[i] == '\0') { ++data.sse4_2; }
                                             break;
-                                        case 'm':
+                                        case 'm': /* pcmpistrm */
                                             if (iset[i] == '\0') { ++data.sse4_2; }
                                             break;
                                         default:
@@ -2932,16 +2932,16 @@
                         case 'r':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* pextrb */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'd':
+                            case 'd': /* pextrd */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'q':
+                            case 'q': /* pextrq */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'w':
+                            case 'w': /* pextrw */
                                 if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.sse4_1;++data.tdnow2; }
                                 break;
                             default:
@@ -2973,10 +2973,10 @@
                     case 'i':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* pf2id */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             break;
-                        case 'w':
+                        case 'w': /* pf2iw */
                             if (iset[i] == '\0') { ++data.tdnow1;++data.tdnow2; }
                             break;
                         default:
@@ -2995,7 +2995,7 @@
                     case 'c':
                         switch(iset[i++])
                         {
-                        case 'c':
+                        case 'c': /* pfacc */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             break;
                         default:
@@ -3006,7 +3006,7 @@
                     case 'd':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* pfadd */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             break;
                         default:
@@ -3031,7 +3031,7 @@
                             case 'e':
                                 switch(iset[i++])
                                 {
-                                case 'q':
+                                case 'q': /* pfcmpeq */
                                     if (iset[i] == '\0') { ++data.tdnow1; }
                                     break;
                                 default:
@@ -3042,10 +3042,10 @@
                             case 'g':
                                 switch(iset[i++])
                                 {
-                                case 'e':
+                                case 'e': /* pfcmpge */
                                     if (iset[i] == '\0') { ++data.tdnow1; }
                                     break;
-                                case 't':
+                                case 't': /* pfcmpgt */
                                     if (iset[i] == '\0') { ++data.tdnow1; }
                                     break;
                                 default:
@@ -3074,7 +3074,7 @@
                     case 'a':
                         switch(iset[i++])
                         {
-                        case 'x':
+                        case 'x': /* pfmax */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             break;
                         default:
@@ -3085,7 +3085,7 @@
                     case 'i':
                         switch(iset[i++])
                         {
-                        case 'n':
+                        case 'n': /* pfmin */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             break;
                         default:
@@ -3096,7 +3096,7 @@
                     case 'u':
                         switch(iset[i++])
                         {
-                        case 'l':
+                        case 'l': /* pfmul */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             break;
                         default:
@@ -3118,7 +3118,7 @@
                         case 'c':
                             switch(iset[i++])
                             {
-                            case 'c':
+                            case 'c': /* pfnacc */
                                 if (iset[i] == '\0') { ++data.tdnow2; }
                                 break;
                             default:
@@ -3148,7 +3148,7 @@
                             case 'c':
                                 switch(iset[i++])
                                 {
-                                case 'c':
+                                case 'c': /* pfpnacc */
                                     if (iset[i] == '\0') { ++data.tdnow2; }
                                     break;
                                 default:
@@ -3177,7 +3177,7 @@
                     case 'c':
                         switch(iset[i++])
                         {
-                        case 'p':
+                        case 'p': /* pfrcp */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             else
                             switch(iset[i++])
@@ -3188,10 +3188,10 @@
                                 case 't':
                                     switch(iset[i++])
                                     {
-                                    case '1':
+                                    case '1': /* pfrcpit1 */
                                         if (iset[i] == '\0') { ++data.tdnow1; }
                                         break;
-                                    case '2':
+                                    case '2': /* pfrcpit2 */
                                         if (iset[i] == '\0') { ++data.tdnow1; }
                                         break;
                                     default:
@@ -3226,7 +3226,7 @@
                                 case 't':
                                     switch(iset[i++])
                                     {
-                                    case '1':
+                                    case '1': /* pfrsqit1 */
                                         if (iset[i] == '\0') { ++data.tdnow1; }
                                         break;
                                     default:
@@ -3242,7 +3242,7 @@
                             case 'r':
                                 switch(iset[i++])
                                 {
-                                case 't':
+                                case 't': /* pfrsqrt */
                                     if (iset[i] == '\0') { ++data.tdnow1; }
                                     break;
                                 default:
@@ -3271,12 +3271,12 @@
                     case 'u':
                         switch(iset[i++])
                         {
-                        case 'b':
+                        case 'b': /* pfsub */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             else
                             switch(iset[i++])
                             {
-                            case 'r':
+                            case 'r': /* pfsubr */
                                 if (iset[i] == '\0') { ++data.tdnow1; }
                                 break;
                             default:
@@ -3311,13 +3311,13 @@
                         case 'd':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* phaddd */
                                 if (iset[i] == '\0') { ++data.ssse3; }
                                 break;
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'w':
+                                case 'w': /* phaddsw */
                                     if (iset[i] == '\0') { ++data.ssse3; }
                                     break;
                                 default:
@@ -3325,7 +3325,7 @@
                                     break;
                                 }
                                 break;
-                            case 'w':
+                            case 'w': /* phaddw */
                                 if (iset[i] == '\0') { ++data.ssse3; }
                                 break;
                             default:
@@ -3364,7 +3364,7 @@
                                         case 'u':
                                             switch(iset[i++])
                                             {
-                                            case 'w':
+                                            case 'w': /* phminposuw */
                                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                                 break;
                                             default:
@@ -3411,13 +3411,13 @@
                         case 'b':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* phsubd */
                                 if (iset[i] == '\0') { ++data.ssse3; }
                                 break;
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'w':
+                                case 'w': /* phsubsw */
                                     if (iset[i] == '\0') { ++data.ssse3; }
                                     break;
                                 default:
@@ -3425,7 +3425,7 @@
                                     break;
                                 }
                                 break;
-                            case 'w':
+                            case 'w': /* phsubw */
                                 if (iset[i] == '\0') { ++data.ssse3; }
                                 break;
                             default:
@@ -3457,10 +3457,10 @@
                     case 'f':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* pi2fd */
                             if (iset[i] == '\0') { ++data.tdnow1; }
                             break;
-                        case 'w':
+                        case 'w': /* pi2fw */
                             if (iset[i] == '\0') { ++data.tdnow1;++data.tdnow2; }
                             break;
                         default:
@@ -3482,16 +3482,16 @@
                         case 'r':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* pinsrb */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'd':
+                            case 'd': /* pinsrd */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'q':
+                            case 'q': /* pinsrq */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'w':
+                            case 'w': /* pinsrw */
                                 if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                                 break;
                             default:
@@ -3535,7 +3535,7 @@
                                     case 's':
                                         switch(iset[i++])
                                         {
-                                        case 'w':
+                                        case 'w': /* pmaddubsw */
                                             if (iset[i] == '\0') { ++data.ssse3; }
                                             break;
                                         default:
@@ -3556,7 +3556,7 @@
                             case 'w':
                                 switch(iset[i++])
                                 {
-                                case 'd':
+                                case 'd': /* pmaddwd */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
                                 default:
@@ -3580,13 +3580,13 @@
                         case 's':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* pmaxsb */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'd':
+                            case 'd': /* pmaxsd */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'w':
+                            case 'w': /* pmaxsw */
                                 if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                                 break;
                             default:
@@ -3597,13 +3597,13 @@
                         case 'u':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* pmaxub */
                                 if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                                 break;
-                            case 'd':
+                            case 'd': /* pmaxud */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'w':
+                            case 'w': /* pmaxuw */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
                             default:
@@ -3630,13 +3630,13 @@
                         case 's':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* pminsb */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'd':
+                            case 'd': /* pminsd */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'w':
+                            case 'w': /* pminsw */
                                 if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                                 break;
                             default:
@@ -3647,13 +3647,13 @@
                         case 'u':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* pminub */
                                 if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                                 break;
-                            case 'd':
+                            case 'd': /* pminud */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'w':
+                            case 'w': /* pminuw */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
                             default:
@@ -3686,7 +3686,7 @@
                                 case 'k':
                                     switch(iset[i++])
                                     {
-                                    case 'b':
+                                    case 'b': /* pmovmskb */
                                         if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                                         break;
                                     default:
@@ -3713,13 +3713,13 @@
                                 case 'b':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* pmovsxbd */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
-                                    case 'q':
+                                    case 'q': /* pmovsxbq */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
-                                    case 'w':
+                                    case 'w': /* pmovsxbw */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -3730,7 +3730,7 @@
                                 case 'd':
                                     switch(iset[i++])
                                     {
-                                    case 'q':
+                                    case 'q': /* pmovsxdq */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -3741,10 +3741,10 @@
                                 case 'w':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* pmovsxwd */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
-                                    case 'q':
+                                    case 'q': /* pmovsxwq */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -3771,13 +3771,13 @@
                                 case 'b':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* pmovzxbd */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
-                                    case 'q':
+                                    case 'q': /* pmovzxbq */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
-                                    case 'w':
+                                    case 'w': /* pmovzxbw */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -3788,7 +3788,7 @@
                                 case 'd':
                                     switch(iset[i++])
                                     {
-                                    case 'q':
+                                    case 'q': /* pmovzxdq */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -3799,10 +3799,10 @@
                                 case 'w':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* pmovzxwd */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
-                                    case 'q':
+                                    case 'q': /* pmovzxwq */
                                         if (iset[i] == '\0') { ++data.sse4_1; }
                                         break;
                                     default:
@@ -3839,7 +3839,7 @@
                         case 'd':
                             switch(iset[i++])
                             {
-                            case 'q':
+                            case 'q': /* pmuldq */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
                             default:
@@ -3856,7 +3856,7 @@
                                 case 's':
                                     switch(iset[i++])
                                     {
-                                    case 'w':
+                                    case 'w': /* pmulhrsw */
                                         if (iset[i] == '\0') { ++data.ssse3; }
                                         break;
                                     default:
@@ -3864,7 +3864,7 @@
                                         break;
                                     }
                                     break;
-                                case 'w':
+                                case 'w': /* pmulhrw */
                                     if (iset[i] == '\0') { ++data.tdnow1; }
                                     break;
                                 default:
@@ -3875,7 +3875,7 @@
                             case 'u':
                                 switch(iset[i++])
                                 {
-                                case 'w':
+                                case 'w': /* pmulhuw */
                                     if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                                     break;
                                 default:
@@ -3883,7 +3883,7 @@
                                     break;
                                 }
                                 break;
-                            case 'w':
+                            case 'w': /* pmulhw */
                                 if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                 break;
                             default:
@@ -3894,10 +3894,10 @@
                         case 'l':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* pmulld */
                                 if (iset[i] == '\0') { ++data.sse4_1; }
                                 break;
-                            case 'w':
+                            case 'w': /* pmullw */
                                 if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                 break;
                             default:
@@ -3911,7 +3911,7 @@
                             case 'd':
                                 switch(iset[i++])
                                 {
-                                case 'q':
+                                case 'q': /* pmuludq */
                                     if (iset[i] == '\0') { ++data.sse2; }
                                     break;
                                 default:
@@ -3951,7 +3951,7 @@
                         case 'n':
                             switch(iset[i++])
                             {
-                            case 't':
+                            case 't': /* popcnt */
                                 if (iset[i] == '\0') { ++data.sse4_2;++data.sse4a; }
                                 break;
                             default:
@@ -3969,7 +3969,7 @@
                         break;
                     }
                     break;
-                case 'r':
+                case 'r': /* por */
                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                     break;
                 default:
@@ -3995,7 +3995,7 @@
                                 case 'c':
                                     switch(iset[i++])
                                     {
-                                    case 'h':
+                                    case 'h': /* prefetch */
                                         if (iset[i] == '\0') { ++data.sse;++data.tdnow1; }
                                         else
                                         switch(iset[i++])
@@ -4006,7 +4006,7 @@
                                             case 't':
                                                 switch(iset[i++])
                                                 {
-                                                case 'a':
+                                                case 'a': /* prefetchnta */
                                                     if (iset[i] == '\0') { ++data.tdnow2; }
                                                     break;
                                                 default:
@@ -4022,13 +4022,13 @@
                                         case 't':
                                             switch(iset[i++])
                                             {
-                                            case '0':
+                                            case '0': /* prefetcht0 */
                                                 if (iset[i] == '\0') { ++data.tdnow2; }
                                                 break;
-                                            case '1':
+                                            case '1': /* prefetcht1 */
                                                 if (iset[i] == '\0') { ++data.tdnow2; }
                                                 break;
-                                            case '2':
+                                            case '2': /* prefetcht2 */
                                                 if (iset[i] == '\0') { ++data.tdnow2; }
                                                 break;
                                             default:
@@ -4083,7 +4083,7 @@
                         case 'b':
                             switch(iset[i++])
                             {
-                            case 'w':
+                            case 'w': /* psadbw */
                                 if (iset[i] == '\0') { ++data.sse;++data.sse2;++data.tdnow2; }
                                 break;
                             default:
@@ -4110,16 +4110,16 @@
                         case 'f':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* pshufb */
                                 if (iset[i] == '\0') { ++data.ssse3; }
                                 break;
-                            case 'd':
+                            case 'd': /* pshufd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
                             case 'h':
                                 switch(iset[i++])
                                 {
-                                case 'w':
+                                case 'w': /* pshufhw */
                                     if (iset[i] == '\0') { ++data.sse2; }
                                     break;
                                 default:
@@ -4130,7 +4130,7 @@
                             case 'l':
                                 switch(iset[i++])
                                 {
-                                case 'w':
+                                case 'w': /* pshuflw */
                                     if (iset[i] == '\0') { ++data.sse2; }
                                     break;
                                 default:
@@ -4138,7 +4138,7 @@
                                     break;
                                 }
                                 break;
-                            case 'w':
+                            case 'w': /* pshufw */
                                 if (iset[i] == '\0') { ++data.sse;++data.tdnow2; }
                                 break;
                             default:
@@ -4165,13 +4165,13 @@
                         case 'n':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* psignb */
                                 if (iset[i] == '\0') { ++data.ssse3; }
                                 break;
-                            case 'd':
+                            case 'd': /* psignd */
                                 if (iset[i] == '\0') { ++data.ssse3; }
                                 break;
-                            case 'w':
+                            case 'w': /* psignw */
                                 if (iset[i] == '\0') { ++data.ssse3; }
                                 break;
                             default:
@@ -4195,12 +4195,12 @@
                     case 'l':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* pslld */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             else
                             switch(iset[i++])
                             {
-                            case 'q':
+                            case 'q': /* pslldq */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
                             default:
@@ -4208,10 +4208,10 @@
                                 break;
                             }
                             break;
-                        case 'q':
+                        case 'q': /* psllq */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
-                        case 'w':
+                        case 'w': /* psllw */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
                         default:
@@ -4230,10 +4230,10 @@
                     case 'a':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* psrad */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
-                        case 'w':
+                        case 'w': /* psraw */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
                         default:
@@ -4244,12 +4244,12 @@
                     case 'l':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* psrld */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             else
                             switch(iset[i++])
                             {
-                            case 'q':
+                            case 'q': /* psrldq */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
                             default:
@@ -4257,10 +4257,10 @@
                                 break;
                             }
                             break;
-                        case 'q':
+                        case 'q': /* psrlq */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
-                        case 'w':
+                        case 'w': /* psrlw */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
                         default:
@@ -4279,22 +4279,22 @@
                     case 'b':
                         switch(iset[i++])
                         {
-                        case 'b':
+                        case 'b': /* psubb */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
-                        case 'd':
+                        case 'd': /* psubd */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
-                        case 'q':
+                        case 'q': /* psubq */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
                         case 's':
                             switch(iset[i++])
                             {
-                            case 'b':
+                            case 'b': /* psubsb */
                                 if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                 break;
-                            case 'w':
+                            case 'w': /* psubsw */
                                 if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                 break;
                             default:
@@ -4308,10 +4308,10 @@
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'b':
+                                case 'b': /* psubusb */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
-                                case 'w':
+                                case 'w': /* psubusw */
                                     if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                     break;
                                 default:
@@ -4324,7 +4324,7 @@
                                 break;
                             }
                             break;
-                        case 'w':
+                        case 'w': /* psubw */
                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                             break;
                         default:
@@ -4346,10 +4346,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* pswapd */
                                 if (iset[i] == '\0') { ++data.tdnow2; }
                                 break;
-                            case 'w':
+                            case 'w': /* pswapw */
                                 if (iset[i] == '\0') { ++data.tdnow1; }
                                 break;
                             default:
@@ -4381,7 +4381,7 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 't':
+                        case 't': /* ptest */
                             if (iset[i] == '\0') { ++data.sse4_1; }
                             break;
                         default:
@@ -4420,7 +4420,7 @@
                                     case 'b':
                                         switch(iset[i++])
                                         {
-                                        case 'w':
+                                        case 'w': /* punpckhbw */
                                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                             break;
                                         default:
@@ -4431,7 +4431,7 @@
                                     case 'd':
                                         switch(iset[i++])
                                         {
-                                        case 'q':
+                                        case 'q': /* punpckhdq */
                                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                             break;
                                         default:
@@ -4445,7 +4445,7 @@
                                         case 'd':
                                             switch(iset[i++])
                                             {
-                                            case 'q':
+                                            case 'q': /* punpckhqdq */
                                                 if (iset[i] == '\0') { ++data.sse2; }
                                                 break;
                                             default:
@@ -4461,7 +4461,7 @@
                                     case 'w':
                                         switch(iset[i++])
                                         {
-                                        case 'd':
+                                        case 'd': /* punpckhwd */
                                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                             break;
                                         default:
@@ -4480,7 +4480,7 @@
                                     case 'b':
                                         switch(iset[i++])
                                         {
-                                        case 'w':
+                                        case 'w': /* punpcklbw */
                                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                             break;
                                         default:
@@ -4491,7 +4491,7 @@
                                     case 'd':
                                         switch(iset[i++])
                                         {
-                                        case 'q':
+                                        case 'q': /* punpckldq */
                                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                             break;
                                         default:
@@ -4505,7 +4505,7 @@
                                         case 'd':
                                             switch(iset[i++])
                                             {
-                                            case 'q':
+                                            case 'q': /* punpcklqdq */
                                                 if (iset[i] == '\0') { ++data.sse2; }
                                                 break;
                                             default:
@@ -4521,7 +4521,7 @@
                                     case 'w':
                                         switch(iset[i++])
                                         {
-                                        case 'd':
+                                        case 'd': /* punpcklwd */
                                             if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                                             break;
                                         default:
@@ -4565,7 +4565,7 @@
                 case 'o':
                     switch(iset[i++])
                     {
-                    case 'r':
+                    case 'r': /* pxor */
                         if (iset[i] == '\0') { ++data.mmx;++data.sse2; }
                         break;
                     default:
@@ -4595,7 +4595,7 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 's':
+                        case 's': /* rcpps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -4606,7 +4606,7 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 's':
+                        case 's': /* rcpss */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -4633,7 +4633,7 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'r':
+                        case 'r': /* rdmsr */
                             if (iset[i] == '\0') { ++data.i586; }
                             break;
                         default:
@@ -4652,7 +4652,7 @@
                     case 'm':
                         switch(iset[i++])
                         {
-                        case 'c':
+                        case 'c': /* rdpmc */
                             if (iset[i] == '\0') { ++data.ppro; }
                             break;
                         default:
@@ -4671,7 +4671,7 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'c':
+                        case 'c': /* rdtsc */
                             if (iset[i] == '\0') { ++data.i586; }
                             break;
                         default:
@@ -4704,10 +4704,10 @@
                             case 'p':
                                 switch(iset[i++])
                                 {
-                                case 'd':
+                                case 'd': /* roundpd */
                                     if (iset[i] == '\0') { ++data.sse4_1; }
                                     break;
-                                case 's':
+                                case 's': /* roundps */
                                     if (iset[i] == '\0') { ++data.sse4_1; }
                                     break;
                                 default:
@@ -4718,10 +4718,10 @@
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'd':
+                                case 'd': /* roundsd */
                                     if (iset[i] == '\0') { ++data.sse4_1; }
                                     break;
-                                case 's':
+                                case 's': /* roundss */
                                     if (iset[i] == '\0') { ++data.sse4_1; }
                                     break;
                                 default:
@@ -4752,7 +4752,7 @@
             case 's':
                 switch(iset[i++])
                 {
-                case 'm':
+                case 'm': /* rsm */
                     if (iset[i] == '\0') { ++data.i586; }
                     break;
                 case 'q':
@@ -4767,7 +4767,7 @@
                             case 'p':
                                 switch(iset[i++])
                                 {
-                                case 's':
+                                case 's': /* rsqrtps */
                                     if (iset[i] == '\0') { ++data.sse; }
                                     break;
                                 default:
@@ -4778,7 +4778,7 @@
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 's':
+                                case 's': /* rsqrtss */
                                     if (iset[i] == '\0') { ++data.sse; }
                                     break;
                                 default:
@@ -4826,7 +4826,7 @@
                         case 'c':
                             switch(iset[i++])
                             {
-                            case 'e':
+                            case 'e': /* sfence */
                                 if (iset[i] == '\0') { ++data.sse;++data.tdnow2; }
                                 break;
                             default:
@@ -4861,10 +4861,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* shufpd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 's':
+                            case 's': /* shufps */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -4899,10 +4899,10 @@
                         case 'p':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* sqrtpd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 's':
+                            case 's': /* sqrtps */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -4913,10 +4913,10 @@
                         case 's':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* sqrtsd */
                                 if (iset[i] == '\0') { ++data.sse2; }
                                 break;
-                            case 's':
+                            case 's': /* sqrtss */
                                 if (iset[i] == '\0') { ++data.sse; }
                                 break;
                             default:
@@ -4954,7 +4954,7 @@
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'r':
+                                case 'r': /* stmxcsr */
                                     if (iset[i] == '\0') { ++data.sse; }
                                     break;
                                 default:
@@ -4991,10 +4991,10 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* subpd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* subps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -5005,10 +5005,10 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* subsd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* subss */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
@@ -5049,10 +5049,10 @@
                             case 's':
                                 switch(iset[i++])
                                 {
-                                case 'd':
+                                case 'd': /* ucomisd */
                                     if (iset[i] == '\0') { ++data.sse2; }
                                     break;
-                                case 's':
+                                case 's': /* ucomiss */
                                     if (iset[i] == '\0') { ++data.sse; }
                                     break;
                                 default:
@@ -5083,7 +5083,7 @@
             case 'd':
                 switch(iset[i++])
                 {
-                case '2':
+                case '2': /* ud2 */
                     if (iset[i] == '\0') { ++data.ppro; }
                     break;
                 default:
@@ -5109,10 +5109,10 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* unpckhpd */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 's':
+                                    case 's': /* unpckhps */
                                         if (iset[i] == '\0') { ++data.sse; }
                                         break;
                                     default:
@@ -5131,10 +5131,10 @@
                                 case 'p':
                                     switch(iset[i++])
                                     {
-                                    case 'd':
+                                    case 'd': /* unpcklpd */
                                         if (iset[i] == '\0') { ++data.sse2; }
                                         break;
-                                    case 's':
+                                    case 's': /* unpcklps */
                                         if (iset[i] == '\0') { ++data.sse; }
                                         break;
                                     default:
@@ -5187,7 +5187,7 @@
                         case 'v':
                             switch(iset[i++])
                             {
-                            case 'd':
+                            case 'd': /* wbinvd */
                                 if (iset[i] == '\0') { ++data.i486; }
                                 break;
                             default:
@@ -5219,7 +5219,7 @@
                     case 's':
                         switch(iset[i++])
                         {
-                        case 'r':
+                        case 'r': /* wrmsr */
                             if (iset[i] == '\0') { ++data.i586; }
                             break;
                         default:
@@ -5251,7 +5251,7 @@
                 case 'd':
                     switch(iset[i++])
                     {
-                    case 'd':
+                    case 'd': /* xadd */
                         if (iset[i] == '\0') { ++data.i486; }
                         break;
                     default:
@@ -5273,10 +5273,10 @@
                     case 'p':
                         switch(iset[i++])
                         {
-                        case 'd':
+                        case 'd': /* xorpd */
                             if (iset[i] == '\0') { ++data.sse2; }
                             break;
-                        case 's':
+                        case 's': /* xorps */
                             if (iset[i] == '\0') { ++data.sse; }
                             break;
                         default:
