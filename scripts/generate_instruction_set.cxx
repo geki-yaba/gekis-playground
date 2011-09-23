@@ -43,7 +43,7 @@
  * If you see a violation to proper coding styles, please report it to me!
  *
  * Your changes must be stored as a unified diff.
- * The easiest way to do so is to checkout this subversion reposity and do a:
+ * The easiest way to do so is to checkout this subversion repository and do a:
  *
  *     svn diff scripts/generate_instruction_set.cxx > changes.diff
  *
@@ -133,7 +133,8 @@ public:
                 blobmap::iterator m = blobs.find(i);
     
                 if (m == blobs.end())
-                    m = blobs.insert(std::make_pair(i, blob(indent + 1, i, name())));
+                    m = blobs.insert(std::make_pair(i,
+                        blob(indent + 1, i, name())));
 
                 blob& b = m->second;
 

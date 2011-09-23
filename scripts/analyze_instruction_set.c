@@ -32,7 +32,7 @@
  * If you see a violation to proper coding styles, please report it to me!
  *
  * Your changes must be stored as a unified diff.
- * The easiest way to do so is to checkout this subversion reposity and do a:
+ * The easiest way to do so is to checkout this subversion repository and do a:
  *
  *     svn diff scripts/analyze_instruction_set.c > changes.diff
  *
