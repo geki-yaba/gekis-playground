@@ -537,7 +537,7 @@ libreoffice_src_compile() {
 	make || die "make failed"
 }
 
-libreoffice_src_compile() {
+libreoffice_src_test() {
 	use test && make check
 }
 
