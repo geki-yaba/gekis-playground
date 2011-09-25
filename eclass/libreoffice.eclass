@@ -29,11 +29,10 @@ CMAKE_REQUIRED="never"
 inherit autotools bash-completion-r1 boost-utils check-reqs db-use eutils \
 	flag-o-matic java-pkg-opt-2 kde4-base multilib pax-utils python versionator \
 	nsplugins
-# inherit mono
 
 [[ ${PV} == *_pre ]] && inherit git-2
 
-EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_install pkg_preinst pkg_postinst pkg_postrm
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install pkg_preinst pkg_postinst pkg_postrm
 
 DESCRIPTION="LibreOffice - a productivity suite (experimental version)"
 HOMEPAGE="http://www.libreoffice.org/"
@@ -41,12 +40,12 @@ HOMEPAGE="http://www.libreoffice.org/"
 SLOT="0"
 
 LICENSE="LGPL-3"
-RESTRICT="binchecks mirror test"
+RESTRICT="binchecks mirror"
 
 IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk
 jemalloc junit kde languagetool ldap mysql nsplugin odbc odk opengl +python
-reportbuilder templates webdav wiki"
-# mono, postgres - system only diff available - no chance to choose! :(
+reportbuilder templates test webdav wiki"
+# postgres - system only diff available - no chance to choose! :(
 
 [[ ${PV} == *_pre ]] && IUSE+=" gtk3"
 [[ ${PV} != *_pre ]] && IUSE+=" cups"
@@ -116,7 +115,6 @@ fi
 #	postgres? ( dev-db/postgresql )
 #		dev-java/saxon:9
 #		dev-db/hsqldb
-#	mono? ( dev-lang/mono )
 CDEPEND="
 	dbus? ( dev-libs/dbus-glib )
 	eds? ( gnome-extra/evolution-data-server )
@@ -365,7 +363,6 @@ libreoffice_src_prepare() {
 	use branding && echo "--with-intro-bitmap=${WORKDIR}/branding-intro.png" >> ${config}
 	echo "$(use_enable gtk)" >> ${config}
 	echo "$(use_enable kde kde4)" >> ${config}
-#	echo "$(use_enable mono)" >> ${config}
 	echo "$(use_enable odk)" >> ${config}
 	echo "$(use_with java)" >> ${config}
 	echo "$(use_with templates sun-templates)" >> ${config}
@@ -538,6 +535,10 @@ libreoffice_src_compile() {
 
 	# build
 	make || die "make failed"
+}
+
+libreoffice_src_compile() {
+	use test && make check
 }
 
 libreoffice_src_install() {
