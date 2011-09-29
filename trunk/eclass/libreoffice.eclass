@@ -11,11 +11,6 @@
 # TODO: proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-# 3.5
-#
-# superfluous diff: as-needed, gbuild, ldflags, translate_toolkit-solenv
-#
-
 EAPI="4"
 
 _libreoffice_java="1.6"
@@ -43,12 +38,15 @@ LICENSE="LGPL-3"
 RESTRICT="binchecks mirror"
 
 IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk
-jemalloc junit kde languagetool ldap mysql nsplugin odbc odk opengl +python
-reportbuilder templates test webdav wiki"
+jemalloc junit kde languagetool ldap mysql nsplugin odbc odk opengl pdfimport
++python reportbuilder templates test webdav wiki"
 # postgres - system only diff available - no chance to choose! :(
 
-[[ ${PV} == *_pre ]] && IUSE+=" gtk3"
-[[ ${PV} != *_pre ]] && IUSE+=" cups"
+# config
+MY_PV="$(get_version_component_range 1-2)"
+
+[[ ${MY_PV} > 3.4 ]] && IUSE+=" gtk3"
+[[ ${MY_PV} < 3.5 ]] && IUSE+=" cups"
 
 # available template languages
 LANGUAGES="de en en_GB en_ZA es fr hu it"
@@ -56,9 +54,6 @@ LANGUAGES="de en en_GB en_ZA es fr hu it"
 for language in ${LANGUAGES}; do
 	IUSE+=" linguas_${language}"
 done
-
-# config
-MY_PV="$(get_version_component_range 1-2)"
 
 # paths
 LIBRE_URI="${LIBRE_URI:="http://download.documentfoundation.org/libreoffice/src/$(get_version_component_range 1-3)"}"
@@ -69,8 +64,6 @@ BRAND_URI="http://dev.gentooexperimental.org/~scarabeus"
 BRAND_SRC="${PN}-branding-gentoo-0.3.tar.xz"
 
 # available templates
-# - en_* => en_US templates for simplicity; fix:
-# https://forums.gentoo.org/viewtopic-p-6449940.html#6449940
 TDEPEND=""
 TDEPEND+=" linguas_de? ( ${EXT_URI}/53ca5e56ccd4cab3693ad32c6bd13343-Sun-ODF-Template-Pack-de_1.0.0.oxt )"
 TDEPEND+=" linguas_en? ( ${EXT_URI}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
@@ -85,36 +78,24 @@ SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )
 	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
-if [[ ${PV} != *_pre ]]; then
+if [[ ${PV} == *_pre ]]; then
+MODULES="core help"
+else
+	if [[ ${MY_PV} < 3.5 ]]; then
 MODULES="artwork base calc components extensions extras filters help impress
 libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
 writer"
 
-	SRC_URI+=" ${LIBRE_URI}/${PN}-bootstrap-${PV}.tar.bz2"
+		SRC_URI+=" ${LIBRE_URI}/${PN}-bootstrap-${PV}.tar.bz2"
+	else
+MODULES="core help"
+	fi
 
 	for module in ${MODULES}; do
 		SRC_URI+=" ${LIBRE_URI}/${PN}-${module}-${PV}.tar.bz2"
 	done
-else
-MODULES="core help"
 fi
 
-#	>=dev-libs/xmlsec-1.2.14
-#	reportbuilder? ( dev-java/sac
-#		dev-java/flute-jfree
-#		dev-java/jcommon
-#		dev-java/jcommon-serializer
-#		dev-java/libfonts
-#		dev-java/libformula
-#		dev-java/liblayout
-#		dev-java/libloader
-#		dev-java/librepository
-#		dev-java/libxml
-#		dev-java/jfreereport
-#		dev-java/commons-logging:0 )
-#	postgres? ( dev-db/postgresql )
-#		dev-java/saxon:9
-#		dev-db/hsqldb
 CDEPEND="
 	dbus? ( dev-libs/dbus-glib )
 	eds? ( gnome-extra/evolution-data-server )
@@ -134,6 +115,7 @@ CDEPEND="
 	nsplugin? ( net-libs/xulrunner:1.9 )
 	mysql? ( dev-db/mysql-connector-c++:1.1.0 )
 	opengl? ( virtual/opengl virtual/glu )
+	pdfimport? ( app-text/poppler[xpdf-headers] )
 	reportbuilder? ( dev-java/commons-logging:0 )
 	webdav? ( net-libs/neon )
 	wiki? ( dev-java/commons-codec:0
@@ -145,7 +127,6 @@ CDEPEND="
 	  app-text/libwpd:0.9[tools]
 	  app-text/libwps:0.2
 	  app-text/mythes
-	  app-text/poppler[xpdf-headers]
 	  dev-libs/boost[program_options,thread]
 	  dev-libs/expat
 	>=dev-libs/hyphen-2.7.1
@@ -170,14 +151,14 @@ CDEPEND="
 	  x11-libs/startup-notification
 	  virtual/jpeg"
 
-if [[ ${PV} == *_pre ]]; then
+if [[ ${MY_PV} < 3.5 ]]; then
+CDEPEND+=" cups? ( net-print/cups )"
+else
 CDEPEND+=" gtk3? ( x11-libs/gtk+:3 )
 	>=gnome-base/librsvg-2.32.1:2
 	  media-libs/libvisio
 	  net-print/cups
 	  sys-devel/gettext"
-else
-CDEPEND+=" cups? ( net-print/cups )"
 fi
 
 PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
@@ -213,7 +194,7 @@ DEPEND="${CDEPEND}
 	x11-proto/xproto"
 
 _libreoffice_use_gtk="gtk"
-[[ ${PV} == *_pre ]] && _libreoffice_use_gtk="|| ( gtk gtk3 )"
+[[ ${MY_PV} > 3.4 ]] && _libreoffice_use_gtk="|| ( gtk gtk3 )"
 
 REQUIRED_USE="gnome? ( ${_libreoffice_use_gtk} )
 	junit? ( java )
@@ -223,7 +204,6 @@ REQUIRED_USE="gnome? ( ${_libreoffice_use_gtk} )
 	wiki? ( java )"
 
 libreoffice_pkg_pretend() {
-	# welcome
 	elog
 	eerror "This ${PN} version is experimental."
 	eerror "Things could just break."
@@ -233,10 +213,8 @@ libreoffice_pkg_pretend() {
 	einfo "You may check ./configure for '--enable-ext-*'"
 	einfo "and request them here: https://forums.gentoo.org/viewtopic-t-865091.html"
 
-	# custom-cflags
 	_libreoffice_custom-cflags_message
 
-	# space
 	CHECKREQS_MEMORY="512M"
 	use debug && CHECKREQS_DISK_BUILD="16G" \
 		|| CHECKREQS_DISK_BUILD="8G"
@@ -254,13 +232,10 @@ libreoffice_pkg_pretend() {
 }
 
 libreoffice_pkg_setup() {
-	# java
 	java-pkg-opt-2_pkg_setup
 
-	# kde
 	use kde && kde4-base_pkg_setup
 
-	# python
 	python_set_active_version 3
 	python_pkg_setup
 }
@@ -280,21 +255,23 @@ libreoffice_src_unpack() {
 			git_src_unpack
 		done
 	else
-		unpack "${PN}-bootstrap-${PV}.tar.bz2"
+		if [[ ${MY_PV} == 3.4 ]]; then
+			unpack "${PN}-bootstrap-${PV}.tar.bz2"
 
-		local clone="${S}/clone"
-		cd "${clone}"
+			cd "${S}/clone"
+		fi
 
 		# unpack modules
 		for module in ${MODULES}; do
 			unpack "${PN}-${module}-${PV}.tar.bz2"
 		done
 
-		# link source into tree
-		ln -sf "${clone}"/*/* "${S}"
+		if [[ ${MY_PV} == 3.4 ]]; then
+			# link source into tree
+			ln -sf "${S}/clone"/*/* "${S}"
+		fi
 	fi
 
-	# branding
 	if use branding; then
 		cd "${WORKDIR}"
 		unpack "${BRAND_SRC}"
@@ -325,10 +302,10 @@ libreoffice_src_prepare() {
 	EPATCH_FORCE="yes"
 	epatch "${FILESDIR}"
 
-	if [[ ${PV} != *_pre ]]; then
-		# version specifics
-		[ -d "${FILESDIR}/${MY_PV}" ] && epatch "${FILESDIR}/${MY_PV}"
+	# version specifics
+	[ -d "${FILESDIR}/${MY_PV}" ] && epatch "${FILESDIR}/${MY_PV}"
 
+	if [[ ${MY_PV} < 3.5 ]]; then
 		# disable printeradmin
 		sed -e "s:.*printeradmin:#\0:" \
 			-i "${S}"/sysui/desktop/share/create_tree.sh \
@@ -367,16 +344,16 @@ libreoffice_src_prepare() {
 	echo "$(use_with java)" >> ${config}
 	echo "$(use_with templates sun-templates)" >> ${config}
 
-	# 3.5
-	if [[ ${PV} == *_pre ]]; then
+	if [[ ${MY_PV} == 3.5 ]]; then
 		echo "$(use_enable !debug release-build)" >> ${config}
 		echo "$(use_enable gtk3)" >> ${config}
 	fi
 
 	# extensions
+	echo "$(use_enable mysql ext-mysql-connector)" >> ${config}
+	echo "$(use_enable pdfimport ext-pdfimport)" >> ${config}
 	echo "$(use_enable reportbuilder ext-report-builder)" >> ${config}
 	echo "$(use_enable wiki ext-wiki-publisher)" >> ${config}
-	echo "$(use_enable mysql ext-mysql-connector)" >> ${config}
 	# FIXME: enable-ext
 	echo "$(use_with languagetool)" >> ${config}
 
@@ -397,8 +374,7 @@ libreoffice_src_prepare() {
 	echo "$(use_enable webdav neon)" >> ${config}
 	echo "$(use_with webdav system-neon)" >> ${config}
 
-	# 3.4
-	if [[ ${PV} != *_pre ]]; then
+	if [[ ${MY_PV} == 3.4 ]]; then
 		echo "$(use_enable python)" >> ${config}
 		echo "$(use_enable cups)" >> ${config}
 	fi
@@ -420,7 +396,7 @@ libreoffice_src_prepare() {
 	# gio
 	local gtk="disable"
 	use gtk && gtk="enable"
-	[[ ${PV} == *_pre ]] && use gtk3 && gtk="enable"
+	[[ ${MY_PV} > 3.4 ]] && use gtk3 && gtk="enable"
 	echo "--${gtk}-gio" >> ${config}
 	echo "--disable-gnome-vfs" >> ${config}
 
@@ -431,16 +407,12 @@ libreoffice_src_prepare() {
 		echo "--with-java-target-version=${_libreoffice_java}" >> ${config}
 		echo "--with-jvm-path=/usr/$(get_libdir)/" >> ${config}
 		echo "--with-system-beanshell" >> ${config}
-#		echo "--with-system-hsqldb" >> ${config}
 		echo "--with-system-lucene" >> ${config}
-#		echo "--with-system-saxon" >> ${config}
 		echo "--with-beanshell-jar=$(java-pkg_getjar bsh bsh.jar)" >> ${config}
-#		echo "--with-hsqldb-jar=$(java-pkg_getjar hsqldb hsqldb.jar)" >> ${config}
 		echo "--with-lucene-core-jar=$(java-pkg_getjar \
 			lucene-2.9 lucene-core.jar)" >> ${config}
 		echo "--with-lucene-analyzers-jar=$(java-pkg_getjar \
 			lucene-2.9 lucene-analyzers.jar)" >> ${config}
-#		echo "--with-saxon-jar=$(java-pkg_getjar saxon-9 saxon.jar)" >> ${config}
 
 		# junit:4
 		use junit && echo "--with-junit=$(java-pkg_getjar \
@@ -449,33 +421,6 @@ libreoffice_src_prepare() {
 
 	# junit:4
 	use !junit && echo "--without-junit" >> ${config}
-
-	# reportbuilder extension
-#	if use reportbuilder; then
-#		echo "--with-system-jfreereport" >> ${config}
-#		echo "--with-sac-jar=$(java-pkg_getjar \
-#			sac sac.jar)" >> ${config}
-#		echo "--with-flute-jar=$(java-pkg_getjar \
-#			flute-jfree flute-jfree.jar)" >> ${config}
-#		echo "--with-jcommon-jar=$(java-pkg_getjar \
-#			jcommon-1.0 jcommon.jar)" >> ${config}
-#		echo "--with-jcommon-serializer-jar=$(java-pkg_getjar \
-#			jcommon-serializer jcommon-serializer.jar)" >> ${config}
-#		echo "--with-libfonts-jar=$(java-pkg_getjar \
-#			libfonts libfonts.jar)" >> ${config}
-#		echo "--with-libformula-jar=$(java-pkg_getjar \
-#			libformula libformula.jar)" >> ${config}
-#		echo "--with-liblayout-jar=$(java-pkg_getjar \
-#			liblayout liblayout.jar)" >> ${config}
-#		echo "--with-libloader-jar=$(java-pkg_getjar \
-#			libloader libloader.jar)" >> ${config}
-#		echo "--with-librepository-jar=$(java-pkg_getjar \
-#			librepository librepository.jar)" >> ${config}
-#		echo "--with-libxml-jar=$(java-pkg_getjar \
-#			libxml libxml.jar)" >> ${config}
-#		echo "--with-jfreereport-jar=$(java-pkg_getjar \
-#			jfreereport jfreereport.jar)" >> ${config}
-#	fi
 
 	# wiki extension
 	if use wiki; then
@@ -516,7 +461,7 @@ libreoffice_src_configure() {
 	export ARCH_FLAGS="${CXXFLAGS}"
 
 	# linker flags
-	[[ ${PV} != *_pre ]] && append-ldflags "-Wl,--no-as-needed"
+	[[ ${MY_PV} < 3.5 ]] && append-ldflags "-Wl,--no-as-needed"
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
 	export LINKFLAGSDEFS="-Wl,-z,defs -L$(boost-utils_get_library_path)"
 
@@ -531,7 +476,7 @@ libreoffice_src_configure() {
 libreoffice_src_compile() {
 	# no need to download external sources
 	# although we set two configure flags already for this ...
-	[[ ${PV} != *_pre ]] && touch src.downloaded
+	[[ ${MY_PV} < 3.5 ]] && touch src.downloaded
 
 	# build
 	make || die "make failed"
@@ -543,7 +488,8 @@ libreoffice_src_test() {
 
 libreoffice_src_install() {
 	# install
-	make DESTDIR="${ED}" distro-pack-install || die "install failed"
+	make DESTDIR="${ED}" distro-pack-install \
+		-o build -o check || die "install failed"
 
 	# access
 	use prefix || chown -RP root:0 "${ED}"
@@ -574,7 +520,6 @@ libreoffice_pkg_postinst() {
 	# hardened
 	_libreoffice_pax_fix
 
-	# info
 	elog " To start LibreOffice, run:"
 	elog
 	elog " $ libreoffice"
@@ -588,7 +533,7 @@ libreoffice_pkg_postinst() {
 	elog "__________________________________________________________________"
 	elog " Some parts have to be installed via Extension Manager now"
 	ewarn " - VBA (VisualBasic-Assistant) support is no longer an extension"
-	elog " - pdfimport"
+	use pdfimport && elog " - pdfimport"
 	elog " - presentation console"
 	elog " - presentation minimizer"
 	elog " - presentation ui"
@@ -640,10 +585,8 @@ if ! has _libreoffice_die ${EBUILD_DEATH_HOOKS}; then
 fi
 
 _libreoffice_die() {
-	# custom-cflags
 	_libreoffice_custom-cflags_message
 
-	# python version
 	echo "Python: $(python_get_version)"
 }
 
