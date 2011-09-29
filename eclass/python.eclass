@@ -2745,6 +2745,59 @@ python_get_library() {
 	fi
 }
 
+# @FUNCTION: python_get_extension_module_suffix
+# @USAGE: [-f|--final-ABI]
+# @DESCRIPTION:
+# Print suffix of filenames of extension modules.
+# If --final-ABI option is specified, then final ABI from the list of enabled ABIs is used.
+python_get_extension_module_suffix() {
+	_python_check_python_pkg_setup_execution
+
+	local final_ABI="0" PYTHON_ABI="${PYTHON_ABI}"
+
+	while (($#)); do
+		case "$1" in
+			-f|--final-ABI)
+				final_ABI="1"
+				;;
+			-*)
+				die "${FUNCNAME}(): Unrecognized option '$1'"
+				;;
+			*)
+				die "${FUNCNAME}(): Invalid usage"
+				;;
+		esac
+		shift
+	done
+
+	if [[ "${final_ABI}" == "1" ]]; then
+		if ! _python_package_supporting_installation_for_multiple_python_abis; then
+			die "${FUNCNAME}(): '--final-ABI' option cannot be used in ebuilds of packages not supporting installation for multiple Python ABIs"
+		fi
+		PYTHON_ABI="$(PYTHON -f --ABI)"
+	else
+		if _python_package_supporting_installation_for_multiple_python_abis; then
+			if ! _python_abi-specific_local_scope; then
+				die "${FUNCNAME}() should be used in ABI-specific local scope"
+			fi
+		else
+			PYTHON_ABI="${PYTHON_ABI:-$(PYTHON --ABI)}"
+		fi
+	fi
+
+	if [[ "$(_python_get_implementation "${PYTHON_ABI}")" == "CPython" ]]; then
+		if [[ "${PYTHON_ABI}" < "3.2" ]]; then
+			echo ".so"
+		else
+			echo ".cpython-${PYTHON_ABI/./}.so"
+		fi
+	elif [[ "$(_python_get_implementation "${PYTHON_ABI}")" == "Jython" ]]; then
+		die "${FUNCNAME}(): Jython does not support extension modules"
+	elif [[ "$(_python_get_implementation "${PYTHON_ABI}")" == "PyPy" ]]; then
+		echo ".so"
+	fi
+}
+
 # @FUNCTION: python_get_version
 # @USAGE: [-f|--final-ABI] [-l|--language] [--full] [--major] [--minor] [--micro]
 # @DESCRIPTION:
