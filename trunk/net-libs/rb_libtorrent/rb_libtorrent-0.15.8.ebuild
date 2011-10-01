@@ -6,7 +6,7 @@ EAPI="2"
 PYTHON_DEPEND="python? 2:2.6"
 PYTHON_USE_WITH="threads"
 
-inherit boost-utils eutils flag-o-matic versionator python
+inherit autotools boost-utils eutils flag-o-matic versionator python
 
 MY_P=${P/rb_/}
 MY_P=${MY_P/torrent/torrent-rasterbar}
@@ -19,7 +19,7 @@ SRC_URI="http://libtorrent.googlecode.com/files/${MY_P}.tar.gz"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~arm ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
-IUSE="debug doc examples python ssl"
+IUSE="debug doc examples python ssl static-libs"
 RESTRICT="test"
 
 DEPEND="dev-libs/boost[filesystem,python?,thread]
@@ -44,6 +44,8 @@ src_prepare() {
 		-i libtorrent-rasterbar-cmake.pc -i libtorrent-rasterbar.pc
 
 	epatch "${FILESDIR}/rb_libtorrent-0.15.7-boost-1_46.diff"
+
+	eautoreconf
 }
 
 src_configure() {
@@ -52,27 +54,26 @@ src_configure() {
 		--with-boost-filesystem=boost_filesystem-mt \
 		--with-boost-thread=boost_thread-mt \
 		--with-boost-python=boost_python-mt"
-	local boost_lib="$(boost-utils_get_library_path)"
+	local myconf="--with-boost-libdir=$(boost-utils_get_library_path)"
+	use debug && myconf+=" --enable-logging=verbose"
 
 	append-flags "-DBOOST_FILESYSTEM_NARROW_ONLY"
-
-	local myconf
-	use debug && myconf+=" --enable-logging=verbose"
 
 	econf $(use_enable debug) \
 		$(use_enable test tests) \
 		$(use_enable examples) \
 		$(use_enable python python-binding) \
 		$(use_enable ssl encryption) \
+		$(use_enable static-libs static) \
 		--with-zlib=system \
-		--with-boost-libdir=${boost_lib} \
-		${boost_libs} \
 		${myconf} \
 		|| die
 }
 
 src_install() {
 	emake DESTDIR="${D}" install || die 'emake install failed'
+
+	use static-libs || find "${D}" -name '*.la' -exec rm -f {} +
 
 	dodoc ChangeLog AUTHORS NEWS README || die 'dodoc failed'
 

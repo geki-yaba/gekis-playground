@@ -98,7 +98,7 @@ src_install() {
 
 	# no linguas set or en without offlinehelp
 	if [ -d "${path}" ] ; then
-		insinto /usr/$(get_libdir)/${MY_PN}/basis-link
+		insinto /usr/$(get_libdir)/${MY_PN}/basis${version}
 		doins -r "${path}"/*
 	fi
 }
