@@ -77,6 +77,17 @@ private:
     bool back;
     bool fix;
 
+private:
+    void loop(std::string& str)
+    {
+        for(blobmap::iterator
+            i = blobs.begin(),
+            e = blobs.end();
+            i != e;
+            i++)
+            i->second << str;
+    }
+
 public:
     // root
     blob(unsigned int i, char k)
@@ -106,47 +117,7 @@ public:
     {
     }
 
-    void next(std::ifstream& is)
-    {
-        if (is.good())
-        {
-            char i;
-            is >> i;
-
-            // end of instructions
-            if (i == ')')
-            {
-                // fill this blob with itype
-                back = true;
-    
-                // roll "rewind" blobs with itype
-                fix = true;
-            }
-            // end of instruction
-            else if (i == '|')
-            {
-                // fill this blob with itype
-                back = true;
-            }
-            else
-            {
-                blobmap::iterator m = blobs.find(i);
-    
-                if (m == blobs.end())
-                    m = blobs.insert(std::make_pair(i,
-                        blob(indent + 1, i, name())));
-
-                blob& b = m->second;
-
-                b.next(is);
-
-                if (b.fill())
-                    fix = true;
-            }
-        }
-    }
-
-    void fill(std::string& str)
+    void operator<<(std::string& str)
     {
         if (rewind())
             data += str;
@@ -157,99 +128,138 @@ public:
         fix  = false;
     }
 
-    void loop(std::string& str)
-    {
-        for(blobmap::iterator
-            i = blobs.begin(),
-            e = blobs.end();
-            i != e;
-            i++)
-        {
-            blob& b = i->second;
+    blobmap& children() { return blobs; }
 
-            b.fill(str);
-        }
-    }
-
-    void print(std::ostream& os)
-    {
-        os << std::string(indent * 4, ' ');
-
-        if (c == ':')
-            os << "unsigned int i = 0;" << std::endl;
-        else
-        {
-            os << "case '" << c << "':";
-
-            if (! data.empty())
-                os << " /* " << name() << " */";
-
-            os << std::endl;
-
-            indent++;
-        }
-
-        if (! data.empty())
-        {
-            os << std::string(indent * 4, ' ');
-            os << "if (iset[i] == '\\0') { " << data << " }" << std::endl;
-
-            if (blobs.size())
-            {
-                os << std::string(indent * 4, ' ');
-                os << "else" << std::endl;
-            }
-        }
-
-        if (blobs.size())
-        {
-            os << std::string(indent * 4, ' ');
-            os << "switch(iset[i++])" << std::endl;
-
-            os << std::string(indent * 4, ' ');
-            os << "{" << std::endl;
-        }
-
-        for(blobmap::iterator
-            i = blobs.begin(),
-            e = blobs.end();
-            i != e;
-            i++)
-        {
-            blob& b = i->second;
-
-            b.print(os);
-        }
-
-        if (blobs.size())
-        {
-            os << std::string(indent * 4, ' ');
-            os << "default:" << std::endl;
-
-            os << std::string((indent + 1) * 4, ' ');
-            os << "++data.unused;" << std::endl;
-
-            os << std::string((indent + 1) * 4, ' ');
-            os << "break;" << std::endl;
-
-            os << std::string(indent * 4, ' ');
-            os << "}" << std::endl;
-        }
-
-        if (c != ':')
-        {
-            os << std::string(indent * 4, ' ');
-            os << "break;" << std::endl;
-
-            indent--;
-        }
-    }
-
+    std::string& code() { return data; }
     std::string& name() { return parse; }
 
+    unsigned int whitespace() { return indent; }
+
+    void decrement() { indent--; }
+    void increment() { indent++; }
+
+    char type() { return c; }
+
     bool rewind() { return back; }
+    void rewind(bool r) { back = r; }
+
     bool fill() { return fix; }
+    void fill(bool f) { fix = f; }
 };
+
+template <class charT, class traits>
+std::basic_istream<charT,traits>& operator>>(std::basic_istream<charT,traits>& is, blob& b)
+{
+    char c;
+    is >> c;
+
+    if (is.good())
+    {
+        // end of instructions
+        if (c == ')')
+        {
+            // fill this blob with itype
+            b.rewind(true);
+
+            // roll "rewind" blobs with itype
+            b.fill(true);
+        }
+        // end of instruction
+        else if (c == '|')
+        {
+            // fill this blob with itype
+            b.rewind(true);
+        }
+        else
+        {
+            blob::blobmap::iterator i = b.children().find(c);
+
+            if (i == b.children().end())
+                i = b.children().insert(std::make_pair(c,
+                    blob(b.whitespace() + 1, c, b.name())));
+
+            blob& n = i->second;
+
+            // recursion
+            is >> n;
+
+            if (n.fill())
+                b.fill(true);
+        }
+    }
+
+    return is;
+}
+
+template<class charT, class traits>
+std::basic_ostream<charT,traits>& operator<<(std::basic_ostream<charT,traits>& os, blob& b)
+{
+    os << std::string(b.whitespace() * 4, ' ');
+
+    if (b.type() == ':')
+        os << "unsigned int i = 0;" << std::endl;
+    else
+    {
+        os << "case '" << b.type() << "':";
+
+        if (! b.code().empty())
+            os << " /* " << b.name() << " */";
+
+        os << std::endl;
+
+        b.increment();
+    }
+
+    if (! b.code().empty())
+    {
+        os << std::string(b.whitespace() * 4, ' ');
+        os << "if (iset[i] == '\\0') { " << b.code() << " }" << std::endl;
+
+        if (b.children().size())
+        {
+            os << std::string(b.whitespace() * 4, ' ');
+            os << "else" << std::endl;
+        }
+    }
+
+    if (b.children().size())
+    {
+        os << std::string(b.whitespace() * 4, ' ');
+        os << "switch(iset[i++])" << std::endl;
+
+        os << std::string(b.whitespace() * 4, ' ');
+        os << "{" << std::endl;
+
+        for(blob::blobmap::iterator
+            i = b.children().begin(),
+            e = b.children().end();
+            i != e;
+            i++)
+            os << i->second;
+
+        os << std::string(b.whitespace() * 4, ' ');
+        os << "default:" << std::endl;
+
+        os << std::string((b.whitespace() + 1) * 4, ' ');
+        os << "++data.unused;" << std::endl;
+
+        os << std::string((b.whitespace() + 1) * 4, ' ');
+        os << "break;" << std::endl;
+
+        os << std::string(b.whitespace() * 4, ' ');
+        os << "}" << std::endl;
+    }
+
+    if (b.type() != ':')
+    {
+        os << std::string(b.whitespace() * 4, ' ');
+        os << "break;" << std::endl;
+
+        b.decrement();
+    }
+
+    return os;
+}
 
 int main()
 {
@@ -259,7 +269,7 @@ int main()
 
     while(! is.eof())
     {
-        b.next(is);
+        is >> b;
 
         if (b.fill())
         {
@@ -270,16 +280,14 @@ int main()
 
             std::string data(buffer);
 
-            b.fill(data);
+            b << data;
         }
     }
 
     std::ofstream os("analyze_instruction_set.generated");
 
-    os.flags(std::ios::right);
-
     if (os.good())
-        b.print(os);
+        os << b;
 
     return 0;
 }
