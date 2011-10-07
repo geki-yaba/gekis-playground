@@ -60,55 +60,92 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
+typedef struct _Data Data;
+struct _Data
+{
+	GtkWidget *button;
+	GtkWidget *entry;
+
+	GtkTreeView  *tree;
+	GtkTreeModel *store;
+	GtkTreeModel *filter;
+};
+
+static GtkTreeModel * create_store();
+static void fill_store(GtkTreeModel *store);
+
+static GtkTreeModel * create_filter(GtkTreeModel *store, GtkEntry *entry);
 static gboolean do_refilter(GtkTreeModelFilter *filter);
 static void queue_refilter(GtkTreeModelFilter *filter);
 
-static void cb_clicked(GtkButton *button, GtkTreeView *tree);
-static void cb_changed(GtkEditable *entry, GtkTreeModelFilter *filter);
+static void cb_changed(GtkEditable *entry, Data *data);
+static void cb_clicked(GtkButton *button, Data *data);
 
 static gboolean visible_func(GtkTreeModel *model, GtkTreeIter *iter,
 	GtkEntry *entry);
 
 static gint timeout_id = 0;
 
-void cb_clicked(GtkButton *button, GtkTreeView *tree)
+GtkTreeModel * create_store()
 {
-	GtkTreeModel *filter;
-	GtkListStore *store;
+	GtkTreeModel *store;
 
+	store = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
+
+	fill_store(store);
+
+	return store;
+}
+
+static void fill_store(GtkTreeModel *store)
+{
 	gchar *name, *file;
-	gint64 start, end;
+
+	gint64 start, end, j;
+	gint i;
 
 	start = g_get_monotonic_time();
 
-	filter = gtk_tree_view_get_model(tree);
-	store = GTK_LIST_STORE(gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(filter)));
-
-	g_object_ref(G_OBJECT(store));
-	gtk_tree_view_set_model(tree, NULL);
-	gtk_list_store_clear(store);
-
-	g_file_get_contents("names.txt", &file, NULL, NULL);
-	for (name = strtok(file, ","); name; name = strtok(NULL, ","))
+	for(i = 0, j = 0; i < 100; i++)
 	{
-		GtkTreeIter iter;
+		GtkTreeIter parent;
 
-		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter, 0, name, -1);
+		g_file_get_contents("names.txt", &file, NULL, NULL);
 
-		name = strtok(NULL, ",");
+		name = strtok(file, ",");
+
+		if (name)
+		{
+			gtk_list_store_append(GTK_LIST_STORE(store), &parent);//, NULL);
+			gtk_list_store_set(GTK_LIST_STORE(store), &parent, 0, name, -1);
+			j++;
+
+			for (name = strtok(NULL, ","); name; name = strtok(NULL, ","))
+			{
+				GtkTreeIter iter;
+
+				gtk_list_store_append(GTK_LIST_STORE(store), &iter);//, NULL);
+				gtk_list_store_set(GTK_LIST_STORE(store), &iter, 0, name, -1);
+				j++;
+			}
+		}
+
+		g_free(file);
 	}
-	g_free(file);
-
-	filter = gtk_tree_model_filter_new(GTK_TREE_MODEL(store), NULL);
-	g_object_unref(G_OBJECT(store));
-
-	gtk_tree_view_set_model(tree, filter);
-	g_object_unref(G_OBJECT(filter));
 
 	end = g_get_monotonic_time();
+	g_print("populate: (%ld) %ld µs\n", j, end - start);
+}
 
-	g_print("populate: %ld µs\n", end - start);
+GtkTreeModel * create_filter(GtkTreeModel *store, GtkEntry *entry)
+{
+	GtkTreeModel *filter;
+
+	filter = GTK_TREE_MODEL(gtk_tree_model_filter_new(store, NULL));
+	gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter),
+		(GtkTreeModelFilterVisibleFunc)visible_func, entry, NULL);
+
+	return filter;
 }
 
 gboolean do_refilter(GtkTreeModelFilter *filter)
@@ -121,7 +158,7 @@ gboolean do_refilter(GtkTreeModelFilter *filter)
 
 	end = g_get_monotonic_time();
 
-	g_print("filter: %ld µs", end - start);
+	g_print("filter: %ld µs\n", end - start);
 
 	timeout_id = 0;
 
@@ -136,9 +173,27 @@ void queue_refilter(GtkTreeModelFilter *filter)
 	timeout_id = g_timeout_add(300, (GSourceFunc)do_refilter, filter);
 }
 
-void cb_changed(GtkEditable *entry, GtkTreeModelFilter *filter)
+void cb_changed(GtkEditable *entry, Data *data)
 {
-	queue_refilter(filter);
+	queue_refilter(GTK_TREE_MODEL_FILTER(data->filter));
+}
+
+void cb_clicked(GtkButton *button, Data *data)
+{
+	GtkTreeView *tree;
+	GtkTreeModel *store;
+	GtkTreeModel *filter;
+
+	tree = data->tree;
+	store = data->store;
+	filter = data->filter;
+
+	gtk_tree_view_set_model(tree, NULL);
+	gtk_list_store_clear(GTK_LIST_STORE(store));
+
+	fill_store(store);
+
+	gtk_tree_view_set_model(tree, filter);
 }
 
 gboolean visible_func(GtkTreeModel *model, GtkTreeIter *iter,
@@ -163,15 +218,17 @@ gboolean visible_func(GtkTreeModel *model, GtkTreeIter *iter,
 
 int main(int argc, char *argv[])
 {
+	Data data;
+
 	GtkWidget *window;
 	GtkWidget *vbox;
 	GtkWidget *button;
 	GtkWidget *entry;
 	GtkWidget *swindow;
-	GtkWidget *tree;
+	GtkWidget* tree;
 
-	GtkListStore *store;
-	GtkTreeModel *filter;
+	GtkTreeModel* store;
+	GtkTreeModel* filter;
 
 	GtkCellRenderer *cell;
 
@@ -195,38 +252,22 @@ int main(int argc, char *argv[])
 	swindow = gtk_scrolled_window_new(NULL, NULL);
 	gtk_box_pack_start(GTK_BOX(vbox), swindow, TRUE, TRUE, 0);
 
-	store = gtk_list_store_new(1, G_TYPE_STRING);
-
-	g_file_get_contents("names.txt", &file, NULL, NULL);
-	for (name = strtok(file, ","); name; name = strtok(NULL, ","))
-	{
-		GtkTreeIter iter;
-
-		gtk_list_store_append(store, &iter);
-		gtk_list_store_set(store, &iter, 0, name, -1);
-
-		name = strtok(NULL, ",");
-	}
-	g_free(file);
-
-	filter = gtk_tree_model_filter_new(GTK_TREE_MODEL(store), NULL);
-	g_object_unref(G_OBJECT(store));
-	gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(filter),
-		(GtkTreeModelFilterVisibleFunc)visible_func, GTK_ENTRY(entry),
-		NULL);
+	store = create_store();
+	filter = create_filter(store, GTK_ENTRY(entry));
 
 	tree = gtk_tree_view_new_with_model(filter);
-	g_object_unref(G_OBJECT(filter));
 	gtk_container_add(GTK_CONTAINER(swindow), tree);
 
 	cell = gtk_cell_renderer_text_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree), -1,
 		"Name", cell, "text", 0, NULL);
 
-	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(cb_clicked),
-		GTK_TREE_VIEW(tree));
-	g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(cb_changed),
-		GTK_TREE_MODEL_FILTER(filter));
+	g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(cb_changed), &data);
+	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(cb_clicked), &data);
+
+	data.tree   = GTK_TREE_VIEW(tree);
+	data.store  = store;
+	data.filter = filter;
 
 	gtk_widget_show_all(window);
 	gtk_main();
