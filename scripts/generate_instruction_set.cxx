@@ -16,17 +16,17 @@
 
 /*
  * COMPILE
- *
- *     cd scripts/
- *     g++ -O2 -march=native -pipe generate_instruction_set.cxx \
- *         -o generate-instruction-set
+ 
+       cd scripts/
+       g++ -O2 -march=native -pipe generate_instruction_set.cxx \
+           -o generate-instruction-set
  */
 
 /*
  * EXECUTE
- *
- *     cd scripts/
- *     ./generate-instruction-set
+ 
+       cd scripts/
+       ./generate-instruction-set
  */
 
 /*
