@@ -113,9 +113,15 @@ void cb_clicked(GtkButton *button, GtkTreeView *tree)
 
 gboolean do_refilter(GtkTreeModelFilter *filter)
 {
-	g_print("Refiltering...");
+	gint64 start, end;
+
+	start = g_get_monotonic_time();
+
 	gtk_tree_model_filter_refilter(filter);
-	g_print("done\n");
+
+	end = g_get_monotonic_time();
+
+	g_print("filter: %ld µs", end - start);
 
 	timeout_id = 0;
 
