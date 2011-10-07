@@ -19,9 +19,9 @@
 
 /*
  * COMPILE
- *
- *     gcc -O2 -march=native -pipe scripts/trans_follow_xcb.c \
- *         -o /usr/local/bin/trans-follow $(pkg-config --libs xcb xcb-icccm)
+ 
+       gcc -O2 -march=native -pipe scripts/trans_follow_xcb.c \
+           -o /usr/local/bin/trans-follow $(pkg-config --libs xcb xcb-icccm)
  */
 
 /*
