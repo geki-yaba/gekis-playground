@@ -72,6 +72,7 @@ struct _Data
 	GtkTreeView  *tree;
 	GtkTreeModel *store;
 	GtkTreeModel *filter;
+	GtkTreeModel *sort;
 };
 
 struct _ListRowData
@@ -89,9 +90,13 @@ static GtkTreeModel * create_filter(GtkTreeModel *store, GtkEntry *entry);
 static gboolean do_refilter(GtkTreeModelFilter *filter);
 static void queue_refilter(GtkTreeModelFilter *filter);
 
+static GtkTreeModel * create_sort(GtkTreeModel *store);
+
 static void cb_changed(GtkEditable *entry, Data *data);
 static void cb_clicked(GtkButton *button, Data *data);
 
+static gint sort_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+	gpointer userdata);
 static gboolean visible_func(GtkTreeModel *model, GtkTreeIter *iter,
 	GtkEntry *entry);
 
@@ -217,6 +222,19 @@ void queue_refilter(GtkTreeModelFilter *filter)
 	timeout_id = g_timeout_add(300, (GSourceFunc)do_refilter, filter);
 }
 
+GtkTreeModel * create_sort(GtkTreeModel *store)
+{
+	GtkTreeModel *sort;
+
+	sort = GTK_TREE_MODEL(gtk_tree_model_sort_new_with_model(store));
+	gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(sort), 0,
+		(GtkTreeIterCompareFunc)sort_func, GINT_TO_POINTER(0), NULL);
+	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sort), 0,
+		GTK_SORT_ASCENDING);
+
+	return sort;
+}
+
 void cb_changed(GtkEditable *entry, Data *data)
 {
 	queue_refilter(GTK_TREE_MODEL_FILTER(data->filter));
@@ -227,17 +245,19 @@ void cb_clicked(GtkButton *button, Data *data)
 	GtkTreeView *tree;
 	GtkTreeModel *store;
 	GtkTreeModel *filter;
+	GtkTreeModel *sort;
 
 	gint64 start, end;
 
-	tree   = data->tree;
-
 	start = g_get_monotonic_time();
 
-	/* FIXME: performance hit: remove and attach store/filter to tree
+	tree   = data->tree;
+
+	/* FIXME: performance hit: remove and attach store/filter/sort to tree
 	 *		  what is the proper way?
 	 */
-	filter = gtk_tree_view_get_model(tree);
+	sort   = gtk_tree_view_get_model(tree);
+	filter = gtk_tree_model_sort_get_model(GTK_TREE_MODEL_SORT(sort));
 	store  = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(filter));
 
 	gtk_tree_view_set_model(tree, NULL);
@@ -246,9 +266,41 @@ void cb_clicked(GtkButton *button, Data *data)
 	end = g_get_monotonic_time();
 	g_print("clear: %ld µs\n", end - start);
 
+	/* FIXME: sort/filter still attached?! */
 	fill_store(store);
 
-	gtk_tree_view_set_model(tree, filter);
+	gtk_tree_view_set_model(tree, sort);
+}
+
+gint sort_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
+	gpointer userdata)
+{
+	gchar *name1, *name2;
+
+	gint result = 0;
+
+	gtk_tree_model_get(model, a, 0, &name1, -1);
+	gtk_tree_model_get(model, b, 0, &name2, -1);
+ 
+	if (name1 == NULL)
+	{
+		if (name2 != NULL)
+			result = -1;
+	}
+	else if (name2 == NULL)
+	{
+		if (name1 != NULL)
+			result =  1;
+	}
+	else
+	{
+		result = strcmp(name1, name2);
+	}
+
+	g_free(name1);
+	g_free(name2);
+
+	return result;
 }
 
 gboolean visible_func(GtkTreeModel *model, GtkTreeIter *iter,
@@ -284,6 +336,7 @@ int main(int argc, char *argv[])
 
 	GtkTreeModel* store;
 	GtkTreeModel* filter;
+	GtkTreeModel* sort;
 
 	GtkCellRenderer *cell;
 
@@ -307,15 +360,19 @@ int main(int argc, char *argv[])
 	swindow = gtk_scrolled_window_new(NULL, NULL);
 	gtk_box_pack_start(GTK_BOX(vbox), swindow, TRUE, TRUE, 0);
 
-	store = create_store();
+	store  = create_store();
 	filter = create_filter(store, GTK_ENTRY(entry));
+	sort   = create_sort(filter);
 
-	tree = gtk_tree_view_new_with_model(filter);
+	tree = gtk_tree_view_new_with_model(sort);
 	gtk_container_add(GTK_CONTAINER(swindow), tree);
 
 	cell = gtk_cell_renderer_text_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree), -1,
 		"Name", cell, "text", 0, NULL);
+
+	gtk_tree_view_column_set_sort_column_id(
+		gtk_tree_view_get_column(GTK_TREE_VIEW(tree), 0), 0);
 
 	g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(cb_changed), &data);
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(cb_clicked), &data);
@@ -323,6 +380,7 @@ int main(int argc, char *argv[])
 	data.tree   = GTK_TREE_VIEW(tree);
 	data.store  = store;
 	data.filter = filter;
+	data.sort   = sort;
 
 	gtk_widget_show_all(window);
 	gtk_main();
