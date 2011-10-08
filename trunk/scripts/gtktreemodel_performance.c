@@ -247,18 +247,18 @@ void cb_clicked(GtkButton *button, Data *data)
 	GtkTreeModel *filter;
 	GtkTreeModel *sort;
 
-	gint64 start, end;
+	gint64 start, create, end;
 
 	start = g_get_monotonic_time();
 
 	tree   = data->tree;
 
-	/* FIXME: performance hit: remove and attach store/filter/sort to tree
-	 *		  what is the proper way?
-	 */
 	sort   = gtk_tree_view_get_model(tree);
 	filter = gtk_tree_model_sort_get_model(GTK_TREE_MODEL_SORT(sort));
 	store  = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(filter));
+
+	g_object_unref(G_OBJECT(sort));
+	g_object_unref(G_OBJECT(filter));
 
 	gtk_tree_view_set_model(tree, NULL);
 	gtk_list_store_clear(GTK_LIST_STORE(store));
@@ -266,10 +266,28 @@ void cb_clicked(GtkButton *button, Data *data)
 	end = g_get_monotonic_time();
 	g_print("clear: %ld µs\n", end - start);
 
-	/* FIXME: sort/filter still attached?! */
 	fill_store(store);
 
+	filter = create_filter(store, GTK_ENTRY(data->entry));
+	sort   = create_sort(filter);
+
+	create = g_get_monotonic_time();
+
+	/* model sort: performance depending on the filter?!
+	 * 			   the longer the filter the faster the redraw
+	 *
+	 * => this needs some love!
+	 */
 	gtk_tree_view_set_model(tree, sort);
+
+	end = g_get_monotonic_time();
+	g_print("create: %ld µs\n", end - create);
+
+	data->filter = filter;
+	data->sort   = sort;
+
+	end = g_get_monotonic_time();
+	g_print("rebuilt: %ld µs\n", end - start);
 }
 
 gint sort_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b,
@@ -376,6 +394,9 @@ int main(int argc, char *argv[])
 
 	g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(cb_changed), &data);
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(cb_clicked), &data);
+
+	data.button = button;
+	data.entry  = entry;
 
 	data.tree   = GTK_TREE_VIEW(tree);
 	data.store  = store;
