@@ -231,15 +231,16 @@ void cb_clicked(GtkButton *button, Data *data)
 	gint64 start, end;
 
 	tree   = data->tree;
-	store  = data->store;
-	filter = data->filter;
 
 	start = g_get_monotonic_time();
 
 	/* FIXME: performance hit: remove and attach store/filter to tree
-	 *		  what is the proper way? tree model == NULL even worse!
+	 *		  what is the proper way?
 	 */
-	gtk_tree_view_set_model(tree, store);
+	filter = gtk_tree_view_get_model(tree);
+	store  = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(filter));
+
+	gtk_tree_view_set_model(tree, NULL);
 	gtk_list_store_clear(GTK_LIST_STORE(store));
 
 	end = g_get_monotonic_time();
