@@ -58,9 +58,12 @@
  */
 
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include <string.h>
 
 typedef struct _Data Data;
+typedef struct _ListRowData ListRowData;
+
 struct _Data
 {
 	GtkWidget *button;
@@ -69,6 +72,14 @@ struct _Data
 	GtkTreeView  *tree;
 	GtkTreeModel *store;
 	GtkTreeModel *filter;
+};
+
+struct _ListRowData
+{
+	gchar *name;
+
+	struct _ListRowData *next;
+	struct _ListRowData *prev;
 };
 
 static GtkTreeModel * create_store();
@@ -99,20 +110,47 @@ GtkTreeModel * create_store()
 
 static void fill_store(GtkTreeModel *store)
 {
+	ListRowData  rows;
+	ListRowData *row;
+	ListRowData *prev;
+
 	gchar *name, *file;
 
 	gint64 start, end, j;
 	gint i;
 
+	rows.name = NULL;
+	rows.next = NULL;
+	rows.prev = NULL;
+
+	g_file_get_contents("names.txt", &file, NULL, NULL);
+
+	prev = &rows;
+	for (name = strtok(file, ","); name; name = strtok(NULL, ","))
+	{
+		row = (ListRowData *)malloc(sizeof(ListRowData));
+
+		row->name = g_strdup(name);
+		row->next = NULL;
+		row->prev = prev;
+
+		prev->next = row;
+		prev = row;
+	}
+
+	prev->prev->next = NULL;
+	free(prev);
+
+	g_free(file);
+
 	start = g_get_monotonic_time();
 
-	for(i = 0, j = 0; i < 100; i++)
+	for(i = 0, j = 0; i < 1; i++)
 	{
 		GtkTreeIter parent;
 
-		g_file_get_contents("names.txt", &file, NULL, NULL);
-
-		name = strtok(file, ",");
+		prev = rows.next;
+		name = prev->name;
 
 		if (name)
 		{
@@ -120,21 +158,28 @@ static void fill_store(GtkTreeModel *store)
 			gtk_list_store_set(GTK_LIST_STORE(store), &parent, 0, name, -1);
 			j++;
 
-			for (name = strtok(NULL, ","); name; name = strtok(NULL, ","))
+			for (prev = prev->next; prev; prev = prev->next)
 			{
 				GtkTreeIter iter;
 
 				gtk_list_store_append(GTK_LIST_STORE(store), &iter);//, NULL);
-				gtk_list_store_set(GTK_LIST_STORE(store), &iter, 0, name, -1);
+				gtk_list_store_set(GTK_LIST_STORE(store), &iter, 0, prev->name, -1);
 				j++;
 			}
 		}
-
-		g_free(file);
 	}
 
 	end = g_get_monotonic_time();
 	g_print("populate: (%ld) %ld µs\n", j, end - start);
+
+	while(rows.next)
+	{
+		prev = rows.next;
+		rows.next = prev->next;
+
+		g_free(prev->name);
+		free(prev);
+	}
 }
 
 GtkTreeModel * create_filter(GtkTreeModel *store, GtkEntry *entry)
@@ -157,7 +202,6 @@ gboolean do_refilter(GtkTreeModelFilter *filter)
 	gtk_tree_model_filter_refilter(filter);
 
 	end = g_get_monotonic_time();
-
 	g_print("filter: %ld µs\n", end - start);
 
 	timeout_id = 0;
@@ -184,12 +228,22 @@ void cb_clicked(GtkButton *button, Data *data)
 	GtkTreeModel *store;
 	GtkTreeModel *filter;
 
-	tree = data->tree;
-	store = data->store;
+	gint64 start, end;
+
+	tree   = data->tree;
+	store  = data->store;
 	filter = data->filter;
 
-	gtk_tree_view_set_model(tree, NULL);
+	start = g_get_monotonic_time();
+
+	/* FIXME: performance hit: remove and attach store/filter to tree
+	 *		  what is the proper way? tree model == NULL even worse!
+	 */
+	gtk_tree_view_set_model(tree, store);
 	gtk_list_store_clear(GTK_LIST_STORE(store));
+
+	end = g_get_monotonic_time();
+	g_print("clear: %ld µs\n", end - start);
 
 	fill_store(store);
 
