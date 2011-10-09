@@ -32,11 +32,13 @@
  
  *  GTk+ 2.x
        gcc -O2 -march=native -pipe gtktreemodel_performance.c \
+           cmtreestore.c gtktreedatalist.c \
            -o /usr/local/bin/gtktreemodel-performance \
            $(pkg-config --cflags --libs gtk+-2.0)
  
  *  GTk+ 3.x
        gcc -O2 -march=native -pipe gtktreemodel_performance.c \
+           cmtreestore.c gtktreedatalist.c \
            -o /usr/local/bin/gtktreemodel-performance \
            $(pkg-config --cflags --libs gtk+-3.0 cairo)
  */
@@ -60,6 +62,8 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "cmtreestore.h"
 
 typedef struct _Data Data;
 typedef struct _ListRowData ListRowData;
@@ -106,7 +110,7 @@ GtkTreeModel * create_store()
 {
 	GtkTreeModel *store;
 
-	store = GTK_TREE_MODEL(gtk_list_store_new(1, G_TYPE_STRING));
+	store = GTK_TREE_MODEL(cm_tree_store_new(1, G_TYPE_STRING));
 
 	fill_store(store);
 
@@ -159,16 +163,16 @@ static void fill_store(GtkTreeModel *store)
 
 		if (name)
 		{
-			gtk_list_store_append(GTK_LIST_STORE(store), &parent);//, NULL);
-			gtk_list_store_set(GTK_LIST_STORE(store), &parent, 0, name, -1);
+			cm_tree_store_append(CM_TREE_STORE(store), &parent, NULL);
+			cm_tree_store_set(CM_TREE_STORE(store), &parent, 0, name, -1);
 			j++;
 
 			for (prev = prev->next; prev; prev = prev->next)
 			{
 				GtkTreeIter iter;
 
-				gtk_list_store_append(GTK_LIST_STORE(store), &iter);//, NULL);
-				gtk_list_store_set(GTK_LIST_STORE(store), &iter, 0, prev->name, -1);
+				cm_tree_store_append(CM_TREE_STORE(store), &iter, NULL);
+				cm_tree_store_set(CM_TREE_STORE(store), &iter, 0, prev->name, -1);
 				j++;
 			}
 		}
@@ -261,7 +265,7 @@ void cb_clicked(GtkButton *button, Data *data)
 	g_object_unref(G_OBJECT(filter));
 
 	gtk_tree_view_set_model(tree, NULL);
-	gtk_list_store_clear(GTK_LIST_STORE(store));
+	cm_tree_store_clear(CM_TREE_STORE(store));
 
 	end = g_get_monotonic_time();
 	g_print("clear: %ld µs\n", end - start);
