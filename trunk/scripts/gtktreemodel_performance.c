@@ -32,13 +32,13 @@
  
  *  GTk+ 2.x
        gcc -O2 -march=native -pipe gtktreemodel_performance.c \
-           cmtreestore.c gtktreedatalist.c \
+           cmnode.c cmtreestore.c gtktreedatalist.c \
            -o /usr/local/bin/gtktreemodel-performance \
            $(pkg-config --cflags --libs gtk+-2.0)
  
  *  GTk+ 3.x
        gcc -O2 -march=native -pipe gtktreemodel_performance.c \
-           cmtreestore.c gtktreedatalist.c \
+           cmnode.c cmtreestore.c gtktreedatalist.c \
            -o /usr/local/bin/gtktreemodel-performance \
            $(pkg-config --cflags --libs gtk+-3.0 cairo)
  */
@@ -65,8 +65,16 @@
 
 #include "cmtreestore.h"
 
-typedef struct _Data Data;
 typedef struct _ListRowData ListRowData;
+typedef struct _Data Data;
+
+struct _ListRowData
+{
+	gchar *name;
+
+	ListRowData *next;
+	ListRowData *prev;
+};
 
 struct _Data
 {
@@ -77,18 +85,15 @@ struct _Data
 	GtkTreeModel *store;
 	GtkTreeModel *filter;
 	GtkTreeModel *sort;
+
+	struct _ListRowData data;
 };
 
-struct _ListRowData
-{
-	gchar *name;
+static create_data(Data *data);
+static destroy_data(Data *data);
 
-	struct _ListRowData *next;
-	struct _ListRowData *prev;
-};
-
-static GtkTreeModel * create_store();
-static void fill_store(GtkTreeModel *store);
+static GtkTreeModel * create_store(Data *data);
+static void fill_store(GtkTreeModel *store, Data *data);
 
 static GtkTreeModel * create_filter(GtkTreeModel *store, GtkEntry *entry);
 static gboolean do_refilter(GtkTreeModelFilter *filter);
@@ -106,35 +111,20 @@ static gboolean visible_func(GtkTreeModel *model, GtkTreeIter *iter,
 
 static gint timeout_id = 0;
 
-GtkTreeModel * create_store()
+static create_data(Data *data)
 {
-	GtkTreeModel *store;
-
-	store = GTK_TREE_MODEL(cm_tree_store_new(1, G_TYPE_STRING));
-
-	fill_store(store);
-
-	return store;
-}
-
-static void fill_store(GtkTreeModel *store)
-{
-	ListRowData  rows;
 	ListRowData *row;
 	ListRowData *prev;
 
 	gchar *name, *file;
 
-	gint64 start, end, j;
-	gint i;
-
-	rows.name = NULL;
-	rows.next = NULL;
-	rows.prev = NULL;
-
 	g_file_get_contents("names.txt", &file, NULL, NULL);
 
-	prev = &rows;
+	data->data.name = NULL;
+	data->data.next = NULL;
+	data->data.prev = NULL;
+
+	prev = &data->data;
 	for (name = strtok(file, ","); name; name = strtok(NULL, ","))
 	{
 		row = (ListRowData *)malloc(sizeof(ListRowData));
@@ -151,6 +141,44 @@ static void fill_store(GtkTreeModel *store)
 	free(prev);
 
 	g_free(file);
+}
+
+static destroy_data(Data *data)
+{
+	ListRowData* prev;
+	ListRowData* root;
+
+	root = &data->data;
+
+	while(root->next)
+	{
+		prev = root->next;
+		root->next = prev->next;
+
+		g_free(prev->name);
+		free(prev);
+	}
+}
+
+GtkTreeModel * create_store(Data* data)
+{
+	GtkTreeModel *store;
+
+	store = GTK_TREE_MODEL(cm_tree_store_new(1, G_TYPE_STRING));
+
+	fill_store(store, data);
+
+	return store;
+}
+
+static void fill_store(GtkTreeModel *store, Data *data)
+{
+	ListRowData *prev;
+
+	gchar *name;
+
+	gint64 start, end, j;
+	gint i;
 
 	start = g_get_monotonic_time();
 
@@ -158,7 +186,7 @@ static void fill_store(GtkTreeModel *store)
 	{
 		GtkTreeIter parent;
 
-		prev = rows.next;
+		prev = data->data.next;
 		name = prev->name;
 
 		if (name)
@@ -180,15 +208,6 @@ static void fill_store(GtkTreeModel *store)
 
 	end = g_get_monotonic_time();
 	g_print("populate: (%ld) %ld µs\n", j, end - start);
-
-	while(rows.next)
-	{
-		prev = rows.next;
-		rows.next = prev->next;
-
-		g_free(prev->name);
-		free(prev);
-	}
 }
 
 GtkTreeModel * create_filter(GtkTreeModel *store, GtkEntry *entry)
@@ -270,7 +289,7 @@ void cb_clicked(GtkButton *button, Data *data)
 	end = g_get_monotonic_time();
 	g_print("clear: %ld µs\n", end - start);
 
-	fill_store(store);
+	fill_store(store, data);
 
 	filter = create_filter(store, GTK_ENTRY(data->entry));
 	sort   = create_sort(filter);
@@ -364,9 +383,13 @@ int main(int argc, char *argv[])
 
 	gchar *name, *file;
 
+	create_data(&data);
+
 	gtk_init(&argc, &argv);
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	g_signal_connect(G_OBJECT(window), "delete-event",
+		G_CALLBACK(destroy_data), &data);
 	g_signal_connect(G_OBJECT(window), "destroy",
 		G_CALLBACK(gtk_main_quit), NULL);
 
@@ -382,7 +405,7 @@ int main(int argc, char *argv[])
 	swindow = gtk_scrolled_window_new(NULL, NULL);
 	gtk_box_pack_start(GTK_BOX(vbox), swindow, TRUE, TRUE, 0);
 
-	store  = create_store();
+	store  = create_store(&data);
 	filter = create_filter(store, GTK_ENTRY(entry));
 	sort   = create_sort(filter);
 

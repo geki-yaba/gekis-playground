@@ -20,9 +20,12 @@
 #ifndef __CM_TREE_STORE_H__
 #define __CM_TREE_STORE_H__
 
+#include <glib.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <stdarg.h>
+
+#include "cmnode.h"
 
 
 G_BEGIN_DECLS
