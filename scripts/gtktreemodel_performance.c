@@ -175,24 +175,23 @@ static void fill_store(GtkTreeModel *store, Data *data)
 {
 	ListRowData *prev;
 
-	gchar *name;
-
 	gint64 start, end, j;
 	gint i;
 
 	start = g_get_monotonic_time();
+
+	cm_tree_store_emit_signals(CM_TREE_STORE(store), FALSE);
 
 	for(i = 0, j = 0; i < 1; i++)
 	{
 		GtkTreeIter parent;
 
 		prev = data->data.next;
-		name = prev->name;
 
-		if (name)
+		if (prev->name)
 		{
 			cm_tree_store_append(CM_TREE_STORE(store), &parent, NULL);
-			cm_tree_store_set(CM_TREE_STORE(store), &parent, 0, name, -1);
+			cm_tree_store_set(CM_TREE_STORE(store), &parent, 0, prev->name, -1);
 			j++;
 
 			for (prev = prev->next; prev; prev = prev->next)
@@ -205,6 +204,8 @@ static void fill_store(GtkTreeModel *store, Data *data)
 			}
 		}
 	}
+
+	cm_tree_store_emit_signals(CM_TREE_STORE(store), TRUE);
 
 	end = g_get_monotonic_time();
 	g_print("populate: (%ld) %ld µs\n", j, end - start);
@@ -388,8 +389,6 @@ int main(int argc, char *argv[])
 	gtk_init(&argc, &argv);
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	g_signal_connect(G_OBJECT(window), "delete-event",
-		G_CALLBACK(destroy_data), &data);
 	g_signal_connect(G_OBJECT(window), "destroy",
 		G_CALLBACK(gtk_main_quit), NULL);
 
@@ -432,6 +431,8 @@ int main(int argc, char *argv[])
 
 	gtk_widget_show_all(window);
 	gtk_main();
+
+	destroy_data (&data);
 
 	return 0;
 }
