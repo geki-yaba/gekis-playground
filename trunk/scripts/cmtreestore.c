@@ -66,6 +66,7 @@ struct _CMTreeStorePrivate
   gint n_columns;
   GType *column_headers;
   guint columns_dirty : 1;
+  gboolean emit_signals;
 };
 
 
@@ -147,24 +148,11 @@ static void     cm_tree_store_buildable_custom_finished (GtkBuildable 	 *buildab
 							  const gchar  	 *tagname,
 							  gpointer     	  user_data);
 
-static void     validate_cmnode                         (CMNode *node);
-
 static void     cm_tree_store_move                    (CMTreeStore           *tree_store,
                                                         GtkTreeIter            *iter,
                                                         GtkTreeIter            *position,
                                                         gboolean                before);
 
-
-static inline void
-validate_tree (CMTreeStore *tree_store)
-{
-  if (gtk_get_debug_flags () & GTK_DEBUG_TREE)
-    {
-      g_assert (CM_NODE (tree_store->priv->root)->parent == NULL);
-
-      validate_cmnode (CM_NODE (tree_store->priv->root));
-    }
-}
 
 G_DEFINE_TYPE_WITH_CODE (CMTreeStore, cm_tree_store, G_TYPE_OBJECT,
 			 G_IMPLEMENT_INTERFACE (GTK_TYPE_TREE_MODEL,
@@ -246,6 +234,7 @@ cm_tree_store_init (CMTreeStore *tree_store)
   while (priv->stamp == 0);
 
   priv->columns_dirty = FALSE;
+  priv->emit_signals = TRUE;
 }
 
 /**
@@ -522,8 +511,6 @@ cm_tree_store_get_path (GtkTreeModel *tree_model,
 
   g_return_val_if_fail (iter->user_data != NULL, NULL);
   g_return_val_if_fail (iter->stamp == priv->stamp, NULL);
-
-  validate_tree (tree_store);
 
   if (CM_NODE (iter->user_data)->parent == NULL &&
       CM_NODE (iter->user_data) == priv->root)
@@ -914,7 +901,8 @@ cm_tree_store_set_value (CMTreeStore *tree_store,
   g_return_if_fail (column >= 0 && column < tree_store->priv->n_columns);
   g_return_if_fail (G_IS_VALUE (value));
 
-  if (cm_tree_store_real_set_value (tree_store, iter, column, value))
+  if (cm_tree_store_real_set_value (tree_store, iter, column, value)
+    && tree_store->priv->emit_signals)
     {
       GtkTreePath *path;
 
@@ -1021,7 +1009,7 @@ cm_tree_store_set_valuesv (CMTreeStore *tree_store,
 				      &emit_signal,
 				      columns, values, n_values);
 
-  if (emit_signal)
+  if (emit_signal && priv->emit_signals)
     {
       GtkTreePath *path;
 
@@ -1056,7 +1044,7 @@ cm_tree_store_set_valist (CMTreeStore *tree_store,
 				      &emit_signal,
 				      var_args);
 
-  if (emit_signal)
+  if (emit_signal && priv->emit_signals)
     {
       GtkTreePath *path;
 
@@ -1138,6 +1126,8 @@ cm_tree_store_remove (CMTreeStore *tree_store,
 
   gtk_tree_model_row_deleted (GTK_TREE_MODEL (tree_store), path);
 
+  if (priv->emit_signals)
+    {
   if (parent != CM_NODE (priv->root))
     {
       /* child_toggled */
@@ -1151,6 +1141,7 @@ cm_tree_store_remove (CMTreeStore *tree_store,
 	}
     }
   gtk_tree_path_free (path);
+    }
 
   /* revalidate iter */
   if (next_node != NULL)
@@ -1218,6 +1209,8 @@ cm_tree_store_insert (CMTreeStore *tree_store,
   iter->user_data2 = GUINT_TO_POINTER (i);
   cm_node_append (parent_node, new_node);
 
+  if (priv->emit_signals)
+    {
   path = cm_tree_store_get_path (GTK_TREE_MODEL (tree_store), iter);
   gtk_tree_model_row_inserted (GTK_TREE_MODEL (tree_store), path, iter);
 
@@ -1231,8 +1224,7 @@ cm_tree_store_insert (CMTreeStore *tree_store,
     }
 
   gtk_tree_path_free (path);
-
-  validate_tree ((CMTreeStore*)tree_store);
+    }
 }
 
 /**
@@ -1295,6 +1287,8 @@ cm_tree_store_insert_before (CMTreeStore *tree_store,
   iter->user_data2 = GUINT_TO_POINTER (i);
   cm_node_append (parent_node, new_node);
 
+  if (priv->emit_signals)
+    {
   path = cm_tree_store_get_path (GTK_TREE_MODEL (tree_store), iter);
   gtk_tree_model_row_inserted (GTK_TREE_MODEL (tree_store), path, iter);
 
@@ -1313,8 +1307,7 @@ cm_tree_store_insert_before (CMTreeStore *tree_store,
     }
 
   gtk_tree_path_free (path);
-
-  validate_tree (tree_store);
+    }
 }
 
 /**
@@ -1378,6 +1371,8 @@ cm_tree_store_insert_after (CMTreeStore *tree_store,
   iter->user_data2 = GUINT_TO_POINTER (i);
   cm_node_append (parent_node, new_node);
 
+  if (priv->emit_signals)
+    {
   path = cm_tree_store_get_path (GTK_TREE_MODEL (tree_store), iter);
   gtk_tree_model_row_inserted (GTK_TREE_MODEL (tree_store), path, iter);
 
@@ -1396,8 +1391,7 @@ cm_tree_store_insert_after (CMTreeStore *tree_store,
     }
 
   gtk_tree_path_free (path);
-
-  validate_tree (tree_store);
+    }
 }
 
 /**
@@ -1475,6 +1469,8 @@ cm_tree_store_insert_with_values (CMTreeStore *tree_store,
 				      var_args);
   va_end (var_args);
 
+  if (priv->emit_signals)
+    {
   path = cm_tree_store_get_path (GTK_TREE_MODEL (tree_store), iter);
   gtk_tree_model_row_inserted (GTK_TREE_MODEL (tree_store), path, iter);
 
@@ -1488,8 +1484,7 @@ cm_tree_store_insert_with_values (CMTreeStore *tree_store,
     }
 
   gtk_tree_path_free (path);
-
-  validate_tree ((CMTreeStore *)tree_store);
+    }
 }
 
 /**
@@ -1554,6 +1549,8 @@ cm_tree_store_insert_with_valuesv (CMTreeStore *tree_store,
 				      &changed,
 				      columns, values, n_values);
 
+  if (priv->emit_signals)
+    {
   path = cm_tree_store_get_path (GTK_TREE_MODEL (tree_store), iter);
   gtk_tree_model_row_inserted (GTK_TREE_MODEL (tree_store), path, iter);
 
@@ -1567,8 +1564,7 @@ cm_tree_store_insert_with_valuesv (CMTreeStore *tree_store,
     }
 
   gtk_tree_path_free (path);
-
-  validate_tree ((CMTreeStore *)tree_store);
+    }
 }
 
 /**
@@ -1614,6 +1610,8 @@ cm_tree_store_prepend (CMTreeStore *tree_store,
       iter->user_data2 = GINT_TO_POINTER (0);
       cm_node_append (parent_node, new_node);
 
+  if (priv->emit_signals)
+    {
       path = cm_tree_store_get_path (GTK_TREE_MODEL (tree_store), iter);
       gtk_tree_model_row_inserted (GTK_TREE_MODEL (tree_store), path, iter);
 
@@ -1624,12 +1622,11 @@ cm_tree_store_prepend (CMTreeStore *tree_store,
 	}
       gtk_tree_path_free (path);
     }
+    }
   else
     {
       cm_tree_store_insert_after (tree_store, iter, parent, NULL);
     }
-
-  validate_tree (tree_store);
 }
 
 /**
@@ -1673,6 +1670,8 @@ cm_tree_store_append (CMTreeStore *tree_store,
       iter->user_data2 = GINT_TO_POINTER (0);
       cm_node_append (parent_node, CM_NODE (iter->user_data));
 
+  if (priv->emit_signals)
+    {
       path = cm_tree_store_get_path (GTK_TREE_MODEL (tree_store), iter);
       gtk_tree_model_row_inserted (GTK_TREE_MODEL (tree_store), path, iter);
 
@@ -1683,12 +1682,20 @@ cm_tree_store_append (CMTreeStore *tree_store,
 	}
       gtk_tree_path_free (path);
     }
+    }
   else
     {
       cm_tree_store_insert_before (tree_store, iter, parent, NULL);
     }
+}
 
-  validate_tree (tree_store);
+void
+cm_tree_store_emit_signals (CMTreeStore *tree_store,
+			    gboolean emit)
+{
+  g_return_if_fail (CM_IS_TREE_STORE (tree_store));
+
+  tree_store->priv->emit_signals = emit;
 }
 
 /**
@@ -1748,13 +1755,8 @@ cm_tree_store_clear_traverse (CMNode        *node,
 
       g_hash_table_iter_init (&iter, node->children);
       while (g_hash_table_iter_next (&iter, &key, &value))
-        {
-	  register CMNode *current;
-
-	  current = CM_NODE (value);
-	  if (cm_tree_store_clear_traverse (current, store))
+	  if (cm_tree_store_clear_traverse (CM_NODE (value), store))
 	    return TRUE;
-	}
     }
   if (node->parent)
     {
@@ -1790,9 +1792,11 @@ cm_tree_store_increment_stamp (CMTreeStore *tree_store)
 void
 cm_tree_store_clear (CMTreeStore *tree_store)
 {
+  CMTreeStorePrivate *priv = tree_store->priv;
   g_return_if_fail (CM_IS_TREE_STORE (tree_store));
 
-  cm_tree_store_clear_traverse (tree_store->priv->root, tree_store);
+  cm_node_destroy (priv->root);
+  priv->root = cm_node_new (NULL);
   cm_tree_store_increment_stamp (tree_store);
 }
 
@@ -1938,8 +1942,6 @@ cm_tree_store_drag_data_received (GtkTreeDragDest   *drag_dest,
 
   tree_model = GTK_TREE_MODEL (drag_dest);
   tree_store = CM_TREE_STORE (drag_dest);
-
-  validate_tree (tree_store);
 
   if (gtk_tree_get_row_drag_data (selection_data,
 				  &src_model,
@@ -2589,23 +2591,6 @@ cm_tree_store_move_after (CMTreeStore *tree_store,
 			   GtkTreeIter  *position)
 {
   cm_tree_store_move (tree_store, iter, position, FALSE);
-}
-
-static void
-validate_cmnode (CMNode* node)
-{
-  GHashTableIter iter;
-  gpointer key, value;
-
-  g_hash_table_iter_init (&iter, node->children);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      CMNode *child;
-
-      child = CM_NODE (value);
-      g_assert (child->parent == node);
-      validate_cmnode (child);
-    }
 }
 
 /* GtkBuildable custom tag implementation

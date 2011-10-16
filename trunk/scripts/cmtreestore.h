@@ -20,8 +20,6 @@
 #ifndef __CM_TREE_STORE_H__
 #define __CM_TREE_STORE_H__
 
-#include <glib.h>
-#include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <stdarg.h>
 
@@ -113,6 +111,8 @@ void         cm_tree_store_prepend          (CMTreeStore *tree_store,
 void         cm_tree_store_append           (CMTreeStore *tree_store,
                                              GtkTreeIter  *iter,
                                              GtkTreeIter  *parent);
+void         cm_tree_store_emit_signals     (CMTreeStore *tree_store,
+                                             gboolean emit);
 gboolean     cm_tree_store_is_ancestor      (CMTreeStore *tree_store,
                                              GtkTreeIter  *iter,
                                              GtkTreeIter  *descendant);
