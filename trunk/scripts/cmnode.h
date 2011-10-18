@@ -31,27 +31,44 @@
 
 G_BEGIN_DECLS
 
-typedef struct _CMNode		CMNode;
+typedef struct _CMNode         CMNode;
+typedef struct _CMNodeForeach  CMNodeForeach;
+typedef struct _CMNodeTraverse CMNodeTraverse;
 
-typedef gboolean	(*CMNodeTraverseFunc)	(CMNode	       *node,
-						 gpointer	data);
-typedef void		(*CMNodeForeachFunc)	(CMNode	       *node,
-						 gpointer	data);
+/*
+ * CMNodeTraverseFunc/CMNodeForeachFunc
+ * @key: of the GHashTable value
+ * @value: stored in the GHashTable
+ * @data: CMNodeTraverse structure. Its data field holds your object
+ *
+ * You have to implement the GTraverseFlags logic within your function, i.e.:
 
-/**
- * GCopyFunc:
- * @src: A pointer to the data which should be copied
- * @data: Additional data
- *
- * A function of this signature is used to copy the node data 
- * when doing a deep-copy of a tree.
- *
- * Returns: A pointer to the copy
- *
- * Since: 2.4
+    CMNode *node = CM_NODE(value);
+    gpointer obj = CM_NODE_TRAVERSE(data)->data;
+    GTraverseFlags flags = CM_NODE_TRAVERSE(data)->flags;
+
+    if (node->data == obj)
+      {
+	    if (CM_NODE_IS_LEAF (node))
+	      {
+            if (flags & G_TRAVERSE_LEAFS)
+              ...
+          }
+        else
+          {
+            if (flags & G_TRAVERSE_NON_LEAFS)
+              ...
+          }
+      }
+
  */
-typedef gpointer	(*GCopyFunc)            (gconstpointer  src,
-                                                 gpointer       data);
+typedef gboolean	(*CMNodeTraverseFunc)	(gpointer key,
+						 gpointer	value,
+						 gpointer	data);
+typedef void		(*CMNodeForeachFunc)	(gpointer key,
+						 gpointer	value,
+						 gpointer	data);
+
 
 /* N-way tree implementation
  */
@@ -62,7 +79,23 @@ struct _CMNode
   GHashTable *children;
 };
 
+struct _CMNodeForeach
+{
+  GTraverseFlags flags;
+  gpointer data;
+};
+
+struct _CMNodeTraverse
+{
+  GTraverseFlags flags;
+  GTraverseType  order;
+  guint    depth;
+  gpointer data;
+};
+
 #define CM_NODE(node) ((CMNode *)node)
+#define CM_NODE_FOREACH(traverse)  ((CMNodeForeach *)traverse)
+#define CM_NODE_TRAVERSE(traverse) ((CMNodeTraverse *)traverse)
 
 #define cm_node_free(node)       g_slice_free (CMNode, node)
 
