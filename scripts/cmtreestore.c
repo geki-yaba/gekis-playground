@@ -396,14 +396,16 @@ cm_tree_store_set_column_type (CMTreeStore *tree_store,
   priv->column_headers[column] = type;
 }
 
-static gboolean
-node_free (CMNode *node, gpointer data)
+static void
+node_data_free (gpointer key,
+          gpointer value,
+          gpointer data)
 {
+  CMNode* node = CM_NODE (value);
+
   if (node->data)
     _gtk_tree_data_list_free (node->data, (GType*)data);
   node->data = NULL;
-
-  return FALSE;
 }
 
 static void
@@ -412,8 +414,8 @@ cm_tree_store_finalize (GObject *object)
   CMTreeStore *tree_store = CM_TREE_STORE (object);
   CMTreeStorePrivate *priv = tree_store->priv;
 
-  cm_node_traverse (priv->root, G_POST_ORDER, G_TRAVERSE_ALL, -1,
-		   node_free, priv->column_headers);
+  g_hash_table_foreach (CM_NODE (priv->root)->children, node_data_free,
+    priv->column_headers);
   cm_node_destroy (priv->root);
   g_free (priv->column_headers);
 
@@ -1118,8 +1120,12 @@ cm_tree_store_remove (CMTreeStore *tree_store,
     next_node = CM_NODE (g_hash_table_lookup (parent->children, GINT_TO_POINTER (i)));
 
   if (CM_NODE (iter->user_data)->data)
-    cm_node_traverse (CM_NODE (iter->user_data), G_POST_ORDER, G_TRAVERSE_ALL,
-		     -1, node_free, priv->column_headers);
+    {
+      g_hash_table_foreach (CM_NODE (iter->user_data)->children, node_data_free,
+        priv->column_headers);
+
+      node_data_free(GINT_TO_POINTER (0), iter->user_data, priv->column_headers);
+    }
 
   path = cm_tree_store_get_path (GTK_TREE_MODEL (tree_store), iter);
   cm_node_destroy (CM_NODE (iter->user_data));
@@ -1743,35 +1749,6 @@ cm_tree_store_iter_depth (CMTreeStore *tree_store,
   return cm_node_depth (CM_NODE (iter->user_data)) - 2;
 }
 
-/* simple ripoff from cm_node_traverse_post_order */
-static gboolean
-cm_tree_store_clear_traverse (CMNode        *node,
-			       CMTreeStore *store)
-{
-  if (node->children)
-    {
-      GHashTableIter iter;
-      gpointer key, value;
-
-      g_hash_table_iter_init (&iter, node->children);
-      while (g_hash_table_iter_next (&iter, &key, &value))
-	  if (cm_tree_store_clear_traverse (CM_NODE (value), store))
-	    return TRUE;
-    }
-  if (node->parent)
-    {
-      GtkTreeIter iter;
-
-      iter.stamp = store->priv->stamp;
-      iter.user_data = node;
-      iter.user_data2 = GINT_TO_POINTER (-1);
-
-      cm_tree_store_remove (store, &iter);
-    }
-
-  return FALSE;
-}
-
 static void
 cm_tree_store_increment_stamp (CMTreeStore *tree_store)
 {
@@ -1795,6 +1772,8 @@ cm_tree_store_clear (CMTreeStore *tree_store)
   CMTreeStorePrivate *priv = tree_store->priv;
   g_return_if_fail (CM_IS_TREE_STORE (tree_store));
 
+  g_hash_table_foreach (CM_NODE (priv->root)->children, node_data_free,
+    priv->column_headers);
   cm_node_destroy (priv->root);
   priv->root = cm_node_new (NULL);
   cm_tree_store_increment_stamp (tree_store);
