@@ -155,7 +155,7 @@ CMNode*	 cm_node_find		(CMNode		  *root,
  * this function is just a high level interface to
  * low level traversal functions, optimized for speed.
  */
-void	 cm_node_traverse	(CMNode		  *root,
+CMNode* cm_node_traverse	(CMNode		  *root,
 				 GTraverseType	   order,
 				 GTraverseFlags	   flags,
 				 gint		   max_depth,
