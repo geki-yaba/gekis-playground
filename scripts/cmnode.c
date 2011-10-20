@@ -322,7 +322,7 @@ cm_node_max_height (CMNode *root)
   return max_height + 1;
 }
 
-static gboolean
+static CMNode*
 cm_node_traverse_pre_order (CMNode	    *node,
 			   CMNodeTraverseFunc func,
 			   gpointer	     data)
@@ -355,7 +355,7 @@ cm_node_traverse_pre_order (CMNode	    *node,
   return FALSE;
 }
 
-static gboolean
+static CMNode*
 cm_node_depth_traverse_pre_order (CMNode		  *node,
 				 CMNodeTraverseFunc func,
 				 gpointer	   data)
@@ -393,7 +393,7 @@ cm_node_depth_traverse_pre_order (CMNode		  *node,
   return FALSE;
 }
 
-static gboolean
+static CMNode*
 cm_node_traverse_post_order (CMNode	     *node,
 			    CMNodeTraverseFunc func,
 			    gpointer	      data)
@@ -427,7 +427,7 @@ cm_node_traverse_post_order (CMNode	     *node,
   return FALSE;
 }
 
-static gboolean
+static CMNode*
 cm_node_depth_traverse_post_order (CMNode		   *node,
 				  CMNodeTraverseFunc func,
 				  gpointer	    data)
@@ -466,7 +466,7 @@ cm_node_depth_traverse_post_order (CMNode		   *node,
   return FALSE;
 }
 
-static gboolean
+static CMNode*
 cm_node_traverse_in_order (CMNode		   *node,
 			  CMNodeTraverseFunc func,
 			  gpointer	    data)
@@ -504,7 +504,7 @@ cm_node_traverse_in_order (CMNode		   *node,
   return FALSE;
 }
 
-static gboolean
+static CMNode*
 cm_node_depth_traverse_in_order (CMNode		 *node,
 				CMNodeTraverseFunc func,
 				gpointer	  data)
@@ -550,7 +550,7 @@ cm_node_depth_traverse_in_order (CMNode		 *node,
   return FALSE;
 }
 
-static gboolean
+static CMNode*
 cm_node_traverse_level (CMNode		 *node,
 		       guint		  level,
 		       CMNodeTraverseFunc  func,
@@ -587,7 +587,7 @@ cm_node_traverse_level (CMNode		 *node,
   return FALSE;
 }
 
-static gboolean
+static CMNode*
 cm_node_depth_traverse_level (CMNode             *node,
 			     CMNodeTraverseFunc  func,
 			     gpointer	        data)
@@ -625,7 +625,8 @@ cm_node_depth_traverse_level (CMNode             *node,
  *
  * Traverses a tree starting at the given root #CMNode.
  * It calls the given function for each node visited.
- * The traversal can be halted at any point by returning %TRUE from @func.
+ * The traversal can be halted at any point by returning %TRUE from @func,
+ * which again returns the associated #CMNode.
  */
 /**
  * GTraverseFlags:
@@ -654,7 +655,7 @@ cm_node_depth_traverse_level (CMNode             *node,
  * user data passed to cm_node_traverse(). If the function returns
  * %TRUE, then the traversal is stopped.
  **/
-void
+CMNode*
 cm_node_traverse (CMNode		  *root,
 		 GTraverseType	   order,
 		 GTraverseFlags	   flags,
@@ -678,24 +679,24 @@ cm_node_traverse (CMNode		  *root,
     {
     case G_PRE_ORDER:
       if (depth < 0)
-	cm_node_traverse_pre_order (root, func, &traverse);
+  return cm_node_traverse_pre_order (root, func, &traverse);
       else
-	cm_node_depth_traverse_pre_order (root, func, &traverse);
+  return cm_node_depth_traverse_pre_order (root, func, &traverse);
       break;
     case G_POST_ORDER:
       if (depth < 0)
-	cm_node_traverse_post_order (root, func, &traverse);
+  return cm_node_traverse_post_order (root, func, &traverse);
       else
-	cm_node_depth_traverse_post_order (root, func, &traverse);
+  return cm_node_depth_traverse_post_order (root, func, &traverse);
       break;
     case G_IN_ORDER:
       if (depth < 0)
-	cm_node_traverse_in_order (root, func, &traverse);
+  return cm_node_traverse_in_order (root, func, &traverse);
       else
-	cm_node_depth_traverse_in_order (root, func, &traverse);
+  return cm_node_depth_traverse_in_order (root, func, &traverse);
       break;
     case G_LEVEL_ORDER:
-      cm_node_depth_traverse_level (root, func, &traverse);
+  return cm_node_depth_traverse_level (root, func, &traverse);
       break;
     }
 }
@@ -706,13 +707,10 @@ cm_node_find_func (gpointer key,
 		  gpointer  data)
 {
   CMNode *node = CM_NODE (value);
-  gpointer *d = CM_NODE_TRAVERSE (data)->data;
-  
-  if (*d != node->data)
+  gpointer d = CM_NODE_TRAVERSE (data)->data;
+
+  if (d != node->data)
     return FALSE;
-  
-  *(++d) = node;
-  
   return TRUE;
 }
 
@@ -735,18 +733,11 @@ cm_node_find (CMNode	    *root,
 	     GTraverseFlags  flags,
 	     gpointer        data)
 {
-  gpointer d[2];
-  
   g_return_val_if_fail (root != NULL, NULL);
   g_return_val_if_fail (order <= G_LEVEL_ORDER, NULL);
   g_return_val_if_fail (flags <= G_TRAVERSE_MASK, NULL);
   
-  d[0] = data;
-  d[1] = NULL;
-  
-  cm_node_traverse (root, order, flags, -1, cm_node_find_func, d);
-  
-  return d[1];
+  return cm_node_traverse (root, order, flags, -1, cm_node_find_func, data);
 }
 
 static void

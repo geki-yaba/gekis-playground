@@ -401,11 +401,14 @@ node_data_free (gpointer key,
           gpointer value,
           gpointer data)
 {
-  CMNode* node = CM_NODE (value);
+  CMNode *node = CM_NODE (value);
 
   if (node->data)
     _gtk_tree_data_list_free (node->data, (GType*)data);
   node->data = NULL;
+
+  if (node->children)
+    g_hash_table_foreach (node->children, node_data_free, data);
 }
 
 static void
@@ -1120,12 +1123,7 @@ cm_tree_store_remove (CMTreeStore *tree_store,
     next_node = CM_NODE (g_hash_table_lookup (parent->children, GINT_TO_POINTER (i)));
 
   if (CM_NODE (iter->user_data)->data)
-    {
-      g_hash_table_foreach (CM_NODE (iter->user_data)->children, node_data_free,
-        priv->column_headers);
-
-      node_data_free(GINT_TO_POINTER (0), iter->user_data, priv->column_headers);
-    }
+    node_data_free(GINT_TO_POINTER (0), iter->user_data, priv->column_headers);
 
   path = cm_tree_store_get_path (GTK_TREE_MODEL (tree_store), iter);
   cm_node_destroy (CM_NODE (iter->user_data));
@@ -1797,7 +1795,7 @@ cm_tree_store_iter_is_valid_helper (GtkTreeIter *iter,
       if (node->children)
         {
       GtkTreeIter child_iter;
-      CMNode* child;
+      CMNode *child;
 
       child = CM_NODE (g_hash_table_lookup (node->children, GINT_TO_POINTER (0)));
       child_iter.user_data = child;
@@ -1835,7 +1833,7 @@ cm_tree_store_iter_is_valid (CMTreeStore *tree_store,
                               GtkTreeIter  *iter)
 {
   GtkTreeIter root_iter;
-  CMNode* root;
+  CMNode *root;
 
   g_return_val_if_fail (CM_IS_TREE_STORE (tree_store), FALSE);
   g_return_val_if_fail (iter != NULL, FALSE);
@@ -1873,8 +1871,7 @@ cm_tree_store_drag_data_delete (GtkTreeDragSource *drag_source,
                                &iter,
                                path))
     {
-      cm_tree_store_remove (CM_TREE_STORE (drag_source),
-                             &iter);
+      g_hash_table_steal(CM_NODE (iter.user_data)->parent->children, iter.user_data2);
       return TRUE;
     }
   else
