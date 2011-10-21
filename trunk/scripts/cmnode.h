@@ -8,7 +8,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.     See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -49,8 +49,8 @@ typedef struct _CMNodeTraverse CMNodeTraverse;
 
     if (node->data == obj)
       {
-	    if (CM_NODE_IS_LEAF (node))
-	      {
+        if (CM_NODE_IS_LEAF (node))
+          {
             if (flags & G_TRAVERSE_LEAFS)
               ...
           }
@@ -62,12 +62,12 @@ typedef struct _CMNodeTraverse CMNodeTraverse;
       }
 
  */
-typedef gboolean	(*CMNodeTraverseFunc)	(gpointer key,
-						 gpointer	value,
-						 gpointer	data);
-typedef void		(*CMNodeForeachFunc)	(gpointer key,
-						 gpointer	value,
-						 gpointer	data);
+typedef gboolean (*CMNodeTraverseFunc) (gpointer key,
+                      gpointer value,
+                      gpointer data);
+typedef void     (*CMNodeForeachFunc)  (gpointer key,
+                      gpointer value,
+                      gpointer data);
 
 
 /* N-way tree implementation
@@ -82,22 +82,22 @@ struct _CMNode
 struct _CMNodeForeach
 {
   GTraverseFlags flags;
-  gpointer data;
+  gpointer       data;
 };
 
 struct _CMNodeTraverse
 {
-  GTraverseFlags flags;
   GTraverseType  order;
-  guint    depth;
-  gpointer data;
+  GTraverseFlags flags;
+  guint          depth;
+  gpointer       data;
 };
 
-#define CM_NODE(node) ((CMNode *)node)
+#define CM_NODE(node)              ((CMNode *)node)
 #define CM_NODE_FOREACH(traverse)  ((CMNodeForeach *)traverse)
 #define CM_NODE_TRAVERSE(traverse) ((CMNodeTraverse *)traverse)
 
-#define cm_node_free(node)       g_slice_free (CMNode, node)
+#define cm_node_free(node)         g_slice_free (CMNode, node)
 
 /**
  * CM_NODE_IS_ROOT:
@@ -108,7 +108,7 @@ struct _CMNodeTraverse
  * Returns: %TRUE if the #CMNode is the root of a tree 
  *     (i.e. it has no parent or siblings)
  */
-#define	 CM_NODE_IS_ROOT(node)	(((CMNode*) (node))->parent == NULL)
+#define CM_NODE_IS_ROOT(node)      (((CMNode*) (node))->parent == NULL)
 
 /**
  * CM_NODE_IS_LEAF:
@@ -119,24 +119,31 @@ struct _CMNodeTraverse
  * Returns: %TRUE if the #CMNode is a leaf node 
  *     (i.e. it has no children)
  */
-#define	 CM_NODE_IS_LEAF(node)	(((CMNode*) (node))->children == NULL)
+#define CM_NODE_IS_LEAF(node)      (((CMNode*) (node))->children == NULL)
 
-CMNode*	 cm_node_new		(gpointer data);
-void	 cm_node_destroy	(gpointer data);
-void	 cm_node_unlink		(CMNode		  *node);
-CMNode*   cm_node_copy            (CMNode            *node);
-CMNode*	 cm_node_append		(CMNode		  *parent,
-				 CMNode		  *node);
-guint	 cm_node_n_nodes		(CMNode		  *root,
-				 GTraverseFlags	   flags);
-CMNode*	 cm_node_get_root	(CMNode		  *node);
-gboolean cm_node_is_ancestor	(CMNode		  *node,
-				 CMNode		  *descendant);
-guint	 cm_node_depth		(CMNode		  *node);
-CMNode*	 cm_node_find		(CMNode		  *root,
-				 GTraverseType	   order,
-				 GTraverseFlags	   flags,
-				 gpointer	   data);
+CMNode*  cm_node_new            (gpointer data);
+void     cm_node_destroy        (gpointer data);
+void     cm_node_unlink         (CMNode  *node);
+CMNode*  cm_node_copy           (CMNode  *node);
+CMNode*  cm_node_append         (CMNode  *parent,
+                                 CMNode  *node);
+guint    cm_node_n_nodes        (CMNode  *root,
+                         GTraverseFlags   flags);
+CMNode*  cm_node_get_root       (CMNode  *node);
+gboolean cm_node_is_ancestor    (CMNode  *node,
+                                 CMNode  *descendant);
+guint    cm_node_depth          (CMNode  *node);
+
+CMNode*  cm_node_find           (CMNode  *root,
+                          GTraverseType   order,
+                         GTraverseFlags   flags,
+                                   gint   depth,
+                     CMNodeTraverseFunc   func,
+                               gpointer   data);
+void     cm_node_foreach        (CMNode  *node,
+                         GTraverseFlags   flags,
+                      CMNodeForeachFunc   func,
+                               gpointer   data);
 
 /**
  * cm_node_append_data:
@@ -147,46 +154,27 @@ CMNode*	 cm_node_find		(CMNode		  *root,
  *
  * Returns: the new #CMNode
  */
-#define	cm_node_append_data(parent, data)			\
-     cm_node_append ((parent), cm_node_new (data))
-
-/* traversal function, assumes that `node' is root
- * (only traverses `node' and its subtree).
- * this function is just a high level interface to
- * low level traversal functions, optimized for speed.
- */
-CMNode* cm_node_traverse	(CMNode		  *root,
-				 GTraverseType	   order,
-				 GTraverseFlags	   flags,
-				 gint		   max_depth,
-				 CMNodeTraverseFunc func,
-				 gpointer	   data);
+#define  cm_node_append_data(parent, data) \
+    cm_node_append ((parent), cm_node_new (data))
 
 /* return the maximum tree height starting with `node', this is an expensive
  * operation, since we need to visit all nodes. this could be shortened by
  * adding `guint height' to struct _CMNode, but then again, this is not very
  * often needed, and would make cm_node_insert() more time consuming.
  */
-guint	 cm_node_max_height	 (CMNode *root);
+guint    cm_node_max_height     (CMNode  *root);
 
-void	 cm_node_children_foreach (CMNode		  *node,
-				  GTraverseFlags   flags,
-				  CMNodeForeachFunc func,
-				  gpointer	   data);
-guint	 cm_node_n_children	 (CMNode		  *node);
-CMNode*	 cm_node_nth_child	 (CMNode		  *node,
-				  guint		   n);
-CMNode*	 cm_node_last_child	 (CMNode		  *node);
-CMNode*	 cm_node_find_child	 (CMNode		  *node,
-				  GTraverseFlags   flags,
-				  gpointer	   data);
-gint	 cm_node_child_position	 (CMNode		  *node,
-				  CMNode		  *child);
-gint	 cm_node_child_index	 (CMNode		  *node,
-				  gpointer	   data);
+guint    cm_node_n_children     (CMNode  *node);
+CMNode*  cm_node_nth_child      (CMNode  *node,
+                                  guint   n);
+CMNode*  cm_node_last_child     (CMNode  *node);
+gint     cm_node_child_position (CMNode  *node,
+                                 CMNode  *child);
+gint     cm_node_child_index    (CMNode  *node,
+                               gpointer   data);
 
-CMNode*	 cm_node_first_sibling	 (CMNode		  *node);
-CMNode*	 cm_node_last_sibling	 (CMNode		  *node);
+CMNode*  cm_node_first_sibling  (CMNode  *node);
+CMNode*  cm_node_last_sibling   (CMNode  *node);
 
 G_END_DECLS
 

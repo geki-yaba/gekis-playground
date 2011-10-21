@@ -11,7 +11,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.     See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -63,7 +63,7 @@
  * cm_node_n_children(), cm_node_is_ancestor() or cm_node_max_height().
  *
  * To traverse a tree, calling a function for each node visited in the
- * traversal, use cm_node_traverse() or cm_node_children_foreach().
+ * traversal, use cm_node_traverse() or cm_node_foreach().
  *
  * To remove a node or subtree from a tree use cm_node_unlink() or
  * cm_node_destroy().
@@ -150,7 +150,7 @@ cm_node_unlink (CMNode *node)
 
       n = cm_node_child_position (node->parent, node);
 
-	  if (n >= 0)
+      if (n >= 0)
         g_hash_table_steal (node->parent->children, GINT_TO_POINTER(n));
     }
   node->parent = NULL;
@@ -174,7 +174,7 @@ cm_node_copy (CMNode *node)
     {
       new_node = cm_node_new (node->data);
       
-	  if (node->children)
+      if (node->children)
         new_node->children = g_hash_table_ref (node->children);
     }
   
@@ -193,7 +193,7 @@ cm_node_copy (CMNode *node)
  */
 CMNode*
 cm_node_append (CMNode *parent,
-		      CMNode *node)
+        CMNode *node)
 {
   guint i = 0;
 
@@ -246,7 +246,7 @@ cm_node_get_root (CMNode *node)
  */
 gboolean
 cm_node_is_ancestor (CMNode *node,
-		    CMNode *descendant)
+        CMNode *descendant)
 {
   g_return_val_if_fail (node != NULL, FALSE);
   g_return_val_if_fail (descendant != NULL, FALSE);
@@ -254,7 +254,7 @@ cm_node_is_ancestor (CMNode *node,
   while (descendant)
     {
       if (descendant->parent == node)
-	return TRUE;
+    return TRUE;
       
       descendant = descendant->parent;
     }
@@ -322,398 +322,6 @@ cm_node_max_height (CMNode *root)
   return max_height + 1;
 }
 
-static CMNode*
-cm_node_traverse_pre_order (CMNode	    *node,
-			   CMNodeTraverseFunc func,
-			   gpointer	     data)
-{
-  GTraverseFlags flags = CM_NODE_TRAVERSE(data)->flags;
-
-  if (node->children)
-    {
-      GHashTableIter iter;
-      gpointer key, value;
-      
-      if ((flags & G_TRAVERSE_NON_LEAFS) &&
-	  func (GINT_TO_POINTER (0), (gpointer)node, data))
-	return TRUE;
-      
-      g_hash_table_iter_init (&iter, node->children);
-      while (g_hash_table_iter_next (&iter, &key, &value))
-	{
-	  CMNode *current;
-	  
-	  current = CM_NODE(value);
-	  if (cm_node_traverse_pre_order (current, func, data))
-	    return TRUE;
-	}
-    }
-  else if ((flags & G_TRAVERSE_LEAFS) &&
-	   func (GINT_TO_POINTER (0), (gpointer)node, data))
-    return TRUE;
-  
-  return FALSE;
-}
-
-static CMNode*
-cm_node_depth_traverse_pre_order (CMNode		  *node,
-				 CMNodeTraverseFunc func,
-				 gpointer	   data)
-{
-  GTraverseFlags flags = CM_NODE_TRAVERSE(data)->flags;
-  guint *depth = &(CM_NODE_TRAVERSE (data)->depth);
-
-  if (node->children)
-    {
-      GHashTableIter iter;
-      gpointer key, value;
-      
-      if ((flags & G_TRAVERSE_NON_LEAFS) &&
-	  func (GINT_TO_POINTER (0), (gpointer)node, data))
-	return TRUE;
-      
-      (*depth)--;
-      if (!(*depth))
-	return FALSE;
-      
-      g_hash_table_iter_init (&iter, node->children);
-      while (g_hash_table_iter_next (&iter, &key, &value))
-	{
-	  CMNode *current;
-	  
-	  current = CM_NODE(value);
-	  if (cm_node_depth_traverse_pre_order (current, func, data))
-	    return TRUE;
-	}
-    }
-  else if ((flags & G_TRAVERSE_LEAFS) &&
-	   func (GINT_TO_POINTER (0), (gpointer)node, data))
-    return TRUE;
-  
-  return FALSE;
-}
-
-static CMNode*
-cm_node_traverse_post_order (CMNode	     *node,
-			    CMNodeTraverseFunc func,
-			    gpointer	      data)
-{
-  GTraverseFlags flags = CM_NODE_TRAVERSE(data)->flags;
-
-  if (node->children)
-    {
-      GHashTableIter iter;
-      gpointer key, value;
-      
-      g_hash_table_iter_init (&iter, node->children);
-      while (g_hash_table_iter_next (&iter, &key, &value))
-	{
-	  CMNode *current;
-	  
-	  current = CM_NODE(value);
-	  if (cm_node_traverse_post_order (current, func, data))
-	    return TRUE;
-	}
-      
-      if ((flags & G_TRAVERSE_NON_LEAFS) &&
-	  func (GINT_TO_POINTER (0), (gpointer)node, data))
-	return TRUE;
-      
-    }
-  else if ((flags & G_TRAVERSE_LEAFS) &&
-	   func (GINT_TO_POINTER (0), (gpointer)node, data))
-    return TRUE;
-  
-  return FALSE;
-}
-
-static CMNode*
-cm_node_depth_traverse_post_order (CMNode		   *node,
-				  CMNodeTraverseFunc func,
-				  gpointer	    data)
-{
-  GTraverseFlags flags = CM_NODE_TRAVERSE(data)->flags;
-  guint *depth = &(CM_NODE_TRAVERSE (data)->depth);
-
-  if (node->children)
-    {
-      (*depth)--;
-      if (*depth)
-	{
-      GHashTableIter iter;
-      gpointer key, value;
-	  
-      g_hash_table_iter_init (&iter, node->children);
-      while (g_hash_table_iter_next (&iter, &key, &value))
-	    {
-	      CMNode *current;
-	      
-	      current = CM_NODE(value);
-	      if (cm_node_depth_traverse_post_order (current, func, data))
-		return TRUE;
-	    }
-	}
-      
-      if ((flags & G_TRAVERSE_NON_LEAFS) &&
-	  func (GINT_TO_POINTER (0), (gpointer)node, data))
-	return TRUE;
-      
-    }
-  else if ((flags & G_TRAVERSE_LEAFS) &&
-	   func (GINT_TO_POINTER (0), (gpointer)node, data))
-    return TRUE;
-  
-  return FALSE;
-}
-
-static CMNode*
-cm_node_traverse_in_order (CMNode		   *node,
-			  CMNodeTraverseFunc func,
-			  gpointer	    data)
-{
-  GTraverseFlags flags = CM_NODE_TRAVERSE(data)->flags;
-
-  if (node->children)
-    {
-      GHashTableIter iter;
-      gpointer key, value;
-      CMNode *current;
-      
-      g_hash_table_iter_init (&iter, node->children);
-      g_hash_table_iter_next (&iter, &key, &value);
-      current = CM_NODE(value);
-      
-      if (cm_node_traverse_in_order (current, func, data))
-	return TRUE;
-      
-      if ((flags & G_TRAVERSE_NON_LEAFS) &&
-	  func (GINT_TO_POINTER (0), (gpointer)node, data))
-	return TRUE;
-      
-      while (g_hash_table_iter_next (&iter, &key, &value))
-	{
-	  current = CM_NODE(value);
-	  if (cm_node_traverse_in_order (current, func, data))
-	    return TRUE;
-	}
-    }
-  else if ((flags & G_TRAVERSE_LEAFS) &&
-	   func (GINT_TO_POINTER (0), (gpointer)node, data))
-    return TRUE;
-  
-  return FALSE;
-}
-
-static CMNode*
-cm_node_depth_traverse_in_order (CMNode		 *node,
-				CMNodeTraverseFunc func,
-				gpointer	  data)
-{
-  GTraverseFlags flags = CM_NODE_TRAVERSE(data)->flags;
-  guint *depth = &(CM_NODE_TRAVERSE (data)->depth);
-
-  if (node->children)
-    {
-      (*depth)--;
-      if (*depth)
-	{
-      GHashTableIter iter;
-      gpointer key, value;
-	  CMNode *current;
-	  
-      g_hash_table_iter_init (&iter, node->children);
-      g_hash_table_iter_next (&iter, &key, &value);
-      current = CM_NODE(value);
-	  
-	  if (cm_node_depth_traverse_in_order (current, func, data))
-	    return TRUE;
-	  
-	  if ((flags & G_TRAVERSE_NON_LEAFS) &&
-	      func (GINT_TO_POINTER (0), (gpointer)node, data))
-	    return TRUE;
-	  
-      while (g_hash_table_iter_next (&iter, &key, &value))
-	    {
-	      current = CM_NODE(value);
-	      if (cm_node_depth_traverse_in_order (current, func, data))
-		return TRUE;
-	    }
-	}
-      else if ((flags & G_TRAVERSE_NON_LEAFS) &&
-	       func (GINT_TO_POINTER (0), (gpointer)node, data))
-	return TRUE;
-    }
-  else if ((flags & G_TRAVERSE_LEAFS) &&
-	   func (GINT_TO_POINTER (0), (gpointer)node, data))
-    return TRUE;
-  
-  return FALSE;
-}
-
-static CMNode*
-cm_node_traverse_level (CMNode		 *node,
-		       guint		  level,
-		       CMNodeTraverseFunc  func,
-		       gpointer	          data,
-		       gboolean          *more_levels)
-{
-  GTraverseFlags flags = CM_NODE_TRAVERSE(data)->flags;
-
-  if (level == 0) 
-    {
-      if (node->children)
-	{
-	  *more_levels = TRUE;
-	  return (flags & G_TRAVERSE_NON_LEAFS) && func (GINT_TO_POINTER (0), (gpointer)node, data);
-	}
-      else
-	{
-	  return (flags & G_TRAVERSE_LEAFS) && func (GINT_TO_POINTER (0), (gpointer)node, data);
-	}
-    }
-  else 
-    {
-      GHashTableIter iter;
-      gpointer key, value;
-      
-      g_hash_table_iter_init (&iter, node->children);
-      while (g_hash_table_iter_next (&iter, &key, &value))
-	{
-	  if (cm_node_traverse_level (CM_NODE(value), level - 1, func, data, more_levels))
-	    return TRUE;
-	}
-    }
-
-  return FALSE;
-}
-
-static CMNode*
-cm_node_depth_traverse_level (CMNode             *node,
-			     CMNodeTraverseFunc  func,
-			     gpointer	        data)
-{
-  guint *depth = &(CM_NODE_TRAVERSE (data)->depth);
-  guint level;
-  gboolean more_levels;
-
-  level = 0;
-  while (level != *depth)
-    {
-      more_levels = FALSE;
-      if (cm_node_traverse_level (node, level, func, data, &more_levels))
-	return TRUE;
-      if (!more_levels)
-	break;
-      level++;
-    }
-  return FALSE;
-}
-
-/**
- * cm_node_traverse:
- * @root: the root #CMNode of the tree to traverse
- * @order: the order in which nodes are visited - %G_IN_ORDER, 
- *     %G_PRE_ORDER, %G_POST_ORDER, or %G_LEVEL_ORDER.
- * @flags: which types of children are to be visited, one of 
- *     %G_TRAVERSE_ALL, %G_TRAVERSE_LEAVES and %G_TRAVERSE_NON_LEAVES
- * @max_depth: the maximum depth of the traversal. Nodes below this
- *     depth will not be visited. If max_depth is -1 all nodes in 
- *     the tree are visited. If depth is 1, only the root is visited. 
- *     If depth is 2, the root and its children are visited. And so on.
- * @func: the function to call for each visited #CMNode
- * @data: user data to pass to the function
- *
- * Traverses a tree starting at the given root #CMNode.
- * It calls the given function for each node visited.
- * The traversal can be halted at any point by returning %TRUE from @func,
- * which again returns the associated #CMNode.
- */
-/**
- * GTraverseFlags:
- * @G_TRAVERSE_LEAVES: only leaf nodes should be visited. This name has
- *                     been introduced in 2.6, for older version use
- *                     %G_TRAVERSE_LEAFS.
- * @G_TRAVERSE_NON_LEAVES: only non-leaf nodes should be visited. This
- *                         name has been introduced in 2.6, for older
- *                         version use %G_TRAVERSE_NON_LEAFS.
- * @G_TRAVERSE_ALL: all nodes should be visited.
- * @G_TRAVERSE_MASK: a mask of all traverse flags.
- * @G_TRAVERSE_LEAFS: identical to %G_TRAVERSE_LEAVES.
- * @G_TRAVERSE_NON_LEAFS: identical to %G_TRAVERSE_NON_LEAVES.
- *
- * Specifies which nodes are visited during several of the tree
- * functions, including cm_node_traverse() and cm_node_find().
- **/
-/**
- * CMNodeTraverseFunc:
- * @node: a #CMNode.
- * @data: user data passed to cm_node_traverse().
- * @Returns: %TRUE to stop the traversal.
- *
- * Specifies the type of function passed to cm_node_traverse(). The
- * function is called with each of the nodes visited, together with the
- * user data passed to cm_node_traverse(). If the function returns
- * %TRUE, then the traversal is stopped.
- **/
-CMNode*
-cm_node_traverse (CMNode		  *root,
-		 GTraverseType	   order,
-		 GTraverseFlags	   flags,
-		 gint		   depth,
-		 CMNodeTraverseFunc func,
-		 gpointer	   data)
-{
-  CMNodeTraverse traverse;
-
-  g_return_if_fail (root != NULL);
-  g_return_if_fail (func != NULL);
-  g_return_if_fail (order <= G_LEVEL_ORDER);
-  g_return_if_fail (flags <= G_TRAVERSE_MASK);
-  g_return_if_fail (depth == -1 || depth > 0);
-
-  traverse.flags = flags;
-  traverse.depth = depth;
-  traverse.data  = data;
-  
-  switch (order)
-    {
-    case G_PRE_ORDER:
-      if (depth < 0)
-  return cm_node_traverse_pre_order (root, func, &traverse);
-      else
-  return cm_node_depth_traverse_pre_order (root, func, &traverse);
-      break;
-    case G_POST_ORDER:
-      if (depth < 0)
-  return cm_node_traverse_post_order (root, func, &traverse);
-      else
-  return cm_node_depth_traverse_post_order (root, func, &traverse);
-      break;
-    case G_IN_ORDER:
-      if (depth < 0)
-  return cm_node_traverse_in_order (root, func, &traverse);
-      else
-  return cm_node_depth_traverse_in_order (root, func, &traverse);
-      break;
-    case G_LEVEL_ORDER:
-  return cm_node_depth_traverse_level (root, func, &traverse);
-      break;
-    }
-}
-
-static gboolean
-cm_node_find_func (gpointer key,
-		  gpointer  value,
-		  gpointer  data)
-{
-  CMNode *node = CM_NODE (value);
-  gpointer d = CM_NODE_TRAVERSE (data)->data;
-
-  if (d != node->data)
-    return FALSE;
-  return TRUE;
-}
-
 /**
  * cm_node_find:
  * @root: the root #CMNode of the tree to search
@@ -728,22 +336,72 @@ cm_node_find_func (gpointer key,
  * Returns: the found #CMNode, or %NULL if the data is not found
  */
 CMNode*
-cm_node_find (CMNode	    *root,
-	     GTraverseType   order,
-	     GTraverseFlags  flags,
-	     gpointer        data)
+cm_node_find (CMNode      *root,
+        GTraverseType      order,
+        GTraverseFlags     flags,
+        gint               depth,
+        CMNodeTraverseFunc func,
+        gpointer           data)
 {
+  CMNodeTraverse traverse;
+
   g_return_val_if_fail (root != NULL, NULL);
+  g_return_val_if_fail (root->children != NULL, NULL);
   g_return_val_if_fail (order <= G_LEVEL_ORDER, NULL);
   g_return_val_if_fail (flags <= G_TRAVERSE_MASK, NULL);
+  g_return_val_if_fail (depth == -1 || depth > 0, NULL);
+  g_return_val_if_fail (func != NULL, NULL);
+
+  traverse.order = order;
+  traverse.flags = flags;
+  traverse.depth = depth;
+  traverse.data  = data;
   
-  return cm_node_traverse (root, order, flags, -1, cm_node_find_func, data);
+  return g_hash_table_find (root->children, func, &traverse);
+}
+
+/**
+ * cm_node_foreach:
+ * @node: a #CMNode
+ * @flags: which types of children are to be visited, one of 
+ *     %G_TRAVERSE_ALL, %G_TRAVERSE_LEAVES and %G_TRAVERSE_NON_LEAVES
+ * @func: the function to call for each visited node
+ * @data: user data to pass to the function
+ *
+ * Calls a function for each of the children of a #CMNode.
+ * Note that it doesn't descend beneath the child nodes.
+ */
+/**
+ * CMNodeForeachFunc:
+ * @node: a #CMNode.
+ * @data: user data passed to cm_node_foreach().
+ *
+ * Specifies the type of function passed to cm_node_foreach().
+ * The function is called with each child node, together with the user
+ * data passed to cm_node_foreach().
+ **/
+void
+cm_node_foreach (CMNode  *node,
+        GTraverseFlags    flags,
+        CMNodeForeachFunc func,
+        gpointer          data)
+{
+  CMNodeForeach traverse;
+
+  g_return_if_fail (node != NULL);
+  g_return_if_fail (node->children != NULL);
+  g_return_if_fail (func != NULL);
+
+  traverse.flags = flags;
+  traverse.data  =  data;
+
+  g_hash_table_foreach (node->children, func, &traverse);
 }
 
 static void
-cm_node_count_traverse (gpointer key,
-           gpointer value,
-           gpointer data)
+cm_node_count_foreach (gpointer key,
+        gpointer value,
+        gpointer data)
 {
   CMNode *node = CM_NODE (value);
   guint *n = (guint *)(CM_NODE_FOREACH(data)->data);
@@ -754,7 +412,7 @@ cm_node_count_traverse (gpointer key,
       if (flags & G_TRAVERSE_NON_LEAFS)
         (*n)++;
 
-      g_hash_table_foreach (node->children, cm_node_count_traverse, data);
+      g_hash_table_foreach (node->children, cm_node_count_foreach, data);
     }
   else if (flags & G_TRAVERSE_LEAFS)
     (*n)++;
@@ -771,20 +429,17 @@ cm_node_count_traverse (gpointer key,
  * Returns: the number of nodes in the tree
  */
 guint
-cm_node_n_nodes (CMNode	       *root,
-		GTraverseFlags  flags)
+cm_node_n_nodes (CMNode *root,
+        GTraverseFlags   flags)
 {
-  CMNodeForeach traverse;
   guint n = 0;
-  
-  g_return_val_if_fail (root != NULL, 0);
-  g_return_val_if_fail (flags <= G_TRAVERSE_MASK, 0);
-  
-  traverse.flags = flags;
-  traverse.data = &n;
 
-  g_hash_table_foreach (root->children, cm_node_count_traverse, &traverse);
-  
+  g_return_val_if_fail (root != NULL, 0);
+  g_return_val_if_fail (root->children != NULL, 0);
+  g_return_val_if_fail (flags <= G_TRAVERSE_MASK, 0);
+
+  cm_node_foreach (root, flags, cm_node_count_foreach, &n);
+
   return n;
 }
 
@@ -805,7 +460,7 @@ cm_node_last_child (CMNode *node)
   g_return_val_if_fail (node->children != NULL, NULL);
 
   nth  = g_hash_table_size (node->children);
-  
+
   return cm_node_nth_child (node, nth);
 }
 
@@ -822,14 +477,12 @@ cm_node_last_child (CMNode *node)
  */
 CMNode*
 cm_node_nth_child (CMNode *node,
-		  guint	 n)
+        guint n)
 {
   g_return_val_if_fail (node != NULL, NULL);
   g_return_val_if_fail (node->children != NULL, NULL);
-  
-  node = CM_NODE (g_hash_table_lookup (node->children, GUINT_TO_POINTER(n)));
-  
-  return node;
+
+  return CM_NODE (g_hash_table_lookup (node->children, GUINT_TO_POINTER (n)));
 }
 
 /**
@@ -844,58 +497,11 @@ guint
 cm_node_n_children (CMNode *node)
 {
   guint n = 0;
-  
+
   g_return_val_if_fail (node != NULL, 0);
-  
-  if (node->children)
-    n = g_hash_table_size(node->children);
-  
-  return n;
-}
+  g_return_val_if_fail (node->children != NULL, 0);
 
-/**
- * cm_node_find_child:
- * @node: a #CMNode
- * @flags: which types of children are to be searched, one of 
- *     %G_TRAVERSE_ALL, %G_TRAVERSE_LEAVES and %G_TRAVERSE_NON_LEAVES
- * @data: the data to find
- *
- * Finds the first child of a #CMNode with the given data.
- *
- * Returns: the found child #CMNode, or %NULL if the data is not found
- */
-CMNode*
-cm_node_find_child (CMNode	  *node,
-		   GTraverseFlags  flags,
-		   gpointer	   data)
-{
-  GHashTableIter iter;
-  gpointer key, value;
-
-  g_return_val_if_fail (node != NULL, NULL);
-  g_return_val_if_fail (flags <= G_TRAVERSE_MASK, NULL);
-  g_return_val_if_fail (node->children != NULL, NULL);
-  
-  g_hash_table_iter_init (&iter, node->children);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      node = CM_NODE(value);
-      if (node->data == data)
-	{
-	  if (CM_NODE_IS_LEAF (node))
-	    {
-	      if (flags & G_TRAVERSE_LEAFS)
-		return node;
-	    }
-	  else
-	    {
-	      if (flags & G_TRAVERSE_NON_LEAFS)
-		return node;
-	    }
-	}
-    }
-  
-  return NULL;
+  return g_hash_table_size(node->children);
 }
 
 /**
@@ -911,23 +517,23 @@ cm_node_find_child (CMNode	  *node,
  */
 gint
 cm_node_child_position (CMNode *node,
-		       CMNode *child)
+        CMNode *child)
 {
   GHashTableIter iter;
   gpointer key, value;
-  
+
   g_return_val_if_fail (node != NULL, -1);
   g_return_val_if_fail (child != NULL, -1);
   g_return_val_if_fail (child->parent == node, -1);
   g_return_val_if_fail (node->children != NULL, -1);
-  
+
   g_hash_table_iter_init (&iter, node->children);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
-      if (CM_NODE(value) == child)
-	return GPOINTER_TO_INT (key);
+      if (CM_NODE (value) == child)
+        return GPOINTER_TO_INT (key);
     }
-  
+
   return -1;
 }
 
@@ -943,22 +549,22 @@ cm_node_child_position (CMNode *node,
  *     @data, or -1 if the data is not found
  */
 gint
-cm_node_child_index (CMNode    *node,
-		    gpointer  data)
+cm_node_child_index (CMNode *node,
+        gpointer data)
 {
   GHashTableIter iter;
   gpointer key, value;
-  
+
   g_return_val_if_fail (node != NULL, -1);
   g_return_val_if_fail (node->children != NULL, -1);
-  
+
   g_hash_table_iter_init (&iter, node->children);
   while (g_hash_table_iter_next (&iter, &key, &value))
     {
-      if (CM_NODE(value)->data == data)
-	return GPOINTER_TO_INT (key);
+      if (CM_NODE (value)->data == data)
+        return GPOINTER_TO_INT (key);
     }
-  
+
   return -1;
 }
 
@@ -975,10 +581,10 @@ CMNode*
 cm_node_first_sibling (CMNode *node)
 {
   g_return_val_if_fail (node != NULL, NULL);
-  
+
   if (node->parent)
     return CM_NODE (g_hash_table_lookup (node->parent->children, GINT_TO_POINTER (0)));
-  
+
   return node;
 }
 
@@ -995,47 +601,9 @@ CMNode*
 cm_node_last_sibling (CMNode *node)
 {
   g_return_val_if_fail (node != NULL, NULL);
-  
+
   if (node->parent)
     return cm_node_last_child (node->parent);
-  
+
   return node;
-}
-
-/**
- * cm_node_children_foreach:
- * @node: a #CMNode
- * @flags: which types of children are to be visited, one of 
- *     %G_TRAVERSE_ALL, %G_TRAVERSE_LEAVES and %G_TRAVERSE_NON_LEAVES
- * @func: the function to call for each visited node
- * @data: user data to pass to the function
- *
- * Calls a function for each of the children of a #CMNode.
- * Note that it doesn't descend beneath the child nodes.
- */
-/**
- * CMNodeForeachFunc:
- * @node: a #CMNode.
- * @data: user data passed to cm_node_children_foreach().
- *
- * Specifies the type of function passed to cm_node_children_foreach().
- * The function is called with each child node, together with the user
- * data passed to cm_node_children_foreach().
- **/
-void
-cm_node_children_foreach (CMNode		  *node,
-			 GTraverseFlags	   flags,
-			 CMNodeForeachFunc  func,
-			 gpointer	   data)
-{
-  CMNodeForeach traverse;
-
-  g_return_if_fail (node != NULL);
-  g_return_if_fail (func != NULL);
-  g_return_if_fail (node->children != NULL);
-
-  traverse.flags = flags;
-  traverse.data  =  data;
-
-  g_hash_table_foreach (node->children, func, &traverse);
 }
