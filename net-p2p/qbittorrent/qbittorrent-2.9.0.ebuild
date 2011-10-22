@@ -18,7 +18,7 @@ IUSE="dbus +X geoip searchengine"
 
 QT_MIN="4.6.1"
 # boost version so that we always have thread support
-CDEPEND=">=net-libs/rb_libtorrent-0.15.8[ssl]
+CDEPEND="net-libs/rb_libtorrent
 	>=x11-libs/qt-core-${QT_MIN}:4
 	X? ( >=x11-libs/qt-gui-${QT_MIN}:4 )
 	dbus? ( >=x11-libs/qt-dbus-${QT_MIN}:4 )

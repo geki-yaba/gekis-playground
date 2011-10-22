@@ -8,7 +8,7 @@ inherit alternatives
 
 DESCRIPTION="Microsoft Works file word processor format import filter library"
 HOMEPAGE="http://libwps.sourceforge.net/"
-SRC_URI="mirror://sourceforge/${PN}/${P}.tar.bz2"
+SRC_URI="mirror://sourceforge/${PN}/${P}.tar.xz"
 
 LICENSE="LGPL-2.1"
 SLOT="0.2"
