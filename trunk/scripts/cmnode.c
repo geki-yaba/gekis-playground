@@ -288,41 +288,6 @@ cm_node_depth (CMNode *node)
 }
 
 /**
- * cm_node_max_height:
- * @root: a #CMNode
- *
- * Gets the maximum height of all branches beneath a #CMNode.
- * This is the maximum distance from the #CMNode to all leaf nodes.
- *
- * If @root is %NULL, 0 is returned. If @root has no children, 
- * 1 is returned. If @root has children, 2 is returned. And so on.
- *
- * Returns: the maximum height of the tree beneath @root
- */
-guint
-cm_node_max_height (CMNode *root)
-{
-  GHashTableIter iter;
-  gpointer key, value;
-  guint max_height = 0;
-
-  if (!root || !root->children)
-    return 0;
-
-  g_hash_table_iter_init (&iter, root->children);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      guint tmp_height;
-
-      tmp_height = cm_node_max_height (CM_NODE(value));
-      if (tmp_height > max_height)
-        max_height = tmp_height;
-    }
-  
-  return max_height + 1;
-}
-
-/**
  * cm_node_find:
  * @root: the root #CMNode of the tree to search
  * @order: the order in which nodes are visited - %G_IN_ORDER, 
@@ -398,8 +363,42 @@ cm_node_foreach (CMNode  *node,
   g_hash_table_foreach (node->children, func, &traverse);
 }
 
+gboolean
+cm_node_find_child_func (gpointer key,
+        gpointer value,
+        gpointer data)
+{
+  CMNodeForeach *find = CM_NODE_FOREACH (data);
+  CMNode *node  = CM_NODE (value);
+
+  if (node == find->data)
+    {
+      find->data = key;
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
+gboolean
+cm_node_find_child_data_func (gpointer key,
+        gpointer value,
+        gpointer data)
+{
+  CMNodeForeach *find = CM_NODE_FOREACH (data);
+  CMNode *node  = CM_NODE (value);
+
+  if (node->data == find->data)
+    {
+      find->data = key;
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
 static void
-cm_node_count_foreach (gpointer key,
+cm_node_foreach_count_func (gpointer key,
         gpointer value,
         gpointer data)
 {
@@ -412,10 +411,25 @@ cm_node_count_foreach (gpointer key,
       if (flags & G_TRAVERSE_NON_LEAFS)
         (*n)++;
 
-      g_hash_table_foreach (node->children, cm_node_count_foreach, data);
+      g_hash_table_foreach (node->children, cm_node_foreach_count_func, data);
     }
   else if (flags & G_TRAVERSE_LEAFS)
     (*n)++;
+}
+
+static void
+cm_node_foreach_height_func (gpointer key,
+        gpointer value,
+        gpointer data)
+{
+  CMNode *node = CM_NODE (value);
+  guint *max_height = (guint *)(CM_NODE_FOREACH(data)->data);
+  guint tmp_height;
+
+  /* there may be a better way */
+  tmp_height = cm_node_max_height (node);
+  if (tmp_height > *max_height)
+    *max_height = tmp_height;
 }
 
 /**
@@ -438,9 +452,34 @@ cm_node_n_nodes (CMNode *root,
   g_return_val_if_fail (root->children != NULL, 0);
   g_return_val_if_fail (flags <= G_TRAVERSE_MASK, 0);
 
-  cm_node_foreach (root, flags, cm_node_count_foreach, &n);
+  cm_node_foreach (root, flags, cm_node_foreach_count_func, &n);
 
   return n;
+}
+
+/**
+ * cm_node_max_height:
+ * @root: a #CMNode
+ *
+ * Gets the maximum height of all branches beneath a #CMNode.
+ * This is the maximum distance from the #CMNode to all leaf nodes.
+ *
+ * If @root is %NULL, 0 is returned. If @root has no children, 
+ * 1 is returned. If @root has children, 2 is returned. And so on.
+ *
+ * Returns: the maximum height of the tree beneath @root
+ */
+guint
+cm_node_max_height (CMNode *root)
+{
+  guint max_height = 0;
+
+  g_return_val_if_fail (root != NULL, 0);
+  g_return_val_if_fail (root->children != NULL, 1);
+
+  cm_node_foreach (root, G_TRAVERSE_ALL, cm_node_foreach_height_func, &max_height);
+
+  return max_height + 1;
 }
 
 /**
@@ -465,6 +504,25 @@ cm_node_last_child (CMNode *node)
 }
 
 /**
+ * cm_node_n_children:
+ * @node: a #CMNode
+ *
+ * Gets the number of children of a #CMNode.
+ *
+ * Returns: the number of children of @node
+ */
+guint
+cm_node_n_children (CMNode *node)
+{
+  guint n = 0;
+
+  g_return_val_if_fail (node != NULL, 0);
+  g_return_val_if_fail (node->children != NULL, 0);
+
+  return g_hash_table_size(node->children);
+}
+
+/**
  * cm_node_nth_child:
  * @node: a #CMNode
  * @n: the index of the desired child
@@ -486,25 +544,6 @@ cm_node_nth_child (CMNode *node,
 }
 
 /**
- * cm_node_n_children:
- * @node: a #CMNode
- *
- * Gets the number of children of a #CMNode.
- *
- * Returns: the number of children of @node
- */
-guint
-cm_node_n_children (CMNode *node)
-{
-  guint n = 0;
-
-  g_return_val_if_fail (node != NULL, 0);
-  g_return_val_if_fail (node->children != NULL, 0);
-
-  return g_hash_table_size(node->children);
-}
-
-/**
  * cm_node_child_position:
  * @node: a #CMNode
  * @child: a child of @node
@@ -519,20 +558,17 @@ gint
 cm_node_child_position (CMNode *node,
         CMNode *child)
 {
-  GHashTableIter iter;
-  gpointer key, value;
+  CMNodeForeach find;
 
   g_return_val_if_fail (node != NULL, -1);
   g_return_val_if_fail (child != NULL, -1);
   g_return_val_if_fail (child->parent == node, -1);
   g_return_val_if_fail (node->children != NULL, -1);
 
-  g_hash_table_iter_init (&iter, node->children);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      if (CM_NODE (value) == child)
-        return GPOINTER_TO_INT (key);
-    }
+  find.data = child;
+
+  if (g_hash_table_find (node->children, cm_node_find_child_func, &find))
+    return GPOINTER_TO_INT (find.data);
 
   return -1;
 }
@@ -552,18 +588,15 @@ gint
 cm_node_child_index (CMNode *node,
         gpointer data)
 {
-  GHashTableIter iter;
-  gpointer key, value;
+  CMNodeForeach find;
 
   g_return_val_if_fail (node != NULL, -1);
   g_return_val_if_fail (node->children != NULL, -1);
 
-  g_hash_table_iter_init (&iter, node->children);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      if (CM_NODE (value)->data == data)
-        return GPOINTER_TO_INT (key);
-    }
+  find.data = data;
+
+  if (g_hash_table_find (node->children, cm_node_find_child_data_func, &find))
+    return GPOINTER_TO_INT (find.data);
 
   return -1;
 }
