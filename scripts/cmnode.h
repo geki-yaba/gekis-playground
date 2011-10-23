@@ -127,8 +127,6 @@ void     cm_node_unlink         (CMNode  *node);
 CMNode*  cm_node_copy           (CMNode  *node);
 CMNode*  cm_node_append         (CMNode  *parent,
                                  CMNode  *node);
-guint    cm_node_n_nodes        (CMNode  *root,
-                         GTraverseFlags   flags);
 CMNode*  cm_node_get_root       (CMNode  *node);
 gboolean cm_node_is_ancestor    (CMNode  *node,
                                  CMNode  *descendant);
@@ -146,6 +144,23 @@ void     cm_node_foreach        (CMNode  *node,
                                gpointer   data);
 
 /**
+ * Helper functions to find the key of a child #CMNode.
+ * @data: a #CMNodeForeach pointer where its data pointer is either the child
+ *        #CMNode or the child #CMNode data pointer
+ *
+ * If the child #CMNode is found the #CMNodeForeach data pointer is replaced
+ * by the key of the child #CMNode
+ */
+gboolean cm_node_find_child_func
+                                (gpointer key,
+                                 gpointer value,
+                                 gpointer data);
+gboolean cm_node_find_child_data_func
+                                (gpointer key,
+                                 gpointer value,
+                                 gpointer data);
+
+/**
  * cm_node_append_data:
  * @parent: the #CMNode to place the new #CMNode under
  * @data: the data for the new #CMNode
@@ -157,6 +172,8 @@ void     cm_node_foreach        (CMNode  *node,
 #define  cm_node_append_data(parent, data) \
     cm_node_append ((parent), cm_node_new (data))
 
+guint    cm_node_n_nodes        (CMNode  *root,
+                         GTraverseFlags   flags);
 /* return the maximum tree height starting with `node', this is an expensive
  * operation, since we need to visit all nodes. this could be shortened by
  * adding `guint height' to struct _CMNode, but then again, this is not very
@@ -164,10 +181,10 @@ void     cm_node_foreach        (CMNode  *node,
  */
 guint    cm_node_max_height     (CMNode  *root);
 
+CMNode*  cm_node_last_child     (CMNode  *node);
 guint    cm_node_n_children     (CMNode  *node);
 CMNode*  cm_node_nth_child      (CMNode  *node,
                                   guint   n);
-CMNode*  cm_node_last_child     (CMNode  *node);
 gint     cm_node_child_position (CMNode  *node,
                                  CMNode  *child);
 gint     cm_node_child_index    (CMNode  *node,
