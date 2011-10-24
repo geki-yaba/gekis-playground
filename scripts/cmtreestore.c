@@ -506,12 +506,11 @@ static GtkTreePath *
 cm_tree_store_get_path (GtkTreeModel *tree_model,
 			 GtkTreeIter  *iter)
 {
-  GHashTableIter hash_iter;
-  gpointer key, value;
   CMTreeStore *tree_store = (CMTreeStore *) tree_model;
   CMTreeStorePrivate *priv = tree_store->priv;
-  GtkTreePath *retval;
+  CMNodeForeach find;
   CMNode *node, *tmp_node;
+  GtkTreePath *retval;
   gint i = 0;
 
   g_return_val_if_fail (iter->user_data != NULL, NULL);
@@ -537,7 +536,8 @@ cm_tree_store_get_path (GtkTreeModel *tree_model,
 
       retval = cm_tree_store_get_path (tree_model, &tmp_iter);
       node = CM_NODE (iter->user_data)->parent;
-      tmp_node = CM_NODE (g_hash_table_lookup (node->children, GINT_TO_POINTER(0)));
+      tmp_node = CM_NODE (g_hash_table_lookup (node->children,
+          GINT_TO_POINTER(0)));
     }
 
   if (retval == NULL)
@@ -549,16 +549,14 @@ cm_tree_store_get_path (GtkTreeModel *tree_model,
       return NULL;
     }
 
-  g_hash_table_iter_init (&hash_iter, node->children);
-  while (g_hash_table_iter_next (&hash_iter, &key, &value))
-    {
-      tmp_node = CM_NODE (value);
-      if (tmp_node == CM_NODE (iter->user_data))
-	break;
-      i++;
-    }
+  find.data = iter->user_data;
 
-  if (tmp_node == NULL)
+  tmp_node = g_hash_table_find (node->children, cm_node_find_child_func, &find);
+  if (tmp_node)
+    {
+      i = GPOINTER_TO_INT (find.data);
+    }
+  else
     {
       /* We couldn't find node, meaning it's prolly not ours */
       /* Perhaps I should do a g_return_if_fail here. */
@@ -2110,7 +2108,7 @@ cm_tree_store_reorder (CMTreeStore *tree_store,
 			GtkTreeIter  *parent,
 			gint         *new_order)
 {
-  gint i, length = 0;
+  gint i, length;
   GHashTable *level, *new_hash;
   GHashTableIter iter;
   gpointer key, value;
@@ -2187,13 +2185,11 @@ cm_tree_store_swap (CMTreeStore *tree_store,
 		     GtkTreeIter  *a,
 		     GtkTreeIter  *b)
 {
-  CMNode *tmp, *node_a, *node_b, *parent_node;
-  CMNode *a_prev, *a_next, *b_prev, *b_next;
-  gint i, a_count, b_count, length, *order;
+  CMNode *node_a, *node_b, *node_p;
   GtkTreePath *path_a, *path_b;
   GtkTreeIter parent;
-  GHashTableIter iter;
-  gpointer key, value;
+  gint key_a, key_b, depth_a, depth_b;
+  gint i, length, *order;
 
   g_return_if_fail (CM_IS_TREE_STORE (tree_store));
   g_return_if_fail (VALID_ITER (a, tree_store));
@@ -2214,10 +2210,11 @@ cm_tree_store_swap (CMTreeStore *tree_store,
   gtk_tree_path_up (path_a);
   gtk_tree_path_up (path_b);
 
-  if (gtk_tree_path_get_depth (path_a) == 0
-      || gtk_tree_path_get_depth (path_b) == 0)
+  depth_a = gtk_tree_path_get_depth (path_a);
+  depth_b = gtk_tree_path_get_depth (path_b);
+  if (depth_a == 0 || depth_b == 0)
     {
-      if (gtk_tree_path_get_depth (path_a) != gtk_tree_path_get_depth (path_b))
+      if (depth_a != depth_b)
         {
           gtk_tree_path_free (path_a);
           gtk_tree_path_free (path_b);
@@ -2225,7 +2222,7 @@ cm_tree_store_swap (CMTreeStore *tree_store,
           g_warning ("Given children are not in the same level\n");
           return;
         }
-      parent_node = CM_NODE (tree_store->priv->root);
+      node_p = CM_NODE (tree_store->priv->root);
     }
   else
     {
@@ -2239,37 +2236,26 @@ cm_tree_store_swap (CMTreeStore *tree_store,
         }
       cm_tree_store_get_iter (GTK_TREE_MODEL (tree_store), &parent,
                                path_a);
-      parent_node = CM_NODE (parent.user_data);
+      node_p = CM_NODE (parent.user_data);
     }
   gtk_tree_path_free (path_b);
 
-  /* counting nodes */
-  length = g_hash_table_size (parent_node->children);
-
-  i = a_count = b_count = 0;
-  g_hash_table_iter_init (&iter, parent_node->children);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      if (CM_NODE (value) == node_a)
-	a_count = i;
-      if (CM_NODE (value) == node_b)
-	b_count = i;
-
-      i++;
-    }
+  key_a = GPOINTER_TO_INT (a->user_data2);
+  key_b = GPOINTER_TO_INT (b->user_data2);
 
   /* emit signal */
-  order = g_new (gint, length);
+  length = g_hash_table_size (node_p->children);
+  order  = g_new (gint, length);
   for (i = 0; i < length; i++)
-    if (i == a_count)
-      order[i] = b_count;
-    else if (i == b_count)
-      order[i] = a_count;
+    if (i == key_a)
+      order[i] = key_b;
+    else if (i == key_b)
+      order[i] = key_a;
     else
       order[i] = i;
 
   gtk_tree_model_rows_reordered (GTK_TREE_MODEL (tree_store), path_a,
-				 parent_node == tree_store->priv->root
+				 node_p == tree_store->priv->root
 				 ? NULL : &parent, order);
   gtk_tree_path_free (path_a);
   g_free (order);
@@ -2285,13 +2271,11 @@ cm_tree_store_move (CMTreeStore *tree_store,
 		     GtkTreeIter  *position,
 		     gboolean      before)
 {
+  CMNodeForeach find;
   CMNode *parent, *node, *a, *b, *tmp, *tmp_a, *tmp_b;
-  gint old_pos, new_pos, length, i, *order;
   GtkTreePath *path = NULL, *tmppath, *pos_path = NULL;
   GtkTreeIter parent_iter, dst_a, dst_b;
-  GHashTableIter hash_iter;
-  gpointer key, value;
-  gint depth = 0;
+  gint old_pos, new_pos, length, i, *order, depth = 0;
   gboolean handle_b = TRUE;
 
   g_return_if_fail (CM_IS_TREE_STORE (tree_store));
@@ -2439,16 +2423,11 @@ cm_tree_store_move (CMTreeStore *tree_store,
   /* counting nodes */
   length = g_hash_table_size (parent->children);
 
+  find.data = iter->user_data;
+
   old_pos = 0;
-  g_hash_table_iter_init (&hash_iter, parent->children);
-  while (g_hash_table_iter_next (&hash_iter, &key, &value))
-    {
-      if (CM_NODE (value) == CM_NODE (iter->user_data))
-        {
-	old_pos = length;
-    break;
-        }
-    }
+  if (g_hash_table_find (parent->children, cm_node_find_child_func, &find))
+    old_pos = length;
 
   /* emit signal */
   if (position)
