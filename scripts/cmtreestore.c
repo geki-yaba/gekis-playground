@@ -2069,6 +2069,12 @@ typedef struct _SortTuple
   CMNode *node;
 } SortTuple;
 
+typedef struct _SortTupleOrder
+{
+  SortTuple *list;
+  gint *new_order;
+} SortTupleOrder;
+
 /* Reordering */
 static gint
 cm_tree_store_reorder_func (gconstpointer a,
@@ -2087,6 +2093,20 @@ cm_tree_store_reorder_func (gconstpointer a,
     return 1;
 
   return 0;
+}
+
+static void
+cm_tree_store_neworder_func (gpointer key,
+                 gpointer value,
+                 gpointer data)
+{
+  SortTupleOrder *order = (SortTupleOrder *)data;
+  SortTuple *sort_array = order->list;
+  gint *new_order = order->new_order;
+  gint i = GPOINTER_TO_INT (key);
+
+  sort_array[new_order[i]].offset = i;
+  sort_array[i].node = CM_NODE (value);
 }
 
 /**
@@ -2110,10 +2130,9 @@ cm_tree_store_reorder (CMTreeStore *tree_store,
 {
   gint i, length;
   GHashTable *level, *new_hash;
-  GHashTableIter iter;
-  gpointer key, value;
   GtkTreePath *path;
   SortTuple *sort_array;
+  SortTupleOrder order;
 
   g_return_if_fail (CM_IS_TREE_STORE (tree_store));
   g_return_if_fail (parent == NULL || VALID_ITER (parent, tree_store));
@@ -2130,15 +2149,10 @@ cm_tree_store_reorder (CMTreeStore *tree_store,
   /* set up sortarray */
   sort_array = g_new (SortTuple, length);
 
-  i = 0;
-  g_hash_table_iter_init (&iter, level);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      sort_array[new_order[i]].offset = i;
-      sort_array[i].node = CM_NODE (value);
+  order.list = sort_array;
+  order.new_order = new_order;
 
-      i++;
-    }
+  g_hash_table_foreach(level, cm_tree_store_neworder_func, &order);
 
   g_qsort_with_data (sort_array,
 		     length,
