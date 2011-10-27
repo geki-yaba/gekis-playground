@@ -186,7 +186,9 @@ cm_tree_store_tree_model_init (GtkTreeModelIface *iface)
   iface->get_path = cm_tree_store_get_path;
   iface->get_value = cm_tree_store_get_value;
   iface->iter_next = cm_tree_store_iter_next;
+#if GTK_CHECK_VERSION(3, 0, 0)
   iface->iter_previous = cm_tree_store_iter_previous;
+#endif
   iface->iter_children = cm_tree_store_iter_children;
   iface->iter_has_child = cm_tree_store_iter_has_child;
   iface->iter_n_children = cm_tree_store_iter_n_children;
