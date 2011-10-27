@@ -84,7 +84,7 @@ struct _Data
 	GtkTreeView  *tree;
 	GtkTreeModel *store;
 	GtkTreeModel *filter;
-	GtkTreeModel *sort;
+//	GtkTreeModel *sort;
 
 	struct _ListRowData data;
 };
@@ -269,7 +269,7 @@ void cb_clicked(GtkButton *button, Data *data)
 	GtkTreeView *tree;
 	GtkTreeModel *store;
 	GtkTreeModel *filter;
-	GtkTreeModel *sort;
+//	GtkTreeModel *sort;
 
 	gint64 start, create, end;
 
@@ -277,11 +277,12 @@ void cb_clicked(GtkButton *button, Data *data)
 
 	tree   = data->tree;
 
-	sort   = gtk_tree_view_get_model(tree);
-	filter = gtk_tree_model_sort_get_model(GTK_TREE_MODEL_SORT(sort));
+//	sort   = gtk_tree_view_get_model(tree);
+//	filter = gtk_tree_model_sort_get_model(GTK_TREE_MODEL_SORT(sort));
+	filter = gtk_tree_view_get_model(tree);
 	store  = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(filter));
 
-	g_object_unref(G_OBJECT(sort));
+//	g_object_unref(G_OBJECT(sort));
 	g_object_unref(G_OBJECT(filter));
 
 	gtk_tree_view_set_model(tree, NULL);
@@ -293,7 +294,7 @@ void cb_clicked(GtkButton *button, Data *data)
 	fill_store(store, data);
 
 	filter = create_filter(store, GTK_ENTRY(data->entry));
-	sort   = create_sort(filter);
+//	sort   = create_sort(filter);
 
 	create = g_get_monotonic_time();
 
@@ -302,13 +303,14 @@ void cb_clicked(GtkButton *button, Data *data)
 	 *
 	 * => this needs some love!
 	 */
-	gtk_tree_view_set_model(tree, sort);
+//	gtk_tree_view_set_model(tree, sort);
+	gtk_tree_view_set_model(tree, filter);
 
 	end = g_get_monotonic_time();
 	g_print("create: %ld µs\n", end - create);
 
 	data->filter = filter;
-	data->sort   = sort;
+//	data->sort   = sort;
 
 	end = g_get_monotonic_time();
 	g_print("rebuilt: %ld µs\n", end - start);
@@ -378,7 +380,7 @@ int main(int argc, char *argv[])
 
 	GtkTreeModel* store;
 	GtkTreeModel* filter;
-	GtkTreeModel* sort;
+//	GtkTreeModel* sort;
 
 	GtkCellRenderer *cell;
 
@@ -406,17 +408,22 @@ int main(int argc, char *argv[])
 
 	store  = create_store(&data);
 	filter = create_filter(store, GTK_ENTRY(entry));
-	sort   = create_sort(filter);
+//	sort   = create_sort(filter);
 
-	tree = gtk_tree_view_new_with_model(sort);
+//	tree = gtk_tree_view_new_with_model(sort);
+	tree = gtk_tree_view_new_with_model(filter);
 	gtk_container_add(GTK_CONTAINER(swindow), tree);
 
 	cell = gtk_cell_renderer_text_new();
+	gtk_cell_renderer_set_alignment(cell, 0, 0);
+	gtk_cell_renderer_set_padding(cell, 0, 0);
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree), -1,
 		"Name", cell, "text", 0, NULL);
 
-	gtk_tree_view_column_set_sort_column_id(
-		gtk_tree_view_get_column(GTK_TREE_VIEW(tree), 0), 0);
+	gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(tree), TRUE);
+
+//	gtk_tree_view_column_set_sort_column_id(
+//		gtk_tree_view_get_column(GTK_TREE_VIEW(tree), 0), 0);
 
 	g_signal_connect(G_OBJECT(entry), "changed", G_CALLBACK(cb_changed), &data);
 	g_signal_connect(G_OBJECT(button),"clicked", G_CALLBACK(cb_clicked), &data);
@@ -427,7 +434,7 @@ int main(int argc, char *argv[])
 	data.tree   = GTK_TREE_VIEW(tree);
 	data.store  = store;
 	data.filter = filter;
-	data.sort   = sort;
+//	data.sort   = sort;
 
 	gtk_widget_show_all(window);
 	gtk_main();
