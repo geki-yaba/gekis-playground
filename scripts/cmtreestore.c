@@ -1105,9 +1105,11 @@ cm_tree_store_remove (CMTreeStore *tree_store,
   CMTreeStorePrivate *priv = tree_store->priv;
   GtkTreePath *path;
   GtkTreeIter new_iter = {0,};
+  GHashTable *hash;
   CMNode *parent;
   CMNode *next_node;
-  gint i;
+  guint length;
+  gint i, j;
 
   g_return_val_if_fail (CM_IS_TREE_STORE (tree_store), FALSE);
   g_return_val_if_fail (VALID_ITER (iter, tree_store), FALSE);
@@ -1116,11 +1118,23 @@ cm_tree_store_remove (CMTreeStore *tree_store,
 
   g_assert (parent != NULL);
 
-  i = GPOINTER_TO_INT (iter->user_data2) + 1;
-  if (i == 0)
+  hash = parent->children;
+  length = g_hash_table_size (hash);
+
+  /* o well, got a better idea? please ... */
+  j = GPOINTER_TO_INT (iter->user_data2);
+  g_hash_table_steal (hash, iter->user_data2);
+  for (i = j + 1; i < length; i++)
+    {
+      gpointer data = g_hash_table_lookup (hash, GINT_TO_POINTER (i));
+      g_hash_table_steal (hash, GINT_TO_POINTER (i));
+      g_hash_table_insert (hash, GINT_TO_POINTER (i - 1), data);
+    }
+
+  if (j < 0)
     next_node = NULL;
   else
-    next_node = CM_NODE (g_hash_table_lookup (parent->children, GINT_TO_POINTER (i)));
+    next_node = CM_NODE (g_hash_table_lookup (parent->children, GINT_TO_POINTER (j)));
 
   if (CM_NODE (iter->user_data)->data)
     node_data_free(GINT_TO_POINTER (0), iter->user_data, priv->column_headers);
@@ -1152,7 +1166,7 @@ cm_tree_store_remove (CMTreeStore *tree_store,
     {
       iter->stamp = priv->stamp;
       iter->user_data = next_node;
-      iter->user_data2 = GINT_TO_POINTER (i);
+      iter->user_data2 = GINT_TO_POINTER (j);
       return TRUE;
     }
   else
@@ -1871,7 +1885,18 @@ cm_tree_store_drag_data_delete (GtkTreeDragSource *drag_source,
                                &iter,
                                path))
     {
-      g_hash_table_steal(CM_NODE (iter.user_data)->parent->children, iter.user_data2);
+      GHashTable *hash = CM_NODE (iter.user_data)->parent->children;
+      guint length = g_hash_table_size (hash);
+      gint i;
+
+      /* o well, got a better idea? please ... */
+      g_hash_table_steal (hash, iter.user_data2);
+      for (i = GPOINTER_TO_INT (iter.user_data2) + 1; i < length; i++)
+        {
+          gpointer data = g_hash_table_lookup (hash, GINT_TO_POINTER (i));
+          g_hash_table_steal (hash, GINT_TO_POINTER (i));
+          g_hash_table_insert (hash, GINT_TO_POINTER (i - 1), data);
+        }
       return TRUE;
     }
   else
