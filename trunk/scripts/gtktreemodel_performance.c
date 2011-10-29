@@ -415,7 +415,6 @@ int main(int argc, char *argv[])
 	gtk_container_add(GTK_CONTAINER(swindow), tree);
 
 	cell = gtk_cell_renderer_text_new();
-	gtk_cell_renderer_set_alignment(cell, 0, 0);
 	gtk_cell_renderer_set_padding(cell, 0, 0);
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(tree), -1,
 		"Name", cell, "text", 0, NULL);
