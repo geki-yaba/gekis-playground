@@ -9,20 +9,22 @@
  #endif
      // Do not display incomplete extensions
      if(name.endsWith(".!qB"))
---- src/qtlibtorrent/qbtsession.cpp	2011-02-20 20:53:57.336013604 +0100
-+++ src/qtlibtorrent/qbtsession.cpp	2011-02-20 20:55:51.364013659 +0100
-@@ -98,8 +98,6 @@
+--- src/qtlibtorrent/qbtsession.cpp.orig	2011-10-30 14:51:57.125565988 +0100
++++ src/qtlibtorrent/qbtsession.cpp	2011-10-30 14:52:22.961571255 +0100
+@@ -107,10 +107,6 @@
    BigRatioTimer->setInterval(10000);
    connect(BigRatioTimer, SIGNAL(timeout()), SLOT(processBigRatios()));
    Preferences pref;
+-#if LIBTORRENT_VERSION_MINOR < 16
 -  // To avoid some exceptions
 -  boost::filesystem::path::default_name_check(boost::filesystem::no_check);
+-#endif
    // Creating Bittorrent session
    QList<int> version;
    version << VERSION_MAJOR;
 --- src/qtlibtorrent/qtorrenthandle.cpp	2011-02-20 20:53:14.940013130 +0100
 +++ src/qtlibtorrent/qtorrenthandle.cpp	2011-02-20 20:53:41.640016856 +0100
-@@ -228,7 +228,7 @@
+@@ -298,7 +298,7 @@
  #if LIBTORRENT_VERSION_MINOR > 15
    return misc::fileName(filepath_at(index));
  #else
@@ -33,8 +35,8 @@
  
 --- src/torrentcreator/torrentcreatorthread.cpp	2011-02-20 20:59:23.548013572 +0100
 +++ src/torrentcreator/torrentcreatorthread.cpp	2011-02-20 21:00:09.936013220 +0100
-@@ -54,7 +54,7 @@
- // name starts with a .
+@@ -65,7 +65,7 @@
+ #else
  bool file_filter(boost::filesystem::path const& filename)
  {
 -  if (filename.leaf()[0] == '.') return false;
@@ -42,11 +44,13 @@
    std::cerr << filename << std::endl;
    return true;
  }
-@@ -70,7 +70,6 @@
+@@ -82,9 +82,6 @@
    comment = _comment;
    is_private = _is_private;
    piece_size = _piece_size;
+-#if LIBTORRENT_VERSION_MINOR < 16
 -  path::default_name_check(no_check);
+-#endif
    abort = false;
    start();
  }
