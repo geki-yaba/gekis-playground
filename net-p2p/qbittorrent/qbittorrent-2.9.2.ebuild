@@ -39,7 +39,7 @@ src_prepare() {
 		-i src/src.pro \
 		|| die
 
-	epatch "${FILESDIR}"/qbittorrent-2.8.1-boost-1_46.diff
+	epatch "${FILESDIR}"/qbittorrent-2.9.2-boost-1_46.diff
 	epatch "${FILESDIR}"/qbittorrent-savepaths.diff
 
 	qt4-r2_src_prepare
