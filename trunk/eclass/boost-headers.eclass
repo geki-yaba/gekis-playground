@@ -39,7 +39,7 @@ PDEPEND="~dev-libs/boost-${PV}"
 S="${WORKDIR}/${BOOST_P}"
 
 case ${PV} in
-	1.47*) PATCHES=( "${BOOST_PATCHDIR}/boost-exceptions-5731.diff" ) ;;
+	*) PATCHES=( "${BOOST_PATCHDIR}/boost-exceptions-5731.diff" ) ;;
 esac
 
 boost-headers_pkg_pretend() {
