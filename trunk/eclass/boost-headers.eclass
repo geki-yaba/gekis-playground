@@ -22,8 +22,9 @@ BOOST_PATCHDIR="${WORKDIR}/patches"
 
 DESCRIPTION="boost.org header libraries for C++"
 HOMEPAGE="http://www.boost.org/"
-SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
-	http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
+SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
+[[ ${BOOST_PATCHSET} ]] && \
+	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
 SLOT="0"
@@ -37,7 +38,9 @@ PDEPEND="~dev-libs/boost-${PV}"
 
 S="${WORKDIR}/${BOOST_P}"
 
-PATCHES=( "${BOOST_PATCHDIR}/boost-exceptions-5731.diff" )
+case ${PV} in
+	1.47*) PATCHES=( "${BOOST_PATCHDIR}/boost-exceptions-5731.diff" ) ;;
+esac
 
 boost-headers_pkg_pretend() {
 	local err=
@@ -61,7 +64,7 @@ boost-headers_pkg_pretend() {
 
 boost-headers_src_unpack() {
 	tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "${BOOST_P}/boost"
-	unpack "${BOOST_PATCHSET}"
+	[[ ${BOOST_PATCHSET} ]] && unpack "${BOOST_PATCHSET}"
 }
 
 boost-headers_src_configure() { :; }

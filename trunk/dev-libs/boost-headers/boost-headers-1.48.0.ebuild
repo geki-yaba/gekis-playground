@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-inherit boost-build
+inherit boost-headers
 
-DEPEND=""
 RDEPEND=""
+DEPEND=""
