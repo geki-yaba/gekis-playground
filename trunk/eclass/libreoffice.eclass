@@ -21,15 +21,12 @@ PYTHON_DEPEND="python? ( ${_libreoffice_python} )"
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
-inherit autotools bash-completion-r1 boost-utils check-reqs db-use eutils \
-	flag-o-matic java-pkg-opt-2 kde4-base multilib pax-utils python versionator \
-	nsplugins
-
-[[ ${PV} == *_pre ]] && inherit git-2
+inherit autotools bash-completion-r1 boost-utils check-reqs eutils flag-o-matic \
+	java-pkg-opt-2 kde4-base multilib pax-utils python versionator nsplugins
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install pkg_preinst pkg_postinst pkg_postrm
 
-DESCRIPTION="LibreOffice - a productivity suite (experimental version)"
+DESCRIPTION="LibreOffice - a productivity suite (geki version)"
 HOMEPAGE="http://www.libreoffice.org/"
 
 SLOT="0"
@@ -37,16 +34,12 @@ SLOT="0"
 LICENSE="LGPL-3"
 RESTRICT="binchecks mirror"
 
-IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk
-jemalloc junit kde languagetool ldap mysql nsplugin odbc odk opengl pdfimport
-+python reportbuilder templates test webdav wiki"
-# postgres - system only diff available - no chance to choose! :(
+IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk gtk3
++jemalloc junit kde languagetool ldap mysql nsplugin odbc odk opengl pdfimport
+postgres +python reportbuilder templates test webdav wiki xmlsec"
 
 # config
 MY_PV="$(get_version_component_range 1-2)"
-
-[[ ${MY_PV} > 3.4 ]] && IUSE+=" gtk3"
-[[ ${MY_PV} < 3.5 ]] && IUSE+=" cups"
 
 # available template languages
 LANGUAGES="de en en_GB en_ZA es fr hu it"
@@ -56,7 +49,7 @@ for language in ${LANGUAGES}; do
 done
 
 # paths
-LIBRE_URI="${LIBRE_URI:="http://download.documentfoundation.org/libreoffice/src/$(get_version_component_range 1-3)"}"
+LIBRE_URI="http://dev-www.libreoffice.org/bundles"
 EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
 BRAND_URI="http://dev.gentooexperimental.org/~scarabeus"
 
@@ -78,23 +71,11 @@ SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )
 	templates? ( ${TDEPEND} )"
 
 # libreoffice modules
-if [[ ${PV} == *_pre ]]; then
-MODULES="core help"
-else
-	if [[ ${MY_PV} < 3.5 ]]; then
-MODULES="artwork base calc components extensions extras filters help impress
-libs-core libs-extern libs-extern-sys libs-gui postprocess sdk testing ure
-writer"
+MODULES="core"
 
-		SRC_URI+=" ${LIBRE_URI}/${PN}-bootstrap-${PV}.tar.bz2"
-	else
-MODULES="core help"
-	fi
-
-	for module in ${MODULES}; do
-		SRC_URI+=" ${LIBRE_URI}/${PN}-${module}-${PV}.tar.bz2"
-	done
-fi
+for module in ${MODULES}; do
+	SRC_URI+=" ${LIBRE_URI}/${PN}-${module}.tar.bz2"
+done
 
 CDEPEND="
 	dbus? ( dev-libs/dbus-glib )
@@ -104,6 +85,7 @@ CDEPEND="
 	gstreamer? ( media-libs/gstreamer
 		media-libs/gst-plugins-base )
 	gtk? ( x11-libs/gtk+:2 )
+	gtk3? ( x11-libs/gtk+:3 )
 	java? ( dev-java/bsh
 		dev-java/lucene:2.9[analyzers] )
 	jemalloc? ( dev-libs/jemalloc )
@@ -112,10 +94,11 @@ CDEPEND="
 		kde-base/kdelibs
 		kde-base/kstyles )
 	ldap? ( net-nds/openldap )
-	nsplugin? ( net-libs/xulrunner:1.9 )
+	nsplugin? ( net-misc/npapi-sdk )
 	mysql? ( dev-db/mysql-connector-c++:1.1.0 )
 	opengl? ( virtual/opengl virtual/glu )
-	pdfimport? ( app-text/poppler[xpdf-headers] )
+	pdfimport? ( app-text/poppler[cxx,xpdf-headers] )
+	postgres? ( dev-db/postgresql-base )
 	reportbuilder? ( dev-java/commons-logging:0 )
 	webdav? ( net-libs/neon )
 	wiki? ( dev-java/commons-codec:0
@@ -123,11 +106,15 @@ CDEPEND="
 		dev-java/commons-lang:2.1
 		dev-java/commons-logging:0
 		dev-java/tomcat-servlet-api:2.4 )
+	xmlsec? ( dev-libs/nspr
+		dev-libs/nss )
 	  app-text/hunspell
+	  app-text/libexttextcat
 	  app-text/libwpd:0.9[tools]
+	  app-text/libwpg:0.2
 	  app-text/libwps:0.2
 	  app-text/mythes
-	  dev-libs/boost[program_options,thread]
+	  dev-cpp/libcmis
 	  dev-libs/expat
 	>=dev-libs/hyphen-2.7.1
 	  dev-libs/icu
@@ -135,14 +122,16 @@ CDEPEND="
 	  dev-libs/libxslt
 	  dev-libs/openssl
 	  dev-libs/redland[ssl]
+	>=gnome-base/librsvg-2.32.1:2
 	  media-libs/fontconfig
 	  media-libs/freetype:2
 	  media-libs/libpng
-	  app-text/libwpg:0.2
-	  media-libs/vigra
+	  media-libs/libvisio
 	  net-misc/curl
+	  net-print/cups
 	>=sys-libs/db-4.7
 	  sys-libs/zlib
+	  x11-libs/libXrender
 	  x11-libs/cairo[svg]
 	  x11-libs/libXaw
 	  x11-libs/libXinerama
@@ -151,29 +140,18 @@ CDEPEND="
 	  x11-libs/startup-notification
 	  virtual/jpeg"
 
-if [[ ${MY_PV} < 3.5 ]]; then
-CDEPEND+=" cups? ( net-print/cups )"
-else
-CDEPEND+=" gtk3? ( x11-libs/gtk+:3 )
-	>=gnome-base/librsvg-2.32.1:2
-	  media-libs/libvisio
-	  net-print/cups
-	  sys-devel/gettext"
-fi
-
-PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
+#PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
 
 RDEPEND="${CDEPEND}
 	java? ( >=virtual/jre-${_libreoffice_java} )"
 
 DEPEND="${CDEPEND}
-	!dev-util/dmake
 	java? ( virtual/jdk:${_libreoffice_java}
 		dev-java/ant-core )
 	junit? ( dev-java/junit:4 )
 	odbc? ( dev-db/unixODBC )
-	app-arch/unzip
 	app-arch/zip
+	app-arch/unzip
 	dev-lang/perl
 	dev-libs/boost-headers
 	dev-perl/Archive-Zip
@@ -183,29 +161,28 @@ DEPEND="${CDEPEND}
 	dev-util/mdds
 	dev-util/pkgconfig
 	media-gfx/imagemagick[png]
+	media-libs/vigra
 	sys-apps/coreutils
 	sys-apps/grep
 	sys-devel/bison
 	sys-devel/flex
-	x11-libs/libXrender
+	sys-devel/gettext
 	x11-proto/randrproto
 	x11-proto/xextproto
 	x11-proto/xineramaproto
 	x11-proto/xproto"
 
-_libreoffice_use_gtk="gtk"
-[[ ${MY_PV} > 3.4 ]] && _libreoffice_use_gtk="|| ( gtk gtk3 )"
-
-REQUIRED_USE="gnome? ( ${_libreoffice_use_gtk} )
+_libreoffice_use_gtk="|| ( gtk gtk3 )"
+REQUIRED_USE="eds? ( ${_libreoffice_use_gtk} )
+	gnome? ( ${_libreoffice_use_gtk} )
 	junit? ( java )
 	languagetool? ( java )
-	nsplugin? ( ${_libreoffice_use_gtk} )
 	reportbuilder? ( java )
 	wiki? ( java )"
 
 libreoffice_pkg_pretend() {
 	elog
-	eerror "This ${PN} version is experimental."
+	eerror "This ${PN} version is geki."
 	eerror "Things could just break."
 
 	elog
@@ -221,6 +198,16 @@ libreoffice_pkg_pretend() {
 	use debug && CHECKREQS_DISK_USR="1G" \
 		|| CHECKREQS_DISK_USR="512M"
 	check-reqs_pkg_pretend
+
+	# ensure pg version
+	if use postgres; then
+		local pgslot="$(postgresql-config show)"
+		if [[ ${pgslot//.} < 84 ]]; then
+			eerror "PostgreSQL slot must be set to 8.4 or higher."
+			eerror "	postgresql-config set 8.4"
+			_libreoffice_die "PostgreSQL slot is not set to 8.4 or higher."
+		fi
+	fi
 
 	if ! use java; then
 		elog
@@ -241,36 +228,10 @@ libreoffice_pkg_setup() {
 }
 
 libreoffice_src_unpack() {
-	# layered clone/build process - fun! :)
-	if [[ ${PV} == *_pre ]]; then
-		local root="git://anongit.freedesktop.org/${PN}"
-		EGIT_BRANCH="${EGIT_BRANCH:-${PN}-$(replace_all_version_separators - ${MY_PV})}"
-		# eclass/git feature: if not equal use EGIT_COMMIT, which defaults to master
-		EGIT_COMMIT="${EGIT_BRANCH}"
-
-		# clone modules
-		for module in ${MODULES}; do
-			EGIT_PROJECT="${PN}/${module}"
-			EGIT_REPO_URI="${root}/${module}"
-			git_src_unpack
-		done
-	else
-		if [[ ${MY_PV} == 3.4 ]]; then
-			unpack "${PN}-bootstrap-${PV}.tar.bz2"
-
-			cd "${S}/clone"
-		fi
-
-		# unpack modules
-		for module in ${MODULES}; do
-			unpack "${PN}-${module}-${PV}.tar.bz2"
-		done
-
-		if [[ ${MY_PV} == 3.4 ]]; then
-			# link source into tree
-			ln -sf "${S}/clone"/*/* "${S}"
-		fi
-	fi
+	# unpack modules
+	for module in ${MODULES}; do
+		unpack "${PN}-${module}.tar.bz2"
+	done
 
 	if use branding; then
 		cd "${WORKDIR}"
@@ -298,24 +259,9 @@ libreoffice_src_unpack() {
 
 libreoffice_src_prepare() {
 	# specifics not for upstream
-	EPATCH_SUFFIX="diff"
-	EPATCH_FORCE="yes"
-	epatch "${FILESDIR}"
-
-	# version specifics
-	[ -d "${FILESDIR}/${MY_PV}" ] && epatch "${FILESDIR}/${MY_PV}"
-
-	if [[ ${MY_PV} < 3.5 ]]; then
-		# disable printeradmin
-		sed -e "s:.*printeradmin:#\0:" \
-			-i "${S}"/sysui/desktop/share/create_tree.sh \
-			|| die
-
-		# honour linker hash-style
-		sed -r -e "s:(hash-style)=both:\1=\$(WITH_LINKER_HASH_STYLE):" \
-			-i "${S}"/solenv/gbuild/platform/unxgcc.mk \
-			|| die
-	fi
+	#EPATCH_SUFFIX="diff"
+	#EPATCH_FORCE="yes"
+	#epatch "${FILESDIR}"
 
 	# allow user to apply any additional patches without modifying ebuild
 	epatch_user
@@ -338,16 +284,13 @@ libreoffice_src_prepare() {
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
 	use branding && echo "--with-about-bitmap=${WORKDIR}/branding-about.png" >> ${config}
 	use branding && echo "--with-intro-bitmap=${WORKDIR}/branding-intro.png" >> ${config}
+	echo "$(use_enable !debug release-build)" >> ${config}
 	echo "$(use_enable gtk)" >> ${config}
+	echo "$(use_enable gtk3)" >> ${config}
 	echo "$(use_enable kde kde4)" >> ${config}
 	echo "$(use_enable odk)" >> ${config}
 	echo "$(use_with java)" >> ${config}
 	echo "$(use_with templates sun-templates)" >> ${config}
-
-	if [[ ${MY_PV} == 3.5 ]]; then
-		echo "$(use_enable !debug release-build)" >> ${config}
-		echo "$(use_enable gtk3)" >> ${config}
-	fi
 
 	# extensions
 	echo "$(use_enable mysql ext-mysql-connector)" >> ${config}
@@ -360,6 +303,8 @@ libreoffice_src_prepare() {
 	# internal
 	echo "$(use_enable dbus)" >> ${config}
 	echo "$(use_enable debug symbols)" >> ${config}
+	echo "$(use_enable test linkoo)" >> ${config}
+	echo "$(use_enable xmlsec)" >> ${config}
 	use jemalloc && echo "--with-alloc=jemalloc" >> ${config}
 
 	# system
@@ -374,18 +319,9 @@ libreoffice_src_prepare() {
 	echo "$(use_enable webdav neon)" >> ${config}
 	echo "$(use_with webdav system-neon)" >> ${config}
 
-	if [[ ${MY_PV} == 3.4 ]]; then
-		echo "$(use_enable python)" >> ${config}
-		echo "$(use_enable cups)" >> ${config}
-	fi
-
 	# mysql
 	echo "$(use_with mysql system-mysql)" >> ${config}
 	echo "$(use_with mysql system-mysql-cppconn)" >> ${config}
-
-	# browser
-	echo "$(use_enable nsplugin mozilla)" >> ${config}
-	echo "$(use_with nsplugin system-mozilla libxul)" >> ${config}
 
 	# gnome
 	echo "$(use_enable gnome lockdown)" >> ${config}
@@ -396,7 +332,7 @@ libreoffice_src_prepare() {
 	# gio
 	local gtk="disable"
 	use gtk && gtk="enable"
-	[[ ${MY_PV} > 3.4 ]] && use gtk3 && gtk="enable"
+	use gtk3 && gtk="enable"
 	echo "--${gtk}-gio" >> ${config}
 	echo "--disable-gnome-vfs" >> ${config}
 
@@ -443,6 +379,7 @@ libreoffice_src_prepare() {
 	fi
 
 	eautoreconf
+	touch autogen.lastrun
 }
 
 libreoffice_src_configure() {
@@ -461,7 +398,6 @@ libreoffice_src_configure() {
 	export ARCH_FLAGS="${CXXFLAGS}"
 
 	# linker flags
-	[[ ${MY_PV} < 3.5 ]] && append-ldflags "-Wl,--no-as-needed"
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
 	export LINKFLAGSDEFS="-Wl,-z,defs -L$(boost-utils_get_library_path)"
 
@@ -474,12 +410,7 @@ libreoffice_src_configure() {
 }
 
 libreoffice_src_compile() {
-	# no need to download external sources
-	# although we set two configure flags already for this ...
-	[[ ${MY_PV} < 3.5 ]] && touch src.downloaded
-
-	# build
-	make || die "make failed"
+	make build || die "make failed"
 }
 
 libreoffice_src_test() {
