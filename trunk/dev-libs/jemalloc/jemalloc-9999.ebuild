@@ -7,7 +7,7 @@ EAPI="2"
 EGIT_REPO_URI="git://canonware.com/jemalloc.git"
 EGIT_MASTER="dev"
 
-inherit autotools eutils flag-o-matic git-2
+inherit autotools base flag-o-matic git-2
 
 DESCRIPTION="Jemalloc is a general-purpose scalable concurrent allocator"
 HOMEPAGE="http://www.canonware.com/jemalloc/"
@@ -24,11 +24,10 @@ RDEPEND=""
 
 S="${WORKDIR}"
 
+PATCHES=( "${FILESDIR}/optimization.diff" "${FILESDIR}/no-pprof.diff" )
+
 src_prepare() {
-	# strip jemalloc optimization preset
-	epatch "${FILESDIR}/optimization.diff"
-	# do not install pprof
-	epatch "${FILESDIR}/no-pprof.diff"
+	base_src_prepare
 
 	# autotooling
 	eautoreconf

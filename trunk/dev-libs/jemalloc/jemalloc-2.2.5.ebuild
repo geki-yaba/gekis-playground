@@ -4,7 +4,7 @@
 
 EAPI="2"
 
-inherit autotools eutils flag-o-matic
+inherit autotools base flag-o-matic
 
 DESCRIPTION="Jemalloc is a general-purpose scalable concurrent allocator"
 HOMEPAGE="http://www.canonware.com/jemalloc/"
@@ -19,11 +19,10 @@ IUSE="debug stats"
 DEPEND=""
 RDEPEND=""
 
+PATCHES=( "${FILESDIR}/optimization.diff" "${FILESDIR}/no-pprof.diff" )
+
 src_prepare() {
-	# strip jemalloc optimization preset
-	epatch "${FILESDIR}/optimization.diff"
-	# do not install pprof
-	epatch "${FILESDIR}/no-pprof.diff"
+	base_src_prepare
 
 	# autotooling
 	eautoreconf

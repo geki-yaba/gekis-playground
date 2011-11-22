@@ -1,0 +1,20 @@
+--- src/create_torrent_dialog.cpp	2011-10-31 12:43:18.313557292 +0100
++++ src/create_torrent_dialog.cpp	2011-10-31 12:44:19.777560447 +0100
+@@ -273,7 +273,7 @@
+ 					{
+ 						throw;
+ 					}
+-					catch(fs::basic_filesystem_error<fs::path>& e)
++					catch(fs::filesystem_error& e)
+ 					{
+ 						M_THROW(__(
+ 							"Error while reading torrent files. File '%1': %2.",
+@@ -320,7 +320,7 @@
+ 					{
+ 						throw;
+ 					}
+-					catch(fs::basic_filesystem_error<fs::path>& e)
++					catch(fs::filesystem_error& e)
+ 					{
+ 						M_THROW(__(
+ 							"Error while reading torrent files. File '%1': %2.",
