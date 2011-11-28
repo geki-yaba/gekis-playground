@@ -13,7 +13,7 @@
 
 EAPI="4"
 
-PYTHON_DEPEND="python? ( <<*>> )"
+PYTHON_DEPEND="python? *"
 
 inherit flag-o-matic python toolchain-funcs versionator
 

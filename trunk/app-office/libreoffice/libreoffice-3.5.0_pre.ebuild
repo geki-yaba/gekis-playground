@@ -12,6 +12,7 @@ S="${WORKDIR}/core"
 
 # config
 CONFFILE="3.5"
+EGIT_BRANCH="master"
 
 # addons
 ADDONS_URI="http://dev-www.libreoffice.org/src/"

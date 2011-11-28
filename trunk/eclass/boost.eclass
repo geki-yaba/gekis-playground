@@ -13,8 +13,8 @@
 
 EAPI="4"
 
-_boost_python="<<*:2.6>>"
-PYTHON_DEPEND="python? ( ${_boost_python} )"
+_boost_python="*:2.6"
+PYTHON_DEPEND="python? ${_boost_python}"
 
 inherit check-reqs eutils flag-o-matic multilib python toolchain-funcs versionator
 

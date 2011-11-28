@@ -14,15 +14,15 @@
 EAPI="4"
 
 _libreoffice_java="1.6"
-_libreoffice_python="<<*:3.1:3.1[threads,xml]>>"
+_libreoffice_python="*:3.1:3.1"
 PYTHON_BDEPEND="${_libreoffice_python}"
-PYTHON_DEPEND="python? ( ${_libreoffice_python} )"
+PYTHON_DEPEND="python? ${_libreoffice_python}"
 
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
 inherit autotools bash-completion-r1 boost-utils check-reqs eutils flag-o-matic \
-	java-pkg-opt-2 kde4-base multilib pax-utils python versionator nsplugins
+	java-pkg-opt-2 kde4-base multilib pax-utils python versionator nsplugins git-2
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install pkg_preinst pkg_postinst pkg_postrm
 
@@ -73,9 +73,9 @@ SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )
 # libreoffice modules
 MODULES="core"
 
-for module in ${MODULES}; do
-	SRC_URI+=" ${LIBRE_URI}/${PN}-${module}.tar.bz2"
-done
+#for module in ${MODULES}; do
+#	SRC_URI+=" ${LIBRE_URI}/${PN}-${module}.tar.bz2"
+#done
 
 CDEPEND="
 	dbus? ( dev-libs/dbus-glib )
@@ -129,6 +129,7 @@ CDEPEND="
 	  media-libs/libvisio
 	  net-misc/curl
 	  net-print/cups
+	  sci-mathematics/lpsolve
 	>=sys-libs/db-4.7
 	  sys-libs/zlib
 	  x11-libs/libXrender
@@ -229,13 +230,26 @@ libreoffice_pkg_setup() {
 
 libreoffice_src_unpack() {
 	# unpack modules
-	for module in ${MODULES}; do
-		unpack "${PN}-${module}.tar.bz2"
-	done
+#	for module in ${MODULES}; do
+#		unpack "${PN}-${module}.tar.bz2"
+#	done
 
 	if use branding; then
 		cd "${WORKDIR}"
 		unpack "${BRAND_SRC}"
+	fi
+
+	if [[ ${PV} == *_pre ]]; then
+		local root="git://anongit.freedesktop.org/${PN}"
+		EGIT_BRANCH="${EGIT_BRANCH:-${PN}-$(replace_all_version_separators - ${MY_PV})}"
+		EGIT_COMMIT="${EGIT_BRANCH}"
+
+		# clone modules
+		for module in ${MODULES}; do
+			EGIT_PROJECT="${PN}/${module}"
+			EGIT_REPO_URI="${root}/${module}"
+			git-2_src_unpack
+		done
 	fi
 
 	# copy extension templates; o what fun ...
