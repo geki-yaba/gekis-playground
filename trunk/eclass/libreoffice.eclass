@@ -203,10 +203,10 @@ libreoffice_pkg_pretend() {
 	# ensure pg version
 	if use postgres; then
 		local pgslot="$(postgresql-config show)"
-		if [[ ${pgslot//.} < 84 ]]; then
-			eerror "PostgreSQL slot must be set to 8.4 or higher."
-			eerror "	postgresql-config set 8.4"
-			_libreoffice_die "PostgreSQL slot is not set to 8.4 or higher."
+		if [[ ${pgslot//.} < 90 ]]; then
+			eerror "PostgreSQL slot must be set to 9.0 or higher."
+			eerror "	postgresql-config set 9.0"
+			_libreoffice_die "PostgreSQL slot is not set to 9.0 or higher."
 		fi
 	fi
 
