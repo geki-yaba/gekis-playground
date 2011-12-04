@@ -1,0 +1,16 @@
+--- sal/prj/build.lst	2011-12-04 12:45:21.108413946 +0100
++++ sal/prj/build.lst	2011-12-04 12:46:58.916419007 +0100
+@@ -15,7 +15,6 @@
+ sa	sal\util								nmake	-	all	sa_util sa_tc.u sa_oslall sa_uwinapi.n sa_onlineupdate.n sa_osln.n sa_oslu.u sa_rtl sa_textenc NULL
+ sa sal\util\sal_textenc nmake - all sa_util_saltextenc sa_util NULL
+ sa sal\cppunittester nmake - all sa_cppunittester sa_cpprt.u sa_util NULL
+-sa sal\qa\ByteSequence nmake - all sa_qa_ByteSequence sa_cppunittester sa_util_saltextenc NULL
+ sa sal\qa\OStringBuffer nmake - all sa_qa_OStringBuffer sa_cppunittester sa_util_saltextenc NULL
+ sa sal\qa\osl\getsystempathfromfileurl nmake - all sa_qa_osl_getsystempathfromfileurl sa_cppunittester sa_util_saltextenc NULL
+ sa sal\qa\osl\file nmake - u sa_qa_osl_file sa_cppunittester sa_util_saltextenc NULL
+@@ -30,5 +29,3 @@
+ sa sal\qa\rtl\cipher nmake - all sa_qa_rtl_cipher sa_cppunittester sa_util_saltextenc NULL
+ sa sal\qa\rtl\doublelock nmake - all sa_qa_rtl_doublelock sa_cppunittester sa_util_saltextenc NULL
+ sa sal\qa\rtl\locale nmake - all sa_qa_rtl_locale sa_cppunittester sa_util_saltextenc NULL
+-sa sal\qa\sal nmake - all sa_qa_sal sa_cppunittester sa_util_saltextenc NULL
+-sa sal\qa\static nmake - u sal_qa_static sa_qa_ByteSequence sa_qa_OStringBuffer sa_qa_osl_file.u sa_qa_osl_condition sa_qa_osl_security sa_qa_rt_alloc sa_qa_rtl_crc32 sa_qa_rtl_cipher sa_qa_rtl_doublelock sa_qa_rtl_locale sa_qa_sal NULL
