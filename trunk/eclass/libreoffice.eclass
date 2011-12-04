@@ -393,7 +393,6 @@ libreoffice_src_prepare() {
 	fi
 
 	eautoreconf
-	touch autogen.lastrun
 }
 
 libreoffice_src_configure() {
