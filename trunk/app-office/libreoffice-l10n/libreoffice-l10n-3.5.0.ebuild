@@ -27,8 +27,9 @@ eu fi fr gl gu he hi hr hu id is it ja ka km ko mk nb ne nl nn om pl pt pt_BR ru
 si sk sl sq sv tg tr ug uk vi zh_CN zh_TW"
 
 MY_PN="${PN/-l10n}"
-BASE_URI="http://download.documentfoundation.org/${MY_PN}/stable/${PV}/rpm"
-RPM_LANG_URI="${BASE_URI}/x86/LibO_${PV}_Linux_x86_langpack-rpm"
+MY_PVR="beta0"
+BASE_URI="http://download.documentfoundation.org/${MY_PN}/testing/${PV}-${MY_PVR}"
+RPM_LANG_URI="${BASE_URI}/rpm/x86/LibO_${PV}${MY_PVR}_Linux_x86_langpack-rpm"
 RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"
 
 for language in ${LANGUAGES}; do
@@ -52,7 +53,7 @@ for language in ${MYSPELLS}; do
 	SDEPEND+=" linguas_${language}? ( app-dicts/myspell-${language} )"
 done
 
-DEPEND="=app-office/libreoffice-${PV}*"
+DEPEND="=app-office/libreoffice-${PV}_pre"
 PDEPEND="${SDEPEND}"
 
 S="${WORKDIR}"
@@ -64,8 +65,9 @@ pkg_setup() {
 src_unpack() {
 	default
 
+	local lang_path help_path
 	for language in ${LINGUAS//_/-}; do
-		lang_path="LibO_${PV}rc2_Linux_x86_langpack-rpm_${language}/RPMS/"
+		lang_path="LibO_${PV}${MY_PVR}_Linux_x86_langpack-rpm_${language}/RPMS/"
 		help_path="${lang_path/langpack/helppack}"
 
 		if [[ ${language} != en ]]; then
@@ -79,6 +81,7 @@ src_unpack() {
 
 		[[ ${language} == en ]] && language="en-US"
 		if [[ "${LANGUAGES_HELP}" =~ "${language}" ]] && use offlinehelp; then
+			help_path="${help_path/_en/_en-US}"
 			[ -d "${S}"/${help_path} ] || die "${S}/${help_path} not found!"
 
 			rpm_unpack ./${help_path}/*.rpm
@@ -94,11 +97,11 @@ src_compile() { :; }
 
 src_install() {
 	local version="$(get_version_component_range 1-2)"
-	local path="${S}/opt/${MY_PN}${version}/basis${version}"
+	local path="${S}/opt/${MY_PN}${version}"
 
 	# no linguas set or en without offlinehelp
 	if [ -d "${path}" ] ; then
-		insinto /usr/$(get_libdir)/${MY_PN}/basis${version}
+		insinto /usr/$(get_libdir)/${MY_PN}
 		doins -r "${path}"/*
 	fi
 }
