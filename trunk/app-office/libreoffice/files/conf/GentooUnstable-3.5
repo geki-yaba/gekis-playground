@@ -2,12 +2,17 @@
 --with-external-dict-dir=/usr/share/myspell
 --with-external-hyph-dir=/usr/share/myspell
 --with-external-thes-dir=/usr/share/myspell
+--with-lang=
+--with-linker-hash-style=gnu
 --with-system-altlinuxhyph
 --with-system-boost
+--with-system-cairo
+--with-system-cppunit
 --with-system-curl
 --with-system-db
 --with-system-dicts
 --with-system-expat
+--with-system-gettext
 --with-system-hunspell
 --with-system-icu
 --with-system-libxslt
@@ -16,6 +21,8 @@
 --with-system-hunspell
 --with-system-libcmis
 --with-system-libexttextcat
+--with-system-libpng
+--with-system-libvisio
 --with-system-libwpd
 --with-system-libwpg
 --with-system-libwps
@@ -23,17 +30,24 @@
 --with-system-lpsolve
 --with-system-mdds
 --with-system-mythes
+--with-system-openssl
+--with-system-redland
 --with-system-zlib
 --with-unix-wrapper=libreoffice
 --with-vendor=Gentoo Foundation (hacked by geki)
---with-lang=
+--without-afms
+--without-fonts
 --without-help
 --without-helppack-integration
 --without-myspell-dicts
+--without-ppds
 --without-stlport
+--without-system-mozilla
 --enable-cairo-canvas
---with-system-cairo
+--enable-librsvg=system
+--enable-python=system
 --disable-binfilter
+--disable-ccache
 --disable-crashdump
 --disable-epm
 --disable-dependency-tracking
@@ -45,20 +59,6 @@
 --disable-online-update
 --disable-strip-solver
 --disable-zenity
-# gentooexperimental defaults
---without-afms
---without-fonts
---without-ppds
---with-linker-hash-style=gnu
---with-system-cppunit
---with-system-gettext
---with-system-libpng
---with-system-libvisio
---with-system-openssl
---with-system-redland
---without-system-mozilla
---enable-librsvg=system
---enable-python=system
 # extensions
 --with-extension-integration
 --enable-ext-presenter-console

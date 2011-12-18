@@ -27,9 +27,9 @@ eu fi fr gl gu he hi hr hu id is it ja ka km ko mk nb ne nl nn om pl pt pt_BR ru
 si sk sl sq sv tg tr ug uk vi zh_CN zh_TW"
 
 MY_PN="${PN/-l10n}"
-MY_PVR="beta0"
+MY_PVR="beta1"
 BASE_URI="http://download.documentfoundation.org/${MY_PN}/testing/${PV}-${MY_PVR}"
-RPM_LANG_URI="${BASE_URI}/rpm/x86/LibO_${PV}${MY_PVR}_Linux_x86_langpack-rpm"
+RPM_LANG_URI="${BASE_URI}/rpm/x86/LibO-Dev_${PV}${MY_PVR}_Linux_x86_langpack-rpm"
 RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"
 
 for language in ${LANGUAGES}; do
@@ -67,7 +67,7 @@ src_unpack() {
 
 	local lang_path help_path
 	for language in ${LINGUAS//_/-}; do
-		lang_path="LibO_${PV}${MY_PVR}_Linux_x86_langpack-rpm_${language}/RPMS/"
+		lang_path="LibO-Dev_${PV}${MY_PVR}_Linux_x86_langpack-rpm_${language}/RPMS/"
 		help_path="${lang_path/langpack/helppack}"
 
 		if [[ ${language} != en ]]; then
