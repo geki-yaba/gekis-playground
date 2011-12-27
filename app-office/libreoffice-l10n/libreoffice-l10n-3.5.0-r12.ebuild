@@ -27,7 +27,7 @@ eu fi fr gl gu he hi hr hu id is it ja ka km ko mk nb ne nl nn om pl pt pt_BR ru
 si sk sl sq sv tg tr ug uk vi zh_CN zh_TW"
 
 MY_PN="${PN/-l10n}"
-MY_PVR="beta1"
+MY_PVR="beta2"
 BASE_URI="http://download.documentfoundation.org/${MY_PN}/testing/${PV}-${MY_PVR}"
 RPM_LANG_URI="${BASE_URI}/rpm/x86/LibO-Dev_${PV}${MY_PVR}_Linux_x86_langpack-rpm"
 RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"

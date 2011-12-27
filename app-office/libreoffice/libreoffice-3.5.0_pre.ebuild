@@ -5,7 +5,7 @@
 inherit libreoffice
 
 # keywords
-KEYWORDS=""
+KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux"
 
 # root
 S="${WORKDIR}/core"
