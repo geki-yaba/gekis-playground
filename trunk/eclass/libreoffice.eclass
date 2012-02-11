@@ -133,7 +133,7 @@ CDEPEND="
 	>=sys-libs/db-4.7
 	  sys-libs/zlib
 	  x11-libs/libXrender
-	  x11-libs/cairo[svg]
+	  x11-libs/cairo[X,svg]
 	  x11-libs/libXaw
 	  x11-libs/libXinerama
 	  x11-libs/libXrandr
