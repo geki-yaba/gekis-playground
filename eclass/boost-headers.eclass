@@ -13,7 +13,7 @@
 
 EAPI="4"
 
-inherit base multilib versionator
+inherit alternatives base multilib versionator
 
 EXPORT_FUNCTIONS pkg_pretend src_unpack src_configure src_compile src_install
 
@@ -27,7 +27,7 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
-SLOT="0"
+SLOT="$(get_version_component_range 1-2)"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 
 IUSE=""
@@ -38,6 +38,11 @@ PDEPEND="~dev-libs/boost-${PV}"
 
 S="${WORKDIR}/${BOOST_P}"
 
+# alternatives
+SOURCE="/usr/include/boost"
+ALTERNATIVES="/usr/include/boost-[0-9].[0-9][0-9]/boost"
+
+# base
 case ${PV} in
 	*) PATCHES=( "${BOOST_PATCHDIR}/boost-exceptions-5731.diff" ) ;;
 esac
@@ -73,7 +78,7 @@ boost-headers_src_compile() { :; }
 
 boost-headers_src_install() {
 	# dir
-	dir="/usr/include"
+	dir="/usr/include/boost-${SLOT}"
 
 	# make dir
 	dodir "${dir}"
