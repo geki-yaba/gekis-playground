@@ -19,13 +19,15 @@ inherit flag-o-matic python toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_compile src_install src_test
 
-MY_PV="$(replace_all_version_separators _)"
-MAJOR_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))"
-BOOST_P="boost_${MY_PV}"
+BOOST_P="boost_$(replace_all_version_separators _)"
+BOOST_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))"
+BOOST_PATCHDIR="${WORKDIR}/patches"
 
 DESCRIPTION="A system for large project software construction, which is simple to use and powerful."
 HOMEPAGE="http://www.boost.org/doc/tools/build/index.html"
-SRC_URI="mirror://sourceforge/boost/boost_${MY_PV}.tar.bz2"
+SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
+[ "${BOOST_PATCHSET}" ] && \
+	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
 SLOT="$(get_version_component_range 1-2)"
@@ -36,7 +38,7 @@ IUSE="examples python"
 DEPEND=""
 RDEPEND=""
 
-S="${WORKDIR}/boost_${MY_PV}/tools"
+S="${WORKDIR}/${BOOST_P}/tools/build/v2"
 
 boost-build_pkg_pretend() {
 	ewarn "Compilation of ${PN} is known to break if {C,LD}FLAGS contain"
@@ -45,28 +47,24 @@ boost-build_pkg_pretend() {
 
 boost-build_pkg_setup() {
 	# set jam paths
-	BOOST_JAM="${S}/build/v2/engine"
-	BOOST_JAM_SRC="${BOOST_JAM}/src"
-	BOOST_JAM_TEST="${BOOST_JAM}/test"
-
-	if [[ ${SLOT} > 1.46 ]]; then
-		BOOST_JAM_SRC="${BOOST_JAM}"
-		BOOST_JAM_TEST="${BOOST_JAM}/../test/engine"
-	fi
+	BOOST_JAM_SRC="${S}/engine"
+	BOOST_JAM_TEST="${S}/test/engine"
 
 	use python && python_pkg_setup
 }
 
 boost-build_src_unpack() {
-	local cmd
-	cmd="tar xjpf ${DISTDIR}/${BOOST_P}.tar.bz2"
-	cmd+=" boost_${MY_PV}/tools/build/v2"
-
-	# extract
-	echo ${cmd}; ${cmd} || die
+	tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "${BOOST_P}/tools/build/v2"
+	[ "${BOOST_PATCHSET}" ] && unpack "${BOOST_PATCHSET}"
 }
 
 boost-build_src_prepare() {
+	if [ "${BOOST_PATCHSET}" ] ; then
+		EPATCH_SUFFIX="diff"
+		EPATCH_FORCE="yes"
+		epatch "${BOOST_PATCHDIR}"
+	fi
+
 	cd "${BOOST_JAM_SRC}" || die
 
 	# Remove stripping option
@@ -76,11 +74,12 @@ boost-build_src_prepare() {
 	# Force regeneration
 	rm -v jambase.c
 
+	cd "${S}"
+
 	# This patch allows us to fully control optimization
 	# and stripping flags when bjam is used as build-system
 	# We simply extend the optimization and debug-symbols feature
 	# with empty dummies called 'none'
-	cd "${S}/build/v2"
 	sed -e "s/off speed space/\0 none/" \
 		-e "s/debug-symbols      : on off/\0 none/" \
 		-i tools/builtin.jam || die "sed failed"
@@ -96,7 +95,7 @@ boost-build_src_compile() {
 	cd "${BOOST_JAM_SRC}" || die
 
 	# For slotting
-	sed -e "s|/usr/share/boost-build|\0-${MAJOR_PV}|" \
+	sed -e "s|/usr/share/boost-build|\0-${BOOST_PV}|" \
 		-i Jambase || die "sed failed"
 
 	# The build.jam file for building bjam using a bootstrapped jam0 ignores
@@ -111,10 +110,10 @@ boost-build_src_compile() {
 }
 
 boost-build_src_install() {
-	newbin "${BOOST_JAM_SRC}"/bin.*/bjam bjam-${MAJOR_PV}
+	newbin "${BOOST_JAM_SRC}"/bin.*/bjam bjam-${BOOST_PV}
 
-	cd "${S}/build/v2"
-	insinto /usr/share/boost-build-${MAJOR_PV}
+	cd "${S}"
+	insinto /usr/share/boost-build-${BOOST_PV}
 	doins -r boost-build.jam bootstrap.jam build-system.jam site-config.jam user-config.jam \
 		build kernel options tools util
 

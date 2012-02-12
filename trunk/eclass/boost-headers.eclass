@@ -18,12 +18,11 @@ inherit alternatives base multilib versionator
 EXPORT_FUNCTIONS pkg_pretend src_unpack src_configure src_compile src_install
 
 BOOST_P="boost_$(replace_all_version_separators _)"
-BOOST_PATCHDIR="${WORKDIR}/patches"
 
 DESCRIPTION="boost.org header libraries for C++"
 HOMEPAGE="http://www.boost.org/"
 SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
-[[ ${BOOST_PATCHSET} ]] && \
+[ "${BOOST_PATCHSET}" ] && \
 	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
@@ -42,23 +41,23 @@ S="${WORKDIR}/${BOOST_P}"
 SOURCE="/usr/include/boost"
 ALTERNATIVES="/usr/include/boost-[0-9].[0-9][0-9]/boost"
 
-# base
-case ${PV} in
-	*) PATCHES=( "${BOOST_PATCHDIR}/boost-exceptions-5731.diff" ) ;;
-esac
-
 boost-headers_pkg_pretend() {
 	local err=
 
-	ls -1 /usr/$(get_libdir)/libboost_* | grep -v boost_*_*
+	# old libraries
+	ls -1 "${EPREFIX}"/usr/$(get_libdir)/libboost_* | grep -v boost_*_*
 	[ -z ${?} ] && err=1
 
-	ls -1 /usr/include/boost_* >/dev/null 2>&1
+	# old includes
+	ls -1 "${EPREFIX}"/usr/include/boost_* >/dev/null 2>&1
 	[ -z ${?} ] && err=1
+
+	# unslotted boost-headers
+	[ -e "${EPREFIX}${SOURCE}" ] && [ ! -L "${EPREFIX}${SOURCE}" ] && err=1
 
 	if [ ${err} ] ; then
 		eerror
-		eerror "Old files from boost.org package of the Gentoo Repository found."
+		eerror "Old files from boost.org package (of the Gentoo repository) found."
 		eerror "Please clean your system following the howto at:"
 		eerror
 		eerror "	http://code.google.com/p/gekis-playground/wiki/Boost"
@@ -69,7 +68,7 @@ boost-headers_pkg_pretend() {
 
 boost-headers_src_unpack() {
 	tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "${BOOST_P}/boost"
-	[[ ${BOOST_PATCHSET} ]] && unpack "${BOOST_PATCHSET}"
+	[ "${BOOST_PATCHSET}" ] && unpack "${BOOST_PATCHSET}"
 }
 
 boost-headers_src_configure() { :; }

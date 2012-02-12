@@ -408,16 +408,20 @@ _boost_threading() {
 }
 
 _boost_fix_jamtest() {
-	local jam libraries="$(find "${S}"/lib/ -type d -name test)"
+	local jam libraries="$(find "${S}"/libs/ -type d -name test)"
 
 	for library in ${libraries} ; do
 		jam="${library}/Jamfile.v2"
 
-		if [ -f ${jam} ] && ! grep -s -q "import testing" "${jam}" ; then
-			eerror "Jamfile broken for testing. 'import testing' missing."
-			eerror "Report upstream broken file: ${jam}."
+		if [ -f ${jam} ] ; then
+			if grep -s -q ^project "${jam}" ; then
+				if ! grep -s -q "import testing" "${jam}" ; then
+					eerror "Jamfile broken for testing. 'import testing' missing."
+					eerror "Report upstream broken file: ${jam}"
 
-			sed -e "s:project:import testing ;\n\0:" -i "${jam}"
+					sed -e "s:^project:import testing ;\n\0:" -i "${jam}"
+				fi
+			fi
 		fi
 	done
 }
