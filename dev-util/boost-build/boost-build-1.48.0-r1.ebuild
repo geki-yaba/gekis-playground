@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-BOOST_PATCHSET="gentoo-boost-1.47.0-r1.tar.bz2"
+BOOST_PATCHSET="gentoo-boost-build-1.48.0.tar.xz"
 
-inherit boost-headers
+inherit boost-build
 
-RDEPEND=""
 DEPEND=""
+RDEPEND=""
