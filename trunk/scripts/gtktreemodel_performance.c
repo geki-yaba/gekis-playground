@@ -182,7 +182,7 @@ static void fill_store(GtkTreeModel *store, Data *data)
 
 	cm_tree_store_emit_signals(CM_TREE_STORE(store), FALSE);
 
-	for(i = 0, j = 0; i < 1; i++)
+	for(i = 0, j = 0; i < 20; i++)
 	{
 		GtkTreeIter parent;
 
@@ -198,7 +198,7 @@ static void fill_store(GtkTreeModel *store, Data *data)
 			{
 				GtkTreeIter iter;
 
-				cm_tree_store_append(CM_TREE_STORE(store), &iter, NULL);
+				cm_tree_store_append(CM_TREE_STORE(store), &iter, &parent);
 				cm_tree_store_set(CM_TREE_STORE(store), &iter, 0, prev->name, -1);
 				j++;
 			}
