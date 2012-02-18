@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -18,6 +18,7 @@ inherit alternatives base multilib versionator
 EXPORT_FUNCTIONS pkg_pretend src_unpack src_configure src_compile src_install
 
 BOOST_P="boost_$(replace_all_version_separators _)"
+BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
 
 DESCRIPTION="boost.org header libraries for C++"
 HOMEPAGE="http://www.boost.org/"
@@ -57,7 +58,7 @@ boost-headers_pkg_pretend() {
 
 	if [ ${err} ] ; then
 		eerror
-		eerror "Old files from boost.org package (of the Gentoo repository) found."
+		eerror "Files from old dev-libs/boost package found."
 		eerror "Please clean your system following the howto at:"
 		eerror
 		eerror "	http://code.google.com/p/gekis-playground/wiki/Boost"
@@ -76,13 +77,10 @@ boost-headers_src_configure() { :; }
 boost-headers_src_compile() { :; }
 
 boost-headers_src_install() {
-	# dir
 	dir="/usr/include/boost-${SLOT}"
 
-	# make dir
 	dodir "${dir}"
-
-	# copy headers
 	insinto "${dir}"
 	doins -r boost
 }
+
