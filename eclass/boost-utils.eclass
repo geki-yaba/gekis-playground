@@ -37,7 +37,7 @@ boost-utils_get_library_path() {
 		slot="$(boost-utils_get_slot)"
 	fi
 
-	local path="${EPREFIX}/usr/$(get_libdir)/boost-${slot}"
+	local path="${EPREFIX}/usr/$(get_libdir)/boost-${slot/./_}"
 
 	if [ -d "${path}" ] ; then
 		echo -n "${path}"
