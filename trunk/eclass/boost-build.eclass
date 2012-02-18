@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -15,13 +15,13 @@ EAPI="4"
 
 PYTHON_DEPEND="python? *"
 
-inherit flag-o-matic python toolchain-funcs versionator
+inherit base flag-o-matic python toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_compile src_install src_test
 
 BOOST_P="boost_$(replace_all_version_separators _)"
 BOOST_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))"
-BOOST_PATCHDIR="${WORKDIR}/patches"
+PATCHES=( "${BOOST_PATCHDIR:="${WORKDIR}/patches"}" )
 
 DESCRIPTION="A system for large project software construction, which is simple to use and powerful."
 HOMEPAGE="http://www.boost.org/doc/tools/build/index.html"
@@ -46,7 +46,6 @@ boost-build_pkg_pretend() {
 }
 
 boost-build_pkg_setup() {
-	# set jam paths
 	BOOST_JAM_SRC="${S}/engine"
 	BOOST_JAM_TEST="${S}/test/engine"
 
@@ -59,19 +58,15 @@ boost-build_src_unpack() {
 }
 
 boost-build_src_prepare() {
-	if [ "${BOOST_PATCHSET}" ] ; then
-		EPATCH_SUFFIX="diff"
-		EPATCH_FORCE="yes"
-		epatch "${BOOST_PATCHDIR}"
-	fi
+	[ "${BOOST_PATCHSET}" ] && EPATCH_SUFFIX="diff" base_src_prepare
 
 	cd "${BOOST_JAM_SRC}" || die
 
-	# Remove stripping option
+	# remove stripping option
 	sed -e 's|-s\b||' \
 		-i build.jam || die "sed failed"
 
-	# Force regeneration
+	# force regeneration
 	rm -v jambase.c
 
 	cd "${S}"
@@ -86,7 +81,7 @@ boost-build_src_prepare() {
 }
 
 boost-build_src_compile() {
-	# Using boost's generic toolset here, which respects CC and CFLAGS
+	# use generic toolset to respect CC/CFLAGS
 	local toolset=cc
 	[[ ${CHOST} == *-darwin* ]] && toolset=darwin
 
@@ -94,7 +89,7 @@ boost-build_src_compile() {
 
 	cd "${BOOST_JAM_SRC}" || die
 
-	# For slotting
+	# slotting
 	sed -e "s|/usr/share/boost-build|\0-${BOOST_PV}|" \
 		-i Jambase || die "sed failed"
 
@@ -130,3 +125,4 @@ boost-build_src_test() {
 	cd "${BOOST_JAM_TEST}" || die
 	./test.sh || die "tests failed"
 }
+

@@ -1,4 +1,4 @@
-# Copyright 1999-2011 Gentoo Foundation
+# Copyright 1999-2012 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -16,7 +16,7 @@ EAPI="4"
 _boost_python="*:2.6"
 PYTHON_DEPEND="python? ${_boost_python}"
 
-inherit check-reqs eutils flag-o-matic multilib python toolchain-funcs versionator
+inherit base check-reqs flag-o-matic multilib python toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test
 
@@ -26,10 +26,16 @@ BOOST_JAM="bjam-${BOOST_MAJOR}"
 
 BOOST_PV="$(replace_all_version_separators _)"
 BOOST_P="${PN}_${BOOST_PV}"
-BOOST_PATCHDIR="${WORKDIR}/patches"
+PATCHES=( "${BOOST_PATCHDIR:="${WORKDIR}/patches"}" )
 
-SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2
-	http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
+DESCRIPTION="boost.org libraries for C++"
+HOMEPAGE="http://www.boost.org/"
+SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
+[ "${BOOST_PATCHSET}" ] && \
+	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
+
+LICENSE="Boost-1.0"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 
 IUSE="debug doc icu static test +threads tools"
 # add available libraries of boost version 
@@ -80,9 +86,7 @@ boost_pkg_setup() {
 }
 
 boost_src_prepare() {
-	EPATCH_SUFFIX="diff"
-	EPATCH_FORCE="yes"
-	epatch "${BOOST_PATCHDIR}"
+	[ "${BOOST_PATCHSET}" ] && EPATCH_SUFFIX="diff" base_src_prepare
 
 	# boost.random library: /dev/urandom support
 	if use random && [[ -e /dev/urandom ]] ; then
@@ -153,7 +157,7 @@ boost_src_compile() {
 	cmd+=" threading=${threading} ${link_opts} runtime-link=shared ${options}"
 	_boost_execute "${cmd}" || die "build failed for options: ${options}"
 
-	# ... and do the whole thing one more time to get the debug libs
+	# once more to get the debug libs
 	if use debug ; then
 		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
 		_boost_execute "${cmd}" || die "build failed for options: ${options}"
@@ -201,18 +205,18 @@ boost_src_install() {
 		mv "${ED}/usr/share/boostbook" "${ED}/usr/share/boostbook-${BOOST_MAJOR}" || die
 	fi
 
-	# install tests
 	cd "${S}/status" || die
 
+	# install tests
 	if [ -f regress.log ] ; then
 		docinto status
 		dohtml *.html "${S}"/boost.png
 		dodoc regress.log
 	fi
 
-	# install docs
 	cd "${S}"
 
+	# install docs
 	if use doc ; then
 		local docdir="/usr/share/doc/${PF}/html"
 
@@ -250,7 +254,7 @@ boost_src_install() {
 		fi
 	done
 
-	# Create a subdirectory with completely unversioned symlinks
+	# subdirectory with unversioned symlinks
 	local path="/usr/$(get_libdir)/${PN}-${BOOST_MAJOR}"
 
 	dodir ${path}
@@ -267,7 +271,7 @@ boost_src_install() {
 		done
 	fi
 
-	# Move the mpi.so to the right place and make sure it's slotted
+	# move mpi.so to slotted python sitedir
 	if use mpi && use python ; then
 		exeinto "$(python_get_sitedir)/boost_${BOOST_MAJOR}"
 		doexe "${ED}/usr/$(get_libdir)/mpi.so"
@@ -329,7 +333,7 @@ boost_src_test() {
 		cmd="${BOOST_JAM} ${options} --dump-tests"
 		echo ${cmd}; LC_ALL="C" ${cmd} 2>&1 | tee regress.log || die
 
-		# Postprocessing
+		# postprocessing
 		"${S}/tools/regression/build/bin/gcc-$(gcc-version)/gentoorelease/pch-off/process_jam_log" --v2 <regress.log
 
 		[[ -n $? ]] && ewarn "Postprocessing the build log failed"
@@ -338,13 +342,13 @@ boost_src_test() {
 <p>Tests are run on a <a href="http://www.gentoo.org/">Gentoo</a> system.</p>
 __EOF__
 
-		# Generate the build log html summary page
+		# generate the build log html summary page
 		"${S}/tools/regression/build/bin/gcc-$(gcc-version)/gentoorelease/pch-off/compiler_status" \
 			--v2 --comment comment.html "${S}" cs-$(uname).html cs-$(uname)-links.html
 
 		[[ -n $? ]] && ewarn "Generating the build log html summary page failed"
 
-		# And do some cosmetic fixes :)
+		# do some cosmetic fixes :)
 		sed -e 's|http://www.boost.org/boost.png|boost.png|' -i *.html || die
 	else
 		einfo "Enable useflag[test] to run tests!"
