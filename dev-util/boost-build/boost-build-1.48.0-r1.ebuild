@@ -6,5 +6,3 @@ BOOST_PATCHSET="gentoo-boost-build-1.48.0.tar.xz"
 
 inherit boost-build
 
-DEPEND=""
-RDEPEND=""

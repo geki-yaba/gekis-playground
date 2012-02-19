@@ -9,5 +9,3 @@ PATCHES=( "${BOOST_PATCHDIR}/10_boost-exceptions-5731.diff"
 
 inherit boost-headers
 
-RDEPEND=""
-DEPEND=""

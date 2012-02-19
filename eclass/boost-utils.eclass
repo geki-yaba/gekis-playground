@@ -17,7 +17,7 @@ boost-utils_get_include_path() {
 	[ ${#} -ne 1 ] && die "${FUNCNAME}: need boost slot as parameter"
 
 	local slot="${1}"
-	local path="${EPREFIX}/usr/include/boost-${slot}"
+	local path="${EPREFIX}/usr/include/boost-${slot/./_}"
 
 	if [ -d "${path}" ] ; then
 		echo -n "${path}"
@@ -67,3 +67,4 @@ boost-utils_add_library_path() {
 boost-utils_add_paths() {
 	boost-utils_add_library_path
 }
+
