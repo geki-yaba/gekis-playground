@@ -4,5 +4,3 @@
 
 inherit boost-build
 
-DEPEND=""
-RDEPEND=""

@@ -17,17 +17,19 @@ inherit alternatives base multilib versionator
 
 EXPORT_FUNCTIONS pkg_pretend src_unpack src_configure src_compile src_install
 
+SLOT="$(get_version_component_range 1-2)"
+BOOST_MAJOR="$(replace_all_version_separators _ ${SLOT})"
+
 BOOST_P="boost_$(replace_all_version_separators _)"
 BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
 
-DESCRIPTION="boost.org header libraries for C++"
+DESCRIPTION="boost.org c++ header libraries"
 HOMEPAGE="http://www.boost.org/"
 SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 [ "${BOOST_PATCHSET}" ] && \
 	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
-SLOT="$(get_version_component_range 1-2)"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 
 IUSE=""
@@ -40,7 +42,7 @@ S="${WORKDIR}/${BOOST_P}"
 
 # alternatives
 SOURCE="/usr/include/boost"
-ALTERNATIVES="/usr/include/boost-[0-9].[0-9][0-9]/boost"
+ALTERNATIVES="/usr/include/boost-[0-9]_[0-9][0-9]/boost"
 
 boost-headers_pkg_pretend() {
 	local err=
@@ -77,7 +79,7 @@ boost-headers_src_configure() { :; }
 boost-headers_src_compile() { :; }
 
 boost-headers_src_install() {
-	dir="/usr/include/boost-${SLOT}"
+	dir="/usr/include/boost-${BOOST_MAJOR}"
 
 	dodir "${dir}"
 	insinto "${dir}"

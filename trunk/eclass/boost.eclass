@@ -28,7 +28,7 @@ BOOST_PV="$(replace_all_version_separators _)"
 BOOST_P="${PN}_${BOOST_PV}"
 PATCHES=( "${BOOST_PATCHDIR:="${WORKDIR}/patches"}" )
 
-DESCRIPTION="boost.org libraries for C++"
+DESCRIPTION="boost.org c++ libraries"
 HOMEPAGE="http://www.boost.org/"
 SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 [ "${BOOST_PATCHSET}" ] && \
