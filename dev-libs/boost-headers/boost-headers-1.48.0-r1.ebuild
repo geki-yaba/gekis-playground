@@ -4,8 +4,8 @@
 
 BOOST_PATCHSET="gentoo-boost-1.48.0.tar.xz"
 
+inherit boost-headers
+
 PATCHES=( "${BOOST_PATCHDIR}/10_boost-exceptions-5731.diff"
 	"${BOOST_PATCHDIR}/11_boost-BOOST_FOREACH-6131.diff" )
-
-inherit boost-headers
 
