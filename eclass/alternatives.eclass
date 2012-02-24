@@ -89,6 +89,8 @@ alternatives_makesym() {
 
 	for alt in ${ALTERNATIVES}; do
 		if [ -e "${pref}${alt}" ]; then
+			#remove old symlink
+			rm ${pref}${SYMLINK}
 			#are files in same directory?
 			if [ "${alt%/*}" = "${SYMLINK%/*}" ]
 			then
@@ -123,7 +125,7 @@ alternatives_makesym() {
 # The alternatives pkg_postinst, this function will be exported
 alternatives_pkg_postinst() {
 	if [ -n "${ALTERNATIVES}" -a -n "${SOURCE}" ]; then
-		alternatives_makesym ${SOURCE} ${ALTERNATIVES}
+		alternatives_auto_makesym "${SOURCE}" "${ALTERNATIVES}"
 	fi
 }
 
@@ -132,7 +134,7 @@ alternatives_pkg_postinst() {
 # The alternatives pkg_postrm, this function will be exported
 alternatives_pkg_postrm() {
 	if [ -n "${ALTERNATIVES}" -a -n "${SOURCE}" ]; then
-		alternatives_makesym ${SOURCE} ${ALTERNATIVES}
+		alternatives_auto_makesym "${SOURCE}" "${ALTERNATIVES}"
 	fi
 }
 
