@@ -8,7 +8,7 @@ inherit autotools-utils
 
 DESCRIPTION="GStreamer VA-API plugins"
 HOMEPAGE="http://gitorious.org/vaapi/gstreamer-vaapi"
-SRC_URI="http://gitorious.org/vaapi/gstreamer-vaapi/archive-tarball/0.3.1 -> ${P}.tar.gz"
+SRC_URI="http://gitorious.org/vaapi/gstreamer-vaapi/archive-tarball/${PV} -> ${P}.tar.gz"
 
 LICENSE="LGPL-2.1"
 SLOT="0"

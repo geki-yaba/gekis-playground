@@ -56,10 +56,9 @@ alternatives_auto_makesym() {
 	local SYMLINK REGEX ALT myregex
 	SYMLINK=$1
 	REGEX=$2
-	if [ "${REGEX:0:1}" != "/" ]
-	then
-		#not an absolute path:
-		#inherit the root directory of our main link path for our regex search
+	if [ "${REGEX:0:1}" != "/" ]; then
+		# not an absolute path:
+		# inherit the root directory of our main link path for our regex search
 		myregex="${SYMLINK%/*}/${REGEX}"
 	else
 		myregex=${REGEX}
@@ -67,56 +66,57 @@ alternatives_auto_makesym() {
 
 	# sort a space delimited string by converting it to a multiline list
 	# and then run sort -r over it.
-	# make sure we use ${ROOT} because otherwise stage-building will break
-	ALT="$(for i in $(echo ${ROOT}${myregex}); do echo ${i#${ROOT}}; done | sort -r)"
+	# make sure we use ${EPREFIX} because otherwise stage-building will break
+	ALT="$(for i in $(echo ${EPREFIX}${myregex}); do echo ${i#${EPREFIX}}; done | sort -r)"
 	alternatives_makesym ${SYMLINK} ${ALT}
 }
 
 alternatives_makesym() {
 	local ALTERNATIVES=""
 	local SYMLINK=""
-	local alt pref
+	local alt
 
+	local pref="$(sed 's:/$::' <<< "${EPREFIX}")"
 	# usage: alternatives_makesym <resulting symlink> [alternative targets..]
 	SYMLINK=$1
-	# this trick removes the trailing / from ${ROOT}
-	pref=$(echo ${ROOT} | sed 's:/$::')
 	shift
 	ALTERNATIVES=$@
 
+	# fail if source exists and no symlink
+	if [ -e "${pref}${SYMLINK}" -a ! -L "${pref}${SYMLINK}" ]; then
+		ewarn "Symlink ${pref}${SYMLINK} exists already and is no symlink!"
 	# step through given alternatives from first to last
 	# and if one exists, link it and finish.
-
-	for alt in ${ALTERNATIVES}; do
-		if [ -e "${pref}${alt}" ]; then
-			#remove old symlink
-			rm ${pref}${SYMLINK}
-			#are files in same directory?
-			if [ "${alt%/*}" = "${SYMLINK%/*}" ]
-			then
-				#yes; strip leading dirname from alt to create relative symlink
-				einfo "Linking ${alt} to ${pref}${SYMLINK} (relative)"
-				ln -sf ${alt##*/} ${pref}${SYMLINK}
-			else
-				#no; keep absolute path
-				einfo "Linking ${alt} to ${pref}${SYMLINK} (absolute)"
-				ln -sf ${pref}${alt} ${pref}${SYMLINK}
+	else
+		for alt in ${ALTERNATIVES}; do
+			if [ -e "${pref}${alt}" ]; then
+				# remove old symlink
+				rm ${pref}${SYMLINK}
+				# are files in same directory?
+				if [ "${alt%/*}" = "${SYMLINK%/*}" ]
+				then
+					# yes; strip leading dirname from alt to create relative symlink
+					einfo "Linking ${alt} to ${pref}${SYMLINK} (relative)"
+					ln -s ${alt##*/} ${pref}${SYMLINK}
+				else
+					# no; keep absolute path
+					einfo "Linking ${alt} to ${pref}${SYMLINK} (absolute)"
+					ln -s ${pref}${alt} ${pref}${SYMLINK}
+				fi
+				break
 			fi
-			break
-		fi
-	done
+		done
+	fi
 
 	# report any errors
 	if [ ! -L ${pref}${SYMLINK} ]; then
 		ewarn "Unable to establish ${pref}${SYMLINK} symlink"
-	else
-		# we need to check for either the target being in relative path form
-		# or absolute path form
-		if [ ! -e "`dirname ${pref}${SYMLINK}`/`readlink ${pref}${SYMLINK}`" -a \
-			 ! -e "`readlink ${pref}${SYMLINK}`" ]; then
-			ewarn "Removing dead symlink ${pref}${SYMLINK}"
-			rm -f ${pref}${SYMLINK}
-		fi
+	# we need to check for either the target being in relative path form
+	# or absolute path form
+	elif [ ! -e "$(dirname ${pref}${SYMLINK})/$(readlink ${pref}${SYMLINK})" -a \
+		   ! -e "$(readlink ${pref}${SYMLINK})" ]; then
+		ewarn "Removing dead symlink ${pref}${SYMLINK}"
+		rm -f ${pref}${SYMLINK}
 	fi
 }
 
