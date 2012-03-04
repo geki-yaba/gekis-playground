@@ -2,11 +2,12 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 PYTHON_DEPEND="python? 2:2.6"
 PYTHON_USE_WITH="threads"
+PYTHON_USE_WITH_OPT="python"
 
-inherit autotools boost-utils eutils flag-o-matic versionator python
+inherit autotools boost-utils eutils flag-o-matic multilib python versionator
 
 MY_P=${P/rb_/}
 MY_P=${MY_P/torrent/torrent-rasterbar}
@@ -31,7 +32,10 @@ DEPEND="dev-libs/boost[filesystem,python?,thread]
 RDEPEND="${DEPEND}"
 
 pkg_setup() {
-	use python && python_set_active_version 2
+	if use python; then
+		python_set_active_version 2
+		python_pkg_setup
+	fi
 }
 
 src_prepare() {
@@ -66,18 +70,15 @@ src_configure() {
 		$(use_enable ssl encryption) \
 		$(use_enable static-libs static) \
 		--with-zlib=system \
-		${myconf} \
-		|| die
+		${myconf}
 }
 
 src_install() {
-	emake DESTDIR="${D}" install || die 'emake install failed'
+	emake DESTDIR="${ED}" install
 
-	use static-libs || find "${D}" -name '*.la' -exec rm -f {} +
+	use static-libs || find "${ED}" -name '*.la' -delete
 
-	dodoc ChangeLog AUTHORS NEWS README || die 'dodoc failed'
+	dodoc ChangeLog AUTHORS NEWS README
 
-	if use doc ; then
-		dohtml docs/* || die "Could not install HTML documentation"
-	fi
+	use doc && dohtml docs/*
 }

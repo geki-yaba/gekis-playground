@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 
-inherit autotools base flag-o-matic
+inherit autotools base flag-o-matic multilib
 
 DESCRIPTION="Jemalloc is a general-purpose scalable concurrent allocator"
 HOMEPAGE="http://www.canonware.com/jemalloc/"
@@ -14,7 +14,7 @@ LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 
-IUSE="debug stats"
+IUSE="debug static-libs stats"
 
 DEPEND=""
 RDEPEND=""
@@ -39,5 +39,13 @@ src_configure() {
 
 src_install() {
 	# install
-	make DESTDIR="${D}" install
+	make DESTDIR="${ED}" install
+
+	# doc
+	dodoc ChangeLog README
+	dohtml doc/jemalloc.html
+	rm -rf "${ED}"/usr/share/doc/jemalloc
+
+	# static
+	use static-libs || rm -v "${ED}"/usr/$(get_libdir)/*.a
 }

@@ -7,7 +7,7 @@ EAPI="2"
 inherit flag-o-matic qt4-r2 versionator
 
 MY_P="${P/_/}"
-DESCRIPTION="BitTorrent client in C++ and Qt"
+DESCRIPTION="Qt BitTorrent client"
 HOMEPAGE="http://www.qbittorrent.org/"
 SRC_URI="mirror://sourceforge/${PN}/${MY_P}.tar.gz"
 
