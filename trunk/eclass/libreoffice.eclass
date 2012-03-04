@@ -21,7 +21,7 @@ PYTHON_DEPEND="python? ${_libreoffice_python}"
 KDE_REQUIRED="never"
 CMAKE_REQUIRED="never"
 
-inherit autotools bash-completion-r1 boost-utils check-reqs eutils flag-o-matic \
+inherit autotools base bash-completion-r1 boost-utils check-reqs flag-o-matic \
 	java-pkg-opt-2 kde4-base multilib pax-utils python versionator nsplugins git-2
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install pkg_preinst pkg_postinst pkg_postrm
@@ -35,8 +35,8 @@ LICENSE="LGPL-3"
 RESTRICT="binchecks mirror"
 
 IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk gtk3
-+jemalloc junit kde languagetool ldap mysql nsplugin odbc odk opengl pdfimport
-postgres +python reportbuilder templates test webdav wiki xmlsec"
+junit kde languagetool ldap mysql nsplugin odbc odk opengl pdfimport postgres
++python reportbuilder templates test webdav wiki xmlsec"
 
 # config
 MY_PV="$(get_version_component_range 1-2)"
@@ -77,6 +77,8 @@ MODULES="core"
 #	SRC_URI+=" ${LIBRE_URI}/${PN}-${module}.tar.bz2"
 #done
 
+PATCHES=( "${FILESDIR}" )
+
 CDEPEND="
 	dbus? ( dev-libs/dbus-glib )
 	eds? ( gnome-extra/evolution-data-server )
@@ -88,7 +90,6 @@ CDEPEND="
 	gtk3? ( x11-libs/gtk+:3 )
 	java? ( dev-java/bsh
 		dev-java/lucene:2.9[analyzers] )
-	jemalloc? ( dev-libs/jemalloc )
 	kde? ( x11-libs/qt-core
 		x11-libs/qt-gui
 		kde-base/kdelibs
@@ -118,6 +119,7 @@ CDEPEND="
 	  dev-libs/expat
 	>=dev-libs/hyphen-2.7.1
 	  dev-libs/icu
+	  dev-libs/jemalloc
 	  dev-libs/libxml2
 	  dev-libs/libxslt
 	  dev-libs/openssl
@@ -141,7 +143,7 @@ CDEPEND="
 	  x11-libs/startup-notification
 	  virtual/jpeg"
 
-#PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
+PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
 
 RDEPEND="${CDEPEND}
 	java? ( >=virtual/jre-${_libreoffice_java} )"
@@ -206,7 +208,7 @@ libreoffice_pkg_pretend() {
 		if [[ ${pgslot//.} < 90 ]]; then
 			eerror "PostgreSQL slot must be set to 9.0 or higher."
 			eerror "	postgresql-config set 9.0"
-			_libreoffice_die "PostgreSQL slot is not set to 9.0 or higher."
+			die "PostgreSQL slot is not set to 9.0 or higher."
 		fi
 	fi
 
@@ -273,12 +275,14 @@ libreoffice_src_unpack() {
 
 libreoffice_src_prepare() {
 	# specifics not for upstream
-	#EPATCH_SUFFIX="diff"
-	#EPATCH_FORCE="yes"
-	#epatch "${FILESDIR}"
+	EPATCH_SUFFIX="diff" base_src_prepare
 
-	# allow user to apply any additional patches without modifying ebuild
-	epatch_user
+	# we all love python
+	sed -e "s:%eprefix%:${EPREFIX}:g" \
+		-e "s:%libdir%:$(get_libdir):g" \
+		-i pyuno/source/module/uno.py \
+		-i scripting/source/pyprov/officehelper.py \
+		|| die "system python adaption failed!"
 
 	# create distro config
 	local config="${S}/distro-configs/GentooUnstable.conf"
@@ -311,15 +315,13 @@ libreoffice_src_prepare() {
 	echo "$(use_enable pdfimport ext-pdfimport)" >> ${config}
 	echo "$(use_enable reportbuilder ext-report-builder)" >> ${config}
 	echo "$(use_enable wiki ext-wiki-publisher)" >> ${config}
-	# FIXME: enable-ext
-	echo "$(use_with languagetool)" >> ${config}
+	echo "$(use_enable languagetool ext-languagetool)" >> ${config}
 
 	# internal
 	echo "$(use_enable dbus)" >> ${config}
 	echo "$(use_enable debug symbols)" >> ${config}
 	echo "$(use_enable test linkoo)" >> ${config}
 	echo "$(use_enable xmlsec)" >> ${config}
-	use jemalloc && echo "--with-alloc=jemalloc" >> ${config}
 
 	# system
 	echo "$(use_enable eds evolution2)" >> ${config}
@@ -333,9 +335,11 @@ libreoffice_src_prepare() {
 	echo "$(use_enable webdav neon)" >> ${config}
 	echo "$(use_with webdav system-neon)" >> ${config}
 
-	# mysql
+	# sql
 	echo "$(use_with mysql system-mysql)" >> ${config}
 	echo "$(use_with mysql system-mysql-cppconn)" >> ${config}
+	echo "$(use_enable postgres postgresql-sdbc)" >> ${config}
+	echo "$(use_with postgres system-postgresql)" >> ${config}
 
 	# gnome
 	echo "$(use_enable gnome lockdown)" >> ${config}
@@ -464,6 +468,7 @@ libreoffice_pkg_postinst() {
 	# hardened
 	_libreoffice_pax_fix
 
+	elog
 	elog " To start LibreOffice, run:"
 	elog
 	elog " $ libreoffice"

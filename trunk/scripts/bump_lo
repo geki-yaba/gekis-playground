@@ -83,7 +83,7 @@ EOH
 fetch_list ()
 {
 	# from "download_external_sources.sh"
-	wget http://cgit.freedesktop.org/libreoffice/bootstrap/plain/${LIST}?id=${TAG} -O ${LIST}
+	wget http://cgit.freedesktop.org/libreoffice/core/plain/${LIST}?id=${TAG} -O ${LIST}
 
 	# remove foo
 	sed -e /^$/d -e /^@/d -e /README/d -e /LICENSE/d -e /Python/d \

@@ -28,7 +28,7 @@ si sk sl sq sv tg tr ug uk vi zh_CN zh_TW"
 
 MY_PN="${PN/-l10n}"
 MY_PVR="rc1"
-BASE_URI="http://download.documentfoundation.org/${MY_PN}/testing/${PV}-${MY_PVR}"
+BASE_URI="http://download.documentfoundation.org/${MY_PN}/testing/${PV}"
 RPM_LANG_URI="${BASE_URI}/rpm/x86/LibO_${PV}${MY_PVR}_Linux_x86_langpack-rpm"
 RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"
 
@@ -53,7 +53,7 @@ for language in ${MYSPELLS}; do
 	SDEPEND+=" linguas_${language}? ( app-dicts/myspell-${language} )"
 done
 
-DEPEND="=app-office/libreoffice-${PV}_pre"
+DEPEND="=app-office/libreoffice-${PV}*"
 PDEPEND="${SDEPEND}"
 
 S="${WORKDIR}"
