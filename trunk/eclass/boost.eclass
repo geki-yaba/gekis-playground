@@ -15,6 +15,8 @@ EAPI="4"
 
 _boost_python="*:2.6"
 PYTHON_DEPEND="python? ${_boost_python}"
+SUPPORT_PYTHON_ABIS="1"
+RESTRICT_PYTHON_ABIS="*-jython *-pypy-*"
 
 inherit base check-reqs flag-o-matic multilib python toolchain-funcs versionator
 
@@ -105,47 +107,22 @@ boost_src_prepare() {
 }
 
 boost_src_configure() {
-	local compiler="gcc"
-	local compilerVersion="$(gcc-version)"
-	local compilerExecutable="$(tc-getCXX)"
-
-	if [[ ${CHOST} == *-darwin* ]] ; then
-		compiler="darwin"
-		compilerVersion=$(gcc-fullversion)
-
-		# we need to add the prefix, and in two cases this exceeds, so prepare
-		# for the largest possible space allocation
-		append-ldflags -Wl,-headerpad_max_install_names
-	fi
-
 	# -fno-strict-aliasing: prevent invalid code
 	append-flags "-fno-strict-aliasing"
+
+	# we need to add the prefix, and in two cases this exceeds, so prepare
+	# for the largest possible space allocation
+	[[ ${CHOST} == *-darwin* ]] && append-ldflags -Wl,-headerpad_max_install_names
 
 	# bug 298489
 	if use ppc || use ppc64 ; then
 		[[ $(gcc-version) > 4.3 ]] && append-flags -mno-altivec
 	fi
 
-	local jam_options=""
-	use mpi && jam_options+="using mpi ;"
-	use python && jam_options+="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
+	local cmd="_boost_config"
+	_boost_execute "${cmd} default" || die "configuration file not written"
 
-	einfo "Writing new user-config.jam"
-	cat > "${S}/user-config.jam" << __EOF__
-
-variant gentoorelease : release : <optimization>none <debug-symbols>none ;
-variant gentoodebug : debug : <optimization>none ;
-
-using ${compiler} : ${compilerVersion} : ${compilerExecutable} : <cxxflags>"${CXXFLAGS}" <linkflags>"${LDFLAGS}" ;
-
-$(sed -e "s:;:;\n:g" <<< ${jam_options})
-__EOF__
-
-	# Maintainer information:
-	# The debug-symbols=none and optimization=none are not official upstream
-	# flags but a Gentoo specific patch to make sure that all our CXXFLAGS
-	# and LDFLAGS are being respected. Using optimization=off would for example
-	# add "-O0" and override "-O2" set by the user.
+	use python && _boost_execute "python_execute_function ${cmd}"
 }
 
 boost_src_compile() {
@@ -153,20 +130,29 @@ boost_src_compile() {
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
-	local cmd="${BOOST_JAM} ${jobs} -q -d+2 gentoorelease"
+	local cmd="${BOOST_JAM} ${jobs} -q -d+1 gentoorelease"
 	cmd+=" threading=${threading} ${link_opts} runtime-link=shared ${options}"
 	_boost_execute "${cmd}" || die "build failed for options: ${options}"
 
-	# once more to get the debug libs
 	if use debug ; then
 		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
 		_boost_execute "${cmd}" || die "build failed for options: ${options}"
 	fi
 
+	# feature: python abi
+	if use python ; then
+		# FIXME: global?!
+		_boost_python_dir=""
+		_boost_library_mpi=""
+
+		cmd="_boost_python_compile"
+		_boost_execute "python_execute_function ${cmd}"
+	fi
+
 	if use tools ; then
 		cd "${S}/tools"
 
-		cmd="${BOOST_JAM} ${jobs} -q -d+2 gentoorelease ${options}"
+		cmd="${BOOST_JAM} ${jobs} -q -d+1 gentoorelease ${options}"
 		_boost_execute "${cmd}" || die "build of tools failed"
 	fi
 }
@@ -177,7 +163,7 @@ boost_src_install() {
 	local library_targets="$(_boost_library_targets)"
 	local threading="$(_boost_threading)"
 
-	local cmd="${BOOST_JAM} -q -d+2 gentoorelease threading=${threading}"
+	local cmd="${BOOST_JAM} -q -d+1 gentoorelease threading=${threading}"
 	cmd+=" ${link_opts} runtime-link=shared --includedir=${ED}/usr/include"
 	cmd+=" --libdir=${ED}/usr/$(get_libdir) ${options} install"
 	_boost_execute "${cmd}" || die "install failed for options: ${options}"
@@ -185,6 +171,12 @@ boost_src_install() {
 	if use debug ; then
 		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
 		_boost_execute "${cmd}" || die "install failed for options: ${options}"
+	fi
+
+	# feature: python abi
+	if use python ; then
+		cmd="_boost_python_install"
+		_boost_execute "python_execute_function ${cmd}"
 	fi
 
 	# install tools
@@ -271,17 +263,6 @@ boost_src_install() {
 		done
 	fi
 
-	# move mpi.so to slotted python sitedir
-	if use mpi && use python ; then
-		exeinto "$(python_get_sitedir)/boost_${BOOST_MAJOR}"
-		doexe "${ED}/usr/$(get_libdir)/mpi.so"
-
-		touch "${ED}$(python_get_sitedir)/boost_${BOOST_MAJOR}/__init__.py" || die
-		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
-
-		python_need_rebuild
-	fi
-
 	# boost's build system truely sucks for not having a destdir.  Because of
 	# this we are forced to build with a prefix that includes the
 	# DESTROOT, dynamic libraries on Darwin end messed up, referencing the
@@ -316,11 +297,12 @@ boost_src_install() {
 }
 
 boost_src_test() {
+	# FIXME: python tests disabled by design
 	if use test ; then
 		local options="$(_boost_options)"
 
 		cd "${S}/tools/regression/build" || die
-		local cmd="${BOOST_JAM} -q -d+2 gentoorelease ${options} process_jam_log compiler_status"
+		local cmd="${BOOST_JAM} -q -d+1 gentoorelease ${options} process_jam_log compiler_status"
 		_boost_execute "${cmd}" || die "build of regression test helpers failed"
 
 		cd "${S}/status" || die
@@ -355,6 +337,136 @@ __EOF__
 	fi
 }
 
+_boost_config() {
+	[[ "${#}" -gt "1" ]] && die "${FUNCNAME}: too many parameters"
+
+	local python_abi="${1}"
+
+	local compiler="gcc"
+	local compilerVersion="$(gcc-version)"
+	local compilerExecutable="$(tc-getCXX)"
+
+	if [[ ${CHOST} == *-darwin* ]] ; then
+		compiler="darwin"
+		compilerVersion=$(gcc-fullversion)
+	fi
+
+	local jam_options=""
+	use mpi && jam_options+="using mpi ;"
+	[[ "${python_abi}" != "default" ]] && jam_options+="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
+
+	local config="user"
+	[[ "${python_abi}" != "default" ]] && config="${PYTHON_ABI}"
+
+	einfo "Writing new Jamfile: ${config}-config.jam"
+	cat > "${S}/${config}-config.jam" << __EOF__
+
+variant gentoorelease : release : <optimization>none <debug-symbols>none ;
+variant gentoodebug : debug : <optimization>none ;
+
+using ${compiler} : ${compilerVersion} : ${compilerExecutable} : <cxxflags>"${CXXFLAGS}" <linkflags>"${LDFLAGS}" ;
+
+$(sed -e "s:;:;\n:g" <<< ${jam_options})
+__EOF__
+
+	# Maintainer information:
+	# The debug-symbols=none and optimization=none are not official upstream
+	# flags but a Gentoo specific patch to make sure that all our CXXFLAGS
+	# and LDFLAGS are being respected. Using optimization=off would for example
+	# add "-O0" and override "-O2" set by the user.
+}
+
+_boost_python_compile() {
+	local options="$(_boost_basic_options ${PYTHON_ABI})"
+	local link_opts="$(_boost_link_options)"
+	local threading="$(_boost_threading)"
+
+	# feature: python abi
+	options+=" --with-python --python-buildid=${PYTHON_ABI}"
+	use mpi && options+=" --with-mpi"
+
+	local cmd="${BOOST_JAM} ${jobs} -q -d+1 gentoorelease"
+	cmd+=" threading=${threading} ${link_opts} runtime-link=shared ${options}"
+	_boost_execute "${cmd}" || die "build failed for options: ${options}"
+
+	if use debug ; then
+		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
+		_boost_execute "${cmd}" || die "build failed for options: ${options}"
+	fi
+
+	local python_dir="$(find bin.v2/libs -name python | sort)"
+
+	if [ -z "${_boost_python_dir}" ] ; then
+		_boost_python_dir="${python_dir}"
+	elif [[ "${python_dir}" != "${_boost_python_dir}" ]] ; then
+		die "python paths changed"
+	fi
+
+	for directory in ${_boost_python_dir} ; do
+		_boost_execute "mv ${directory} ${directory}-${PYTHON_ABI}" \
+			|| die "move '${directory}' -> '${directory}-${PYTHON_ABI}' failed"
+	done
+
+	if use mpi ; then
+		local library_mpi="$(find bin.v2/libs/mpi/build/*/gentoorelease -type f -name mpi.so)"
+
+		if [ -z "${_boost_library_mpi}" ] ; then
+			local count="$(echo "${library_mpi}" | wc -l)"
+			[[ "${count}" -ne 1 ]] && die "multiple mpi.so files found"
+
+			_boost_library_mpi="${library_mpi}"
+		elif [[ "${library_mpi}" != "${_boost_library_mpi}" ]] ; then
+			die "python/mpi library path changed"
+		fi
+
+		_boost_execute "mv stage/lib/mpi.so stage/lib/mpi.so-${PYTHON_ABI}" \
+			|| die "move 'stage/lib/mpi.so' -> 'stage/lib/mpi.so-${PYTHON_ABI}' failed"
+	fi
+}
+
+_boost_python_install() {
+	for directory in ${_boost_python_dir} ; do
+		_boost_execute "mv ${directory}-${PYTHON_ABI} ${directory}" \
+			|| die "move '${directory}-${PYTHON_ABI}' -> '${directory}' failed"
+	done
+
+	if use mpi ; then
+		_boost_execute "mv stage/lib/mpi.so-${PYTHON_ABI} stage/lib/mpi.so" \
+			|| die "move 'stage/lib/mpi.so-${PYTHON_ABI}' -> 'stage/lib/mpi.so' failed"
+		_boost_execute "mv stage/lib/mpi.so-${PYTHON_ABI} ${_boost_library_mpi}" \
+			|| die "move 'stage/lib/mpi.so-${PYTHON_ABI}' -> '${_boost_library_mpi}' failed"
+	fi
+
+	local options="$(_boost_basic_options ${PYTHON_ABI})"
+	local link_opts="$(_boost_link_options)"
+	local threading="$(_boost_threading)"
+
+	# feature: python abi
+	options+=" --with-python --python-buildid=${PYTHON_ABI}"
+	use mpi && options+=" --with-mpi"
+
+	local cmd="${BOOST_JAM} -q -d+1 gentoorelease threading=${threading}"
+	cmd+=" ${link_opts} runtime-link=shared --includedir=${ED}/usr/include"
+	cmd+=" --libdir=${ED}/usr/$(get_libdir) ${options} install"
+	_boost_execute "${cmd}" || die "install failed for options: ${options}"
+
+	if use debug ; then
+		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
+		_boost_execute "${cmd}" || die "install failed for options: ${options}"
+	fi
+
+	rm -rf ${_boost_python_dir} || die "clean python paths"
+
+	# move mpi.so to python sitedir
+	if use mpi ; then
+		exeinto "$(python_get_sitedir)/boost_${BOOST_MAJOR}"
+		doexe "${ED}/usr/$(get_libdir)/mpi.so"
+		doexe "${S}"/libs/mpi/build/__init__.py
+
+		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
+	fi
+}
+
 _boost_execute() {
 	if [ -n "${@}" ] ; then
 		# pretty print
@@ -367,9 +479,13 @@ _boost_execute() {
 	fi
 }
 
-_boost_options() {
+_boost_basic_options() {
+	[[ "${#}" -gt "1" ]] && die "${FUNCNAME}: too many parameters"
+
+	local config="${1:-"user"}"
+
 	local options=""
-	options+=" pch=off --user-config=${S}/user-config.jam --prefix=${ED}/usr"
+	options+=" pch=off --user-config=${S}/${config}-config.jam --prefix=${ED}/usr"
 	options+=" --boost-build=/usr/share/boost-build-${BOOST_MAJOR} --layout=versioned"
 
 	# https://svn.boost.org/trac/boost/attachment/ticket/2597/add-disable-long-double.patch
@@ -377,7 +493,14 @@ _boost_options() {
 		options+=" --disable-long-double"
 	fi
 
-	for library in ${BOOST_LIBRARIES} ; do
+	echo -n ${options}
+}
+
+_boost_options() {
+	local options="$(_boost_basic_options)"
+
+	# feature: python abi
+	for library in ${BOOST_LIBRARIES/python} ; do
 		use ${library} && options+=" --with-${library}"
 	done
 
