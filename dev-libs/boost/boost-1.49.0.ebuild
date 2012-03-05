@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-BOOST_LIBRARIES="date_time filesystem graph graph_parallel iostreams math mpi
-program_options python random regex serialization signals system test thread
-wave"
+BOOST_LIBRARIES="chrono date_time filesystem graph graph_parallel iostreams
+locale math mpi program_options python random regex serialization signals system
+test thread timer wave"
 
 BOOST_PATCHSET="gentoo-boost-1.49.0.tar.xz"
 
