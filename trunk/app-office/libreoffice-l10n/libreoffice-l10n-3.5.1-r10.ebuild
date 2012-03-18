@@ -21,14 +21,14 @@ LANGUAGES="af ar as ast be bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el
 en en_GB en_ZA eo es et eu fa fi fr ga gl gu he hi hr hu id is it ja ka kk km
 kn kok ko ks ku lo lt lv mai mk ml mn mni mr my nb ne nl nn nr nso oc om or
 pa_IN pl pt pt_BR ro ru rw sat sd sh si sk sl sq sr ss st sv sw_TZ ta te tg
-th tn tr ts ug uk uz ve vi xh zh_CN zh_TW zu"
+th tn tr ts tt ug uk uz ve vi xh zh_CN zh_TW zu"
 LANGUAGES_HELP="bg bn bo bs ca ca_XV cs da de dz el en-US en-GB en-ZA eo es et
 eu fi fr gl gu he hi hr hu id is it ja ka km ko mk nb ne nl nn om pl pt pt_BR ru
 si sk sl sq sv tg tr ug uk vi zh_CN zh_TW"
 
 MY_PN="${PN/-l10n}"
-MY_PVR="rc1"
-BASE_URI="http://download.documentfoundation.org/${MY_PN}/testing/${PV}"
+MY_PVR=""
+BASE_URI="http://download.documentfoundation.org/${MY_PN}/stable/${PV}"
 RPM_LANG_URI="${BASE_URI}/rpm/x86/LibO_${PV}${MY_PVR}_Linux_x86_langpack-rpm"
 RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"
 
@@ -67,7 +67,7 @@ src_unpack() {
 
 	local lang_path help_path
 	for language in ${LINGUAS//_/-}; do
-		lang_path="LibO_${PV}${MY_PVR}_Linux_x86_langpack-rpm_${language}/RPMS/"
+		lang_path="LibO_${PV}rc2_Linux_x86_langpack-rpm_${language}/RPMS/"
 		help_path="${lang_path/langpack/helppack}"
 
 		if [[ ${language} != en ]]; then
