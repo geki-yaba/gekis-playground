@@ -35,8 +35,8 @@ LICENSE="LGPL-3"
 RESTRICT="binchecks mirror"
 
 IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk gtk3
-junit kde languagetool ldap mysql nsplugin odbc odk opengl pdfimport postgres
-+python reportbuilder templates test webdav wiki xmlsec"
+junit kde languagetool ldap mysql nlpsolver nsplugin odbc odk opengl pdfimport
+postgres +python reportbuilder templates test webdav wiki xmlsec"
 
 # config
 MY_PV="$(get_version_component_range 1-2)"
@@ -56,7 +56,7 @@ BRAND_URI="http://dev.gentooexperimental.org/~scarabeus"
 # branding
 BRAND_SRC="${PN}-branding-gentoo-0.3.tar.xz"
 
-# available templates
+# templates
 TDEPEND=""
 TDEPEND+=" linguas_de? ( ${EXT_URI}/53ca5e56ccd4cab3693ad32c6bd13343-Sun-ODF-Template-Pack-de_1.0.0.oxt )"
 TDEPEND+=" linguas_en? ( ${EXT_URI}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
@@ -70,13 +70,14 @@ TDEPEND+=" linguas_it? ( ${EXT_URI}/b33775feda3bcf823cad7ac361fd49a6-Sun-ODF-Tem
 SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )
 	templates? ( ${TDEPEND} )"
 
-# libreoffice modules
-MODULES="core"
+# modules
+MODULES="core help"
 
-#for module in ${MODULES}; do
-#	SRC_URI+=" ${LIBRE_URI}/${PN}-${module}.tar.bz2"
-#done
-
+if [[ ${PV} != *_pre ]]; then
+	for module in ${MODULES}; do
+		SRC_URI+=" ${LIBRE_URI}/${PN}-${module}.tar.xz"
+	done
+fi
 PATCHES=( "${FILESDIR}" )
 
 CDEPEND="
@@ -231,16 +232,6 @@ libreoffice_pkg_setup() {
 }
 
 libreoffice_src_unpack() {
-	# unpack modules
-#	for module in ${MODULES}; do
-#		unpack "${PN}-${module}.tar.bz2"
-#	done
-
-	if use branding; then
-		cd "${WORKDIR}"
-		unpack "${BRAND_SRC}"
-	fi
-
 	if [[ ${PV} == *_pre ]]; then
 		local root="git://anongit.freedesktop.org/${PN}"
 		EGIT_BRANCH="${EGIT_BRANCH:-${PN}-$(replace_all_version_separators - ${MY_PV})}"
@@ -250,8 +241,20 @@ libreoffice_src_unpack() {
 		for module in ${MODULES}; do
 			EGIT_PROJECT="${PN}/${module}"
 			EGIT_REPO_URI="${root}/${module}"
+
+			[[ ${module} != core ]] && EGIT_SOURCEDIR="${WORKDIR}/${module}"
 			git-2_src_unpack
 		done
+	else
+		# unpack modules
+		for module in ${MODULES}; do
+			unpack "${PN}-${module}.tar.xz"
+		done
+	fi
+
+	if use branding; then
+		cd "${WORKDIR}"
+		unpack "${BRAND_SRC}"
 	fi
 
 	# copy extension templates; o what fun ...
@@ -311,11 +314,12 @@ libreoffice_src_prepare() {
 	echo "$(use_with templates sun-templates)" >> ${config}
 
 	# extensions
+	echo "$(use_enable languagetool ext-languagetool)" >> ${config}
 	echo "$(use_enable mysql ext-mysql-connector)" >> ${config}
+	echo "$(use_enable nlpsolver ext-nlpsolver)" >> ${config}
 	echo "$(use_enable pdfimport ext-pdfimport)" >> ${config}
 	echo "$(use_enable reportbuilder ext-report-builder)" >> ${config}
 	echo "$(use_enable wiki ext-wiki-publisher)" >> ${config}
-	echo "$(use_enable languagetool ext-languagetool)" >> ${config}
 
 	# internal
 	echo "$(use_enable dbus)" >> ${config}
@@ -427,6 +431,21 @@ libreoffice_src_configure() {
 }
 
 libreoffice_src_compile() {
+	# hack for offlinehelp, this needs fixing upstream at some point
+	# it is broken because we send --without-help
+	# https://bugs.freedesktop.org/show_bug.cgi?id=46506
+	(
+		grep -v ^WORKDIR "${S}/Env.Host.sh" > "${S}/My.Host.sh"
+		source "${S}/My.Host.sh"
+
+		local path="${SOLARVER}/${INPATH}/res/img"
+		mkdir -p "${path}"
+
+		perl "${WORKDIR}/help/helpcontent2/helpers/create_ilst.pl" \
+			-dir=default_images/res/helpimg \
+			> "${path}/helpimg.ilst"
+	)
+
 	make build || die "make failed"
 }
 
@@ -454,6 +473,12 @@ libreoffice_src_install() {
 
 	use nsplugin && inst_plugin \
 		/usr/$(get_libdir)/${PN}/program/libnpsoplugin.so
+
+	# hack for offlinehelp, this needs fixing upstream at some point
+	# it is broken because we send --without-help
+	# https://bugs.freedesktop.org/show_bug.cgi?id=46506
+	insinto /usr/$(get_libdir)/libreoffice/help
+	doins xmlhelp/util/*.xsl
 }
 
 libreoffice_pkg_preinst() {
