@@ -2,14 +2,14 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 
 inherit flag-o-matic qt4-r2 versionator
 
 MY_P="${P/_/}"
 DESCRIPTION="Qt BitTorrent client"
 HOMEPAGE="http://www.qbittorrent.org/"
-SRC_URI="mirror://sourceforge/${PN}/${MY_P}.tar.gz"
+SRC_URI="mirror://sourceforge/${PN}/${MY_P}.tar.xz"
 
 LICENSE="GPL-2"
 SLOT="0"
