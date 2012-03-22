@@ -54,7 +54,7 @@ EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
 BRAND_URI="http://dev.gentooexperimental.org/~scarabeus"
 
 # branding
-BRAND_SRC="${PN}-branding-gentoo-0.3.tar.xz"
+BRAND_SRC="${PN}-branding-gentoo-0.4.tar.xz"
 
 # templates
 TDEPEND=""
