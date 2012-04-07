@@ -189,12 +189,23 @@ libreoffice_pkg_pretend() {
 	eerror "This ${PN} version is geki."
 	eerror "Things could just break."
 
+	if ! use java; then
+		elog
+		ewarn "	You are merging ${PN} without java support!"
+		ewarn "	This results in some of its functionality being disabled."
+		ewarn "	If something you need does not work, rebuild:"
+		ewarn "	# USE=\"java\" emerge ${CATEGORY}/${PN}"
+	fi
+
+	_libreoffice_custom-cflags_message
+
+	# skip build-time info for binary merge
+	[[ ${MERGE_TYPE} == binary ]] && return
+
 	elog
 	einfo "There are various extensions to ${PN}."
 	einfo "You may check ./configure for '--enable-ext-*'"
 	einfo "and request them here: https://forums.gentoo.org/viewtopic-t-865091.html"
-
-	_libreoffice_custom-cflags_message
 
 	CHECKREQS_MEMORY="512M"
 	use debug && CHECKREQS_DISK_BUILD="16G" \
@@ -211,14 +222,6 @@ libreoffice_pkg_pretend() {
 			eerror "	postgresql-config set 9.0"
 			die "PostgreSQL slot is not set to 9.0 or higher."
 		fi
-	fi
-
-	if ! use java; then
-		elog
-		ewarn "You are building with java-support disabled, this results in some"
-		ewarn "of the LibreOffice functionality being disabled."
-		ewarn "If something you need does not work for you, rebuild with"
-		ewarn "java in your USE-flags."
 	fi
 }
 
