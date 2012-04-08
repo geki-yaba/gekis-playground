@@ -55,6 +55,8 @@ REQUIRED_USE="graph_parallel? ( mpi )"
 S="${WORKDIR}/${BOOST_P}"
 
 boost_pkg_pretend() {
+	einfo "Enable useflag[test] to run tests!"
+
 	if use test ; then
 		CHECKREQS_DISK_BUILD="15G"
 		check-reqs_pkg_pretend
@@ -103,7 +105,7 @@ boost_src_prepare() {
 	fi
 
 	# fix tests
-	_boost_fix_jamtest
+	use test && _boost_fix_jamtest
 }
 
 boost_src_configure() {
@@ -212,7 +214,7 @@ boost_src_install() {
 	if use doc ; then
 		local docdir="/usr/share/doc/${PF}/html"
 
-		find libs/*/* -iname "test" -or -iname "src" | xargs rm -rf
+		find libs/*/* -type d -iname "test" -or -iname "src" | xargs rm -rf
 
 		insinto ${docdir}
 		doins -r libs
@@ -223,15 +225,16 @@ boost_src_install() {
 	cd "${ED}/usr/$(get_libdir)" || die
 
 	# debug version
-	local dbgver="${BOOST_PV/_0}-debug"
+	local libver="${BOOST_PV/_0}"
+	local dbgver="${libver}-debug"
 
 	# The threading libs obviously always gets the "-mt" (multithreading) tag
 	# some packages seem to have a problem with it. Creating symlinks ...
 	# The same goes for the mpi libs
 	for library in mpi thread ; do
 		if use ${library} ; then
-			libs="lib${PN}_${library}-mt-${BOOST_PV/_0}$(get_libname)"
-			use static && libs+=" lib${PN}_${library}-mt-${BOOST_PV/_0}.a"
+			libs="lib${PN}_${library}-mt-${libver}$(get_libname)"
+			use static && libs+=" lib${PN}_${library}-mt-${libver}.a"
 
 			if use debug ; then
 				libs+=" lib${PN}_${library}-mt-${dbgver}$(get_libname)"
@@ -251,7 +254,7 @@ boost_src_install() {
 
 	dodir ${path}
 	for f in $(ls -1 ${library_targets} | grep -v debug) ; do
-		ln -s ../${f} "${ED}"/${path}/${f/-${BOOST_PV/_0}} || die
+		ln -s ../${f} "${ED}"/${path}/${f/-${libver}} || die
 	done
 
 	if use debug ; then
@@ -332,8 +335,6 @@ __EOF__
 
 		# do some cosmetic fixes :)
 		sed -e 's|http://www.boost.org/boost.png|boost.png|' -i *.html || die
-	else
-		einfo "Enable useflag[test] to run tests!"
 	fi
 }
 
@@ -394,7 +395,7 @@ _boost_python_compile() {
 		_boost_execute "${cmd}" || die "build failed for options: ${options}"
 	fi
 
-	local python_dir="$(find bin.v2/libs -name python | sort)"
+	local python_dir="$(find bin.v2/libs -type d -name python | sort)"
 
 	if [ -z "${_boost_python_dir}" ] ; then
 		_boost_python_dir="${python_dir}"
@@ -464,6 +465,8 @@ _boost_python_install() {
 		doexe "${S}"/libs/mpi/build/__init__.py
 
 		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
+	else
+		touch "${ED}/$(python_get_sitedir)/boost_${BOOST_MAJOR}/__init__.py"
 	fi
 }
 
@@ -489,7 +492,7 @@ _boost_basic_options() {
 	options+=" --boost-build=/usr/share/boost-build-${BOOST_MAJOR} --layout=versioned"
 
 	# https://svn.boost.org/trac/boost/attachment/ticket/2597/add-disable-long-double.patch
-	if use sparc || { use mips && [[ ${ABI} = "o32" ]]; } || use hppa || use arm || use x86-fbsd || use sh; then
+	if use sparc || { use mips && [[ ${ABI} == o32 ]]; } || use hppa || use arm || use x86-fbsd || use sh; then
 		options+=" --disable-long-double"
 	fi
 
@@ -543,7 +546,7 @@ _boost_fix_jamtest() {
 		if [ -f ${jam} ] ; then
 			if grep -s -q ^project "${jam}" ; then
 				if ! grep -s -q "import testing" "${jam}" ; then
-					eerror "Jamfile broken for testing. 'import testing' missing."
+					eerror "Jamfile broken for testing: 'import testing' missing."
 					eerror "Report upstream broken file: ${jam}"
 
 					sed -e "s:^project:import testing ;\n\0:" -i "${jam}"
