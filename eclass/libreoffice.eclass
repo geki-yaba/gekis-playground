@@ -245,6 +245,7 @@ libreoffice_src_unpack() {
 			EGIT_REPO_URI="${root}/${module}"
 
 			[[ ${module} != core ]] && EGIT_SOURCEDIR="${WORKDIR}/${module}"
+			EGIT_NOUNPACK=1
 			git-2_src_unpack
 		done
 	else
