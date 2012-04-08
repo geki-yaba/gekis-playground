@@ -35,8 +35,8 @@ LICENSE="LGPL-3"
 RESTRICT="binchecks mirror"
 
 IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk gtk3
-junit kde languagetool ldap mysql nlpsolver nsplugin odbc odk opengl pdfimport
-postgres +python reportbuilder templates test webdav wiki xmlsec"
+junit kde ldap mysql nlpsolver nsplugin odbc odk opengl pdfimport postgres
++python reportbuilder templates test webdav wiki xmlsec"
 
 # config
 MY_PV="$(get_version_component_range 1-2)"
@@ -180,7 +180,6 @@ _libreoffice_use_gtk="|| ( gtk gtk3 )"
 REQUIRED_USE="eds? ( ${_libreoffice_use_gtk} )
 	gnome? ( ${_libreoffice_use_gtk} )
 	junit? ( java )
-	languagetool? ( java )
 	reportbuilder? ( java )
 	wiki? ( java )"
 
@@ -317,7 +316,6 @@ libreoffice_src_prepare() {
 	echo "$(use_with templates sun-templates)" >> ${config}
 
 	# extensions
-	echo "$(use_enable languagetool ext-languagetool)" >> ${config}
 	echo "$(use_enable mysql ext-mysql-connector)" >> ${config}
 	echo "$(use_enable nlpsolver ext-nlpsolver)" >> ${config}
 	echo "$(use_enable pdfimport ext-pdfimport)" >> ${config}
@@ -514,7 +512,6 @@ libreoffice_pkg_postinst() {
 	elog " - presentation console"
 	elog " - presentation minimizer"
 	elog " - presentation ui"
-	use languagetool && elog " - JLanguageTool"
 	use reportbuilder && elog " - report builder"
 	use wiki && elog " - wiki publisher"
 	use mysql && elog " - MySQL (native) database connector"
