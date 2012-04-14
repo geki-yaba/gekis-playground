@@ -34,12 +34,6 @@ DOCS="AUTHORS Changelog NEWS README TODO"
 S="${WORKDIR}/${MY_P}"
 
 src_prepare() {
-	sed -e "s:BOOST_FILESYSTEM_VERSION=2:BOOST_FILESYSTEM_VERSION=3:" \
-		-e 's/-Wl,--as-needed/$(LDFLAGS)/g' \
-		-i src/src.pro \
-		|| die
-
-	epatch "${FILESDIR}"/qbittorrent-2.9.2-boost-1_46.diff
 	epatch "${FILESDIR}"/qbittorrent-savepaths.diff
 
 	qt4-r2_src_prepare
@@ -50,8 +44,6 @@ src_configure() {
 	use X         || myconf+=" --disable-gui"
 	use geoip     || myconf+=" --disable-geoip-database"
 	use dbus 	  || myconf+=" --disable-qt-dbus"
-
-	append-flags "-DBOOST_FILESYSTEM_NARROW_ONLY"
 
 	# econf fails, since this uses qconf
 	./configure --prefix=/usr --qtdir=/usr ${myconf} \

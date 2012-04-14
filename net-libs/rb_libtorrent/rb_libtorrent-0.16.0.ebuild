@@ -25,7 +25,6 @@ RESTRICT="test"
 
 DEPEND="dev-libs/boost[filesystem,python?,thread]
 	>=sys-devel/libtool-2.2
-	sys-libs/zlib
 	examples? ( !net-p2p/mldonkey )
 	ssl? ( dev-libs/openssl )"
 
@@ -40,28 +39,14 @@ pkg_setup() {
 
 src_prepare() {
 	use python && python_convert_shebangs -r 2 .
-
-	sed -e "s:BOOST_FILESYSTEM_VERSION=2:BOOST_FILESYSTEM_VERSION=3:g" \
-		-e "s:BOOST_FILESYSTEM_VERSION 2:BOOST_FILESYSTEM_VERSION 3:g" \
-		-e "s:\[BOOST_FILESYSTEM_VERSION\],\[2\]:[BOOST_FILESYSTEM_VERSION],[3]:g" \
-		-i bindings/python/setup.py -i configure -i configure.ac -i Jamfile \
-		-i libtorrent-rasterbar-cmake.pc -i libtorrent-rasterbar.pc
-
-	epatch "${FILESDIR}/rb_libtorrent-0.15.7-boost-1_46.diff"
-
-	eautoreconf
 }
 
 src_configure() {
 	# use multi-threading versions of boost libs
 	local myconf="--with-boost-libdir=$(boost-utils_get_library_path) \
 		--with-boost-system=boost_system-mt \
-		--with-boost-filesystem=boost_filesystem-mt \
-		--with-boost-thread=boost_thread-mt \
 		--with-boost-python=boost_python-mt"
 	use debug && myconf+=" --enable-logging=verbose"
-
-	append-flags "-DBOOST_FILESYSTEM_NARROW_ONLY"
 
 	econf $(use_enable debug) \
 		$(use_enable test tests) \
@@ -69,7 +54,6 @@ src_configure() {
 		$(use_enable python python-binding) \
 		$(use_enable ssl encryption) \
 		$(use_enable static-libs static) \
-		--with-zlib=system \
 		${myconf}
 }
 
