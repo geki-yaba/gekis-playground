@@ -29,13 +29,13 @@
  }
  
  void torrentAdditionDialog::loadSavePathHistory() {
-@@ -796,7 +797,8 @@
-       dsp = dsp.replace("/", "\\");
- #endif
-       path_history << sp;
--      savePathTxt->addItem(dsp);
-+      savePathTxt->insertItem(0, dsp);
-     }
-   }
-+  savePathTxt->setCurrentIndex(0);
- }
+#@@ -796,7 +797,8 @@
+#       dsp = dsp.replace("/", "\\");
+# #endif
+#       path_history << sp;
+#-      savePathTxt->addItem(dsp);
+#+      savePathTxt->insertItem(0, dsp);
+#     }
+#   }
+#+  savePathTxt->setCurrentIndex(0);
+# }

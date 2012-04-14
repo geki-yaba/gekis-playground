@@ -23,8 +23,8 @@ inherit base check-reqs flag-o-matic multilib python toolchain-funcs versionator
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test
 
 SLOT="$(get_version_component_range 1-2)"
-BOOST_MAJOR="$(replace_all_version_separators _ ${SLOT})"
-BOOST_JAM="bjam-${BOOST_MAJOR}"
+BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
+BOOST_JAM="bjam-${BOOST_SLOT}"
 
 BOOST_PV="$(replace_all_version_separators _)"
 BOOST_P="${PN}_${BOOST_PV}"
@@ -110,7 +110,7 @@ boost_src_prepare() {
 
 boost_src_configure() {
 	# -fno-strict-aliasing: prevent invalid code
-	append-flags "-fno-strict-aliasing"
+	append-flags -fno-strict-aliasing
 
 	# we need to add the prefix, and in two cases this exceeds, so prepare
 	# for the largest possible space allocation
@@ -186,7 +186,7 @@ boost_src_install() {
 		cd "${S}/dist/bin" || die
 
 		for b in * ; do
-			newbin "${b}" "${b}-${BOOST_MAJOR}"
+			newbin "${b}" "${b}-${BOOST_SLOT}"
 		done
 
 		cd "${S}/dist" || die
@@ -196,7 +196,7 @@ boost_src_install() {
 		doins -r share/boostbook
 
 		# slotting
-		mv "${ED}/usr/share/boostbook" "${ED}/usr/share/boostbook-${BOOST_MAJOR}" || die
+		mv "${ED}/usr/share/boostbook" "${ED}/usr/share/boostbook-${BOOST_SLOT}" || die
 	fi
 
 	cd "${S}/status" || die
@@ -250,7 +250,7 @@ boost_src_install() {
 	done
 
 	# subdirectory with unversioned symlinks
-	local path="/usr/$(get_libdir)/${PN}-${BOOST_MAJOR}"
+	local path="/usr/$(get_libdir)/${PN}-${BOOST_SLOT}"
 
 	dodir ${path}
 	for f in $(ls -1 ${library_targets} | grep -v debug) ; do
@@ -460,13 +460,11 @@ _boost_python_install() {
 
 	# move mpi.so to python sitedir
 	if use mpi ; then
-		exeinto "$(python_get_sitedir)/boost_${BOOST_MAJOR}"
+		exeinto "$(python_get_sitedir)/boost_${BOOST_SLOT}"
 		doexe "${ED}/usr/$(get_libdir)/mpi.so"
 		doexe "${S}"/libs/mpi/build/__init__.py
 
 		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
-	else
-		touch "${ED}/$(python_get_sitedir)/boost_${BOOST_MAJOR}/__init__.py"
 	fi
 }
 
@@ -489,7 +487,7 @@ _boost_basic_options() {
 
 	local options=""
 	options+=" pch=off --user-config=${S}/${config}-config.jam --prefix=${ED}/usr"
-	options+=" --boost-build=/usr/share/boost-build-${BOOST_MAJOR} --layout=versioned"
+	options+=" --boost-build=/usr/share/boost-build-${BOOST_SLOT} --layout=versioned"
 
 	# https://svn.boost.org/trac/boost/attachment/ticket/2597/add-disable-long-double.patch
 	if use sparc || { use mips && [[ ${ABI} == o32 ]]; } || use hppa || use arm || use x86-fbsd || use sh; then
