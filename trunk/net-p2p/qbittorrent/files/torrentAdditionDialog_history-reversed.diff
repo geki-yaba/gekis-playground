@@ -1,0 +1,86 @@
+--- src/torrentadditiondlg.cpp	2012-04-17 11:48:08.982808995 +0200
++++ src/torrentadditiondlg.cpp	2012-04-17 12:18:56.702903100 +0200
+@@ -83,8 +83,6 @@
+   LineEdit *contentFilterLine = new LineEdit(this);
+   connect(contentFilterLine, SIGNAL(textChanged(QString)), PropListModel, SLOT(setFilterFixedString(QString)));
+   contentFilterLayout->insertWidget(1, contentFilterLine);
+-  // Important: as a default, it inserts at the bottom which is not desirable
+-  savePathTxt->setInsertPolicy(QComboBox::InsertAtCurrent);
+   //torrentContentList->header()->setResizeMode(0, QHeaderView::Stretch);
+   defaultSavePath = pref.getSavePath();
+   //In case of the LastLocationPath doesn't exist anymore, empty the string
+@@ -93,11 +91,10 @@
+   QString display_path = defaultSavePath.replace("\\", "/");
+   if(!display_path.endsWith("/"))
+     display_path += "/";
+-  path_history << display_path;
+ #if defined(Q_WS_WIN) || defined(Q_OS_OS2)
+   display_path.replace("/", "\\");
+ #endif
+-  savePathTxt->addItem(display_path);
++  savePathTxt->setEditText(display_path);
+ 
+   if(pref.addTorrentsInPause()) {
+     addInPause->setChecked(true);
+@@ -739,22 +736,6 @@
+   path_history.replace(savePathTxt->currentIndex(), getCurrentTruncatedSavePath());
+   QString root_folder_or_file_name = "";
+   getCurrentTruncatedSavePath(&root_folder_or_file_name);
+-  // Update other combo items
+-  for(int i=0; i<savePathTxt->count(); ++i) {
+-    if(i == savePathTxt->currentIndex()) continue;
+-    QString item_path = path_history.at(i);
+-    if(item_path.isEmpty()) continue;
+-    // Append label
+-    if(i == 0 && appendLabelToSavePath && QDir(item_path) == QDir(defaultSavePath) && !comboLabel->currentText().isEmpty())
+-      item_path += comboLabel->currentText() + "/";
+-    // Append root_folder or filename
+-    if(!root_folder_or_file_name.isEmpty())
+-      item_path += root_folder_or_file_name;
+-#if defined(Q_WS_WIN) || defined(Q_OS_OS2)
+-    item_path.replace("/", "\\");
+-#endif
+-    savePathTxt->setItemText(i, item_path);
+-  }
+ }
+ 
+ QString torrentAdditionDialog::getCurrentTruncatedSavePath(QString* root_folder_or_file_name) const {
+@@ -790,18 +771,19 @@
+   // Get current history
+   QStringList history = settings.value("TorrentAdditionDlg/save_path_history").toStringList();
+ #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
+-  if(!history.contains(current_save_path, Qt::CaseSensitive)) {
++  if(history.contains(current_save_path, Qt::CaseSensitive)) {
+ #else
+-  if(!history.contains(current_save_path, Qt::CaseInsensitive)) {
++  if(history.contains(current_save_path, Qt::CaseInsensitive)) {
+ #endif
+-    // Add save path to history
+-    history << current_save_path;
+-    // Limit list size
+-    if(history.size() > 8)
+-      history.removeFirst();
+-    // Save history
+-    settings.setValue("TorrentAdditionDlg/save_path_history", history);
++    history.removeOne(current_save_path);
+   }
++  // Add save path to history
++  history << current_save_path;
++  // Limit list size
++  if(history.size() > 16)
++    history.removeFirst();
++  // Save history
++  settings.setValue("TorrentAdditionDlg/save_path_history", history);
+ }
+ 
+ void torrentAdditionDialog::loadSavePathHistory() {
+@@ -815,7 +797,8 @@
+       dsp.replace("/", "\\");
+ #endif
+       path_history << sp;
+-      savePathTxt->addItem(dsp);
++      savePathTxt->insertItem(0, dsp);
+     }
+   }
++  savePathTxt->setCurrentIndex(0);
+ }
