@@ -144,7 +144,7 @@ CDEPEND="
 	  x11-libs/startup-notification
 	  virtual/jpeg"
 
-PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
+#PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
 
 RDEPEND="${CDEPEND}
 	java? ( >=virtual/jre-${_libreoffice_java} )"
