@@ -93,7 +93,7 @@ boost_src_prepare() {
 	[ "${BOOST_PATCHSET}" ] && EPATCH_SUFFIX="diff" base_src_prepare
 
 	# boost.random library: /dev/urandom support
-	if use random && [[ -e /dev/urandom ]] ; then
+	if [[ ${SLOT} < 1.48 ]] && use random && [[ -e /dev/urandom ]] ; then
 		local lib_random="${S}/libs/random"
 
 		mkdir -p "${lib_random}"/build
