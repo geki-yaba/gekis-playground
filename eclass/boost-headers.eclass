@@ -18,7 +18,7 @@ inherit alternatives base multilib versionator
 EXPORT_FUNCTIONS pkg_pretend src_unpack src_configure src_compile src_install
 
 SLOT="$(get_version_component_range 1-2)"
-BOOST_MAJOR="$(replace_all_version_separators _ ${SLOT})"
+BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
 
 BOOST_P="boost_$(replace_all_version_separators _)"
 BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
@@ -79,7 +79,7 @@ boost-headers_src_configure() { :; }
 boost-headers_src_compile() { :; }
 
 boost-headers_src_install() {
-	dir="/usr/include/boost-${BOOST_MAJOR}"
+	dir="/usr/include/boost-${BOOST_SLOT}"
 
 	dodir "${dir}"
 	insinto "${dir}"
