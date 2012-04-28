@@ -339,7 +339,7 @@ __EOF__
 }
 
 _boost_config() {
-	[[ "${#}" -gt "1" ]] && die "${FUNCNAME}: too many parameters"
+	[[ "${#}" -ne "1" ]] && die "${FUNCNAME}: wrong parameter"
 
 	local python_abi="${1}"
 
@@ -354,7 +354,8 @@ _boost_config() {
 
 	local jam_options=""
 	use mpi && jam_options+="using mpi ;"
-	[[ "${python_abi}" != "default" ]] && jam_options+="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
+	[[ "${python_abi}" != "default" ]] \
+		&& jam_options+="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
 
 	local config="user"
 	[[ "${python_abi}" != "default" ]] && config="${PYTHON_ABI}"
@@ -400,7 +401,7 @@ _boost_python_compile() {
 	if [ -z "${_boost_python_dir}" ] ; then
 		_boost_python_dir="${python_dir}"
 	elif [[ "${python_dir}" != "${_boost_python_dir}" ]] ; then
-		die "python paths changed"
+		die "python path changed"
 	fi
 
 	for directory in ${_boost_python_dir} ; do

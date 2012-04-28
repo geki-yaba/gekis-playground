@@ -20,6 +20,10 @@ DEPEND="${RDEPEND}
 	dev-util/pkgconfig
 	doc? ( app-doc/doxygen )"
 
+src_prepare() {
+	./autogen.sh || die
+}
+
 src_configure() {
 	econf $(use_with doc docs) \
 		$(use_enable debug) \
