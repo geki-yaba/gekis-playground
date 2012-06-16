@@ -2,6 +2,8 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
+EAPI="4"
+
 BOOST_PATCHSET="gentoo-boost-1.49.0.tar.xz"
 
 inherit boost-headers

@@ -2,12 +2,12 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="2"
+EAPI="4"
 
 inherit cmake-utils eutils flag-o-matic
 
 DEBIAN_URI="mirror://debian/pool/main/${PN:0:1}/${PN}"
-DEBIAN_SRC="${PN}_${PV}-2.debian.tar.gz"
+DEBIAN_SRC="${PN}_${PV}-4.debian.tar.gz"
 
 DESCRIPTION="MySQL database connector for C++ (mimics JDBC 4.0 API)"
 HOMEPAGE="http://forge.mysql.com/wiki/Connector_C++"
@@ -18,7 +18,7 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86"
 
-IUSE="debug examples gcov static"
+IUSE="debug examples gcov static-libs"
 
 DEPEND=">=virtual/mysql-5.1
 	dev-libs/boost
@@ -42,16 +42,16 @@ src_configure() {
 	# native lib/wrapper needs this!
 	append-flags "-fno-strict-aliasing"
 
-	mycmakeargs=(
+	local mycmakeargs=(
 		"-DMYSQLCPPCONN_BUILD_EXAMPLES=OFF"
 		"-DMYSQLCPPCONN_ICU_ENABLE=OFF"
 		$(cmake-utils_use debug MYSQLCPPCONN_TRACE_ENABLE)
-		$(cmake-utils_use gconv MYSQLCPPCONN_GCOV_ENABLE)
+		$(cmake-utils_use gcov MYSQLCPPCONN_GCOV_ENABLE)
 	)
 
 	# eclass/cmake-utils relies on this variable for various things
 	# - how to do proper install targets? dynamic vs static? :)
-	use static && CMAKE_BUILD_TYPE="GentooFull"
+	use static-libs && CMAKE_BUILD_TYPE="GentooFull"
 
 	cmake-utils_src_configure
 }
@@ -61,7 +61,7 @@ src_compile() {
 	cmake-utils_src_compile mysqlcppconn
 
 	# make static
-	use static && cmake-utils_src_compile mysqlcppconn-static
+	use static-libs && cmake-utils_src_compile mysqlcppconn-static
 }
 
 src_install() {

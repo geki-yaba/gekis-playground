@@ -114,7 +114,7 @@ CDEPEND="
 	  app-text/libexttextcat
 	  app-text/libwpd:0.9[tools]
 	  app-text/libwpg:0.2
-	  app-text/libwps:0.2
+	  app-text/libwps:0
 	  app-text/mythes
 	  dev-cpp/libcmis
 	  dev-libs/expat
