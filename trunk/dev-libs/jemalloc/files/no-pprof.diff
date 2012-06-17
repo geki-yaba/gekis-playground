@@ -1,16 +1,16 @@
---- a/Makefile.in	2011-04-11 10:42:32.084403330 -0500
-+++ b/Makefile.in	2011-04-11 10:43:23.490760665 -0500
-@@ -42,7 +42,6 @@
- endif
+--- Makefile.in
++++ Makefile.in
+@@ -69,7 +69,6 @@ endif
+ LIBJEMALLOC := $(LIBPREFIX)jemalloc$(install_suffix)
  
  # Lists of files.
--BINS := @srcroot@bin/pprof
- CHDRS := @objroot@include/jemalloc/jemalloc@install_suffix@.h \
- 	@objroot@include/jemalloc/jemalloc_defs@install_suffix@.h
- CSRCS := @srcroot@src/jemalloc.c @srcroot@src/arena.c @srcroot@src/atomic.c \
-@@ -141,13 +140,6 @@
- 	$(CC) -o $@ $< -L@objroot@lib -ljemalloc@install_suffix@
- endif
+-BINS := $(srcroot)bin/pprof $(objroot)bin/jemalloc.sh
+ CHDRS := $(objroot)include/jemalloc/jemalloc$(install_suffix).h \
+ 	$(objroot)include/jemalloc/jemalloc_defs$(install_suffix).h
+ CSRCS := $(srcroot)src/jemalloc.c $(srcroot)src/arena.c $(srcroot)src/atomic.c \
+@@ -196,13 +195,6 @@ build_lib_shared: $(DSOS)
+ build_lib_static: $(STATIC_LIBS)
+ build: build_lib_shared build_lib_static
  
 -install_bin:
 -	install -d $(BINDIR)

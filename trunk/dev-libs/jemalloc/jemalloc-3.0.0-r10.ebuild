@@ -19,7 +19,7 @@ IUSE="debug static-libs stats"
 DEPEND=""
 RDEPEND=""
 
-PATCHES=( "${FILESDIR}/optimization.diff" "${FILESDIR}/no-pprof.diff" )
+PATCHES=( "${FILESDIR}/optimization.diff" "${FILESDIR}/no-pprof.diff" "${FILESDIR}/html.diff" )
 
 src_prepare() {
 	base_src_prepare
@@ -44,7 +44,6 @@ src_install() {
 	# doc
 	dodoc ChangeLog README
 	dohtml doc/jemalloc.html
-	rm -rf "${ED}"/usr/share/doc/jemalloc
 
 	# static
 	use static-libs || rm -v "${ED}"/usr/$(get_libdir)/*.a
