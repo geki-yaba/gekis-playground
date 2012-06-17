@@ -97,7 +97,7 @@ CDEPEND="
 		kde-base/kstyles )
 	ldap? ( net-nds/openldap )
 	nsplugin? ( net-misc/npapi-sdk )
-	mysql? ( dev-db/mysql-connector-c++:1.1.0 )
+	mysql? ( dev-db/mysql-connector-c++:0 )
 	opengl? ( virtual/opengl virtual/glu )
 	pdfimport? ( app-text/poppler[cxx,xpdf-headers] )
 	postgres? ( dev-db/postgresql-base )
@@ -116,7 +116,7 @@ CDEPEND="
 	  app-text/libwpg:0.2
 	  app-text/libwps:0
 	  app-text/mythes
-	  dev-cpp/libcmis
+	 <dev-cpp/libcmis-0.2
 	  dev-libs/expat
 	>=dev-libs/hyphen-2.7.1
 	  dev-libs/icu
