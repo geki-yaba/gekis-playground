@@ -422,7 +422,7 @@ libreoffice_src_configure() {
 
 	# linker flags
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
-	export LINKFLAGSDEFS="-Wl,-z,defs -L$(boost-utils_get_library_path)"
+	boost-utils_add_library_path
 
 	# qt/kde --- yay
 	use kde && export KDE4DIR="${KDEDIR}"
@@ -562,6 +562,7 @@ fi
 _libreoffice_die() {
 	_libreoffice_custom-cflags_message
 
-	echo "Python: $(python_get_version)"
+	[[ ${EBUILD_PHASE} != "pretend" ]] \
+		&& echo "Python: $(python_get_version)"
 }
 
