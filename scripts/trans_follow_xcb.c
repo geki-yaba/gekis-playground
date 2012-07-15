@@ -206,7 +206,7 @@ void xcb_config_command_wrapper(xcb_window_t window, float opacity)
 	char buffer[40];
 	int count;
 
-	count = sprintf(buffer, "transset-df -i 0x%x %1.3f", window, opacity);
+	count = sprintf(buffer, "transset -i 0x%x %1.3f", window, opacity);
 
 	buffer[count] = '\0';
 
