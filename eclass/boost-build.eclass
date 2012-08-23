@@ -21,6 +21,7 @@ EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_compile src_in
 
 BOOST_P="boost_$(replace_all_version_separators _)"
 BOOST_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))"
+BOOST_B="${BOOST_P}/tools/build/v2"
 PATCHES=( "${BOOST_PATCHDIR:="${WORKDIR}/patches"}" )
 
 DESCRIPTION="A system for large project software construction, which is simple to use and powerful."
@@ -38,7 +39,7 @@ IUSE="examples python"
 DEPEND=""
 RDEPEND=""
 
-S="${WORKDIR}/${BOOST_P}/tools/build/v2"
+S="${WORKDIR}/${BOOST_B}"
 
 boost-build_pkg_pretend() {
 	ewarn "Compilation of ${PN} is known to break if {C,LD}FLAGS contain"
@@ -53,7 +54,10 @@ boost-build_pkg_setup() {
 }
 
 boost-build_src_unpack() {
-	tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "${BOOST_P}/tools/build/v2"
+	tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "${BOOST_B}" \
+		|| tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "./${BOOST_B}" \
+		|| die
+
 	[ "${BOOST_PATCHSET}" ] && unpack "${BOOST_PATCHSET}"
 }
 
