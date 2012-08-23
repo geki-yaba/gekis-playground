@@ -45,7 +45,7 @@ src_configure() {
 	# use multi-threading versions of boost libs
 	local myconf="--with-boost-libdir=$(boost-utils_get_library_path) \
 		--with-boost-system=boost_system-mt \
-		--with-boost-python=boost_python-mt"
+		--with-boost-python=boost_python-${PYTHON_ABI}-mt"
 	use debug && myconf+=" --enable-logging=verbose"
 
 	econf $(use_enable debug) \

@@ -339,7 +339,7 @@ __EOF__
 }
 
 _boost_config() {
-	[[ "${#}" -ne "1" ]] && die "${FUNCNAME}: wrong parameter"
+	[[ "${#}" -gt "1" ]] && die "${FUNCNAME}: wrong parameter"
 
 	local python_abi="${1}"
 

@@ -34,7 +34,7 @@ DOCS="AUTHORS Changelog NEWS README TODO"
 S="${WORKDIR}/${MY_P}"
 
 src_prepare() {
-	epatch "${FILESDIR}"/torrentAdditionDialog_history-reversed.diff
+	#epatch "${FILESDIR}"/torrentAdditionDialog_history-reversed.diff
 
 	qt4-r2_src_prepare
 }

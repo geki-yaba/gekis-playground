@@ -70,7 +70,10 @@ boost-headers_pkg_pretend() {
 }
 
 boost-headers_src_unpack() {
-	tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "${BOOST_P}/boost"
+	tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "${BOOST_P}/boost" \
+		|| tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "./${BOOST_P}/boost" \
+		|| die
+
 	[ "${BOOST_PATCHSET}" ] && unpack "${BOOST_PATCHSET}"
 }
 
