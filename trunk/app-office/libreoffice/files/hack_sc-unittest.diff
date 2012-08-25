@@ -1,0 +1,13 @@
+--- sc/Module_sc.mk	2012-08-25 21:45:51.152966805 +0200
++++ sc/Module_sc.mk	2012-08-25 21:46:05.132969868 +0200
+@@ -46,10 +46,6 @@
+     CppunitTest_sc_filters_test \
+ ))
+ 
+-$(eval $(call gb_Module_add_slowcheck_targets,sc,\
+-    CppunitTest_sc_subsequent_filters_test \
+-))
+-
+ $(eval $(call gb_Module_add_subsequentcheck_targets,sc,\
+     JunitTest_sc_complex \
+     JunitTest_sc_unoapi \

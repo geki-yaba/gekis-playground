@@ -14,15 +14,18 @@
 EAPI="4"
 
 _libreoffice_java="1.6"
+_libreoffice_kde="never"
 _libreoffice_python="*:3.1:3.1"
-PYTHON_BDEPEND="${_libreoffice_python}"
-PYTHON_DEPEND="python? ${_libreoffice_python}"
+_libreoffice_qt="4.7.4"
 
-KDE_REQUIRED="never"
-CMAKE_REQUIRED="never"
+CMAKE_REQUIRED="${_libreoffice_kde}"
+KDE_REQUIRED="${_libreoffice_kde}"
+PYTHON_DEPEND="${_libreoffice_python}"
+QT_MINIMAL="${_libreoffice_qt}"
 
 inherit autotools base bash-completion-r1 boost-utils check-reqs flag-o-matic \
-	java-pkg-opt-2 kde4-base multilib pax-utils python versionator nsplugins git-2
+	java-pkg-opt-2 kde4-base multilib nsplugins pax-utils python versionator \
+	git-2
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install pkg_preinst pkg_postinst pkg_postrm
 
@@ -31,15 +34,12 @@ HOMEPAGE="http://www.libreoffice.org/"
 
 SLOT="0"
 
-LICENSE="LGPL-3"
+LICENSE="|| ( LGPL-3 MPL-1.1 )"
 RESTRICT="binchecks mirror"
 
-IUSE="+branding custom-cflags dbus debug eds gnome graphite gstreamer gtk gtk3
-junit kde ldap mysql nlpsolver nsplugin odbc odk opengl pdfimport postgres
-+python reportbuilder templates test webdav wiki xmlsec"
-
-# config
-MY_PV="$(get_version_component_range 1-2)"
+IUSE="+branding custom-cflags dbus debug eds +fonts gnome graphite gstreamer gtk
+gtk3 junit kde ldap mysql odbc odk opengl postgres +python templates test webdav
++xmlsec"
 
 # available template languages
 LANGUAGES="de en en_GB en_ZA es fr hu it"
@@ -48,13 +48,21 @@ for language in ${LANGUAGES}; do
 	IUSE+=" linguas_${language}"
 done
 
+# extensions
+EXTENSIONS="nlpsolver pdfimport presenter-console presenter-minimizer
+report-builder scripting-beanshell scripting-javascript wiki-publisher"
+
+for extension in ${EXTENSIONS}; do
+	IUSE+=" libreoffice_extension_${extension}"
+done
+
 # paths
 LIBRE_URI="http://dev-www.libreoffice.org/bundles"
 EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
-BRAND_URI="http://dev.gentooexperimental.org/~scarabeus"
+BRAND_URI="http://dev.gentoo.org/~dilfridge/distfiles"
 
 # branding
-BRAND_SRC="${PN}-branding-gentoo-0.4.tar.xz"
+BRAND_SRC="${PN}-branding-gentoo-0.6.tar.xz"
 
 # templates
 TDEPEND=""
@@ -73,11 +81,7 @@ SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )
 # modules
 MODULES="core help"
 
-if [[ ${PV} != *_pre ]]; then
-	for module in ${MODULES}; do
-		SRC_URI+=" ${LIBRE_URI}/${PN}-${module}.tar.xz"
-	done
-fi
+# patches
 PATCHES=( "${FILESDIR}" )
 
 CDEPEND="
@@ -89,45 +93,46 @@ CDEPEND="
 		media-libs/gst-plugins-base )
 	gtk? ( x11-libs/gtk+:2 )
 	gtk3? ( x11-libs/gtk+:3 )
-	java? ( dev-java/bsh
-		dev-java/lucene:2.9[analyzers] )
 	kde? ( x11-libs/qt-core
 		x11-libs/qt-gui
 		kde-base/kdelibs
 		kde-base/kstyles )
 	ldap? ( net-nds/openldap )
-	nsplugin? ( net-misc/npapi-sdk )
 	mysql? ( dev-db/mysql-connector-c++:0 )
 	opengl? ( virtual/opengl virtual/glu )
-	pdfimport? ( app-text/poppler[cxx,xpdf-headers] )
-	postgres? ( dev-db/postgresql-base )
-	reportbuilder? ( dev-java/commons-logging:0 )
+	postgres? ( dev-db/postgresql-base[kerberos] )
 	webdav? ( net-libs/neon )
-	wiki? ( dev-java/commons-codec:0
+	xmlsec? ( dev-libs/nspr
+		dev-libs/nss )
+	libreoffice_extension_pdfimport? ( app-text/poppler[cxx,xpdf-headers] )
+	libreoffice_extension_scripting-beanshell? ( dev-java/bsh )
+	libreoffice_extension_report-builder? ( dev-java/commons-logging:0 )
+	libreoffice_extension_wiki-publisher? ( dev-java/commons-codec:0
 		dev-java/commons-httpclient:3
 		dev-java/commons-lang:2.1
 		dev-java/commons-logging:0
-		dev-java/tomcat-servlet-api:2.4 )
-	xmlsec? ( dev-libs/nspr
-		dev-libs/nss )
+		dev-java/tomcat-servlet-api:3.0 )
 	  app-text/hunspell
 	  app-text/libexttextcat
 	  app-text/libwpd:0.9[tools]
 	  app-text/libwpg:0.2
 	  app-text/libwps:0
 	  app-text/mythes
-	 <dev-cpp/libcmis-0.2
+	>=dev-cpp/clucene-2.3
+	>=dev-cpp/libcmis-0.2
 	  dev-libs/expat
-	>=dev-libs/hyphen-2.7.1
+	  dev-libs/hyphen
 	  dev-libs/icu
 	  dev-libs/jemalloc
 	  dev-libs/libxml2
 	  dev-libs/libxslt
 	  dev-libs/openssl
 	  dev-libs/redland[ssl]
-	>=gnome-base/librsvg-2.32.1:2
+	  gnome-base/librsvg
 	  media-libs/fontconfig
 	  media-libs/freetype:2
+	  media-libs/lcms:2
+	  media-libs/libcdr
 	  media-libs/libpng
 	  media-libs/libvisio
 	  net-misc/curl
@@ -144,8 +149,6 @@ CDEPEND="
 	  x11-libs/startup-notification
 	  virtual/jpeg"
 
-#PDEPEND="~app-office/libreoffice-l10n-$(get_version_component_range 1-3)"
-
 RDEPEND="${CDEPEND}
 	java? ( >=virtual/jre-${_libreoffice_java} )"
 
@@ -154,6 +157,7 @@ DEPEND="${CDEPEND}
 		dev-java/ant-core )
 	junit? ( dev-java/junit:4 )
 	odbc? ( dev-db/unixODBC )
+	odk? ( app-doc/doxygen )
 	app-arch/zip
 	app-arch/unzip
 	dev-lang/perl
@@ -166,6 +170,7 @@ DEPEND="${CDEPEND}
 	dev-util/pkgconfig
 	media-gfx/imagemagick[png]
 	media-libs/vigra
+	net-misc/npapi-sdk
 	sys-apps/coreutils
 	sys-apps/grep
 	sys-devel/bison
@@ -176,12 +181,22 @@ DEPEND="${CDEPEND}
 	x11-proto/xineramaproto
 	x11-proto/xproto"
 
+#PDEPEND="=app-office/libreoffice-l10n-${LV2}*"
+
+PDEPEND="
+	fonts? ( media-fonts/liberation-fonts
+		media-fonts/libertine-ttf
+		media-fonts/urw-fonts )"
+
 _libreoffice_use_gtk="|| ( gtk gtk3 )"
 REQUIRED_USE="eds? ( ${_libreoffice_use_gtk} )
 	gnome? ( ${_libreoffice_use_gtk} )
 	junit? ( java )
-	reportbuilder? ( java )
-	wiki? ( java )"
+	libreoffice_extension_report-builder? ( java )
+	libreoffice_extension_nlpsolver? ( java )
+	libreoffice_extension_scripting-beanshell? ( java )
+	libreoffice_extension_scripting-javascript? ( java )
+	libreoffice_extension_wiki-publisher? ( java )"
 
 libreoffice_pkg_pretend() {
 	elog
@@ -234,26 +249,19 @@ libreoffice_pkg_setup() {
 }
 
 libreoffice_src_unpack() {
-	if [[ ${PV} == *_pre ]]; then
-		local root="git://anongit.freedesktop.org/${PN}"
-		EGIT_BRANCH="${EGIT_BRANCH:-${PN}-$(replace_all_version_separators - ${MY_PV})}"
-		EGIT_COMMIT="${EGIT_BRANCH}"
+	local root="git://anongit.freedesktop.org/${PN}"
+	EGIT_BRANCH="${EGIT_BRANCH:-${PN}-${LV2/./-}}"
+	EGIT_COMMIT="${EGIT_BRANCH}"
 
-		# clone modules
-		for module in ${MODULES}; do
-			EGIT_PROJECT="${PN}/${module}"
-			EGIT_REPO_URI="${root}/${module}"
+	# clone modules
+	for module in ${MODULES}; do
+		EGIT_PROJECT="${PN}/${module}"
+		EGIT_REPO_URI="${root}/${module}"
 
-			[[ ${module} != core ]] && EGIT_SOURCEDIR="${WORKDIR}/${module}"
-			EGIT_NOUNPACK=1
-			git-2_src_unpack
-		done
-	else
-		# unpack modules
-		for module in ${MODULES}; do
-			unpack "${PN}-${module}.tar.xz"
-		done
-	fi
+		[[ ${module} != core ]] && EGIT_SOURCEDIR="${WORKDIR}/${module}"
+		EGIT_NOUNPACK=1
+		git-2_src_unpack
+	done
 
 	if use branding; then
 		cd "${WORKDIR}"
@@ -293,7 +301,7 @@ libreoffice_src_prepare() {
 	# create distro config
 	local config="${S}/distro-configs/GentooUnstable.conf"
 	sed -e /^#/d \
-		< "${FILESDIR}"/conf/GentooUnstable-${CONFFILE} \
+		< "${FILESDIR}"/conf/GentooUnstable-${CONFBASE} \
 		> ${config} \
 		|| die "base configuration generation failed"
 
@@ -306,22 +314,26 @@ libreoffice_src_prepare() {
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${config}
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
-	use branding && echo "--with-about-bitmap=${WORKDIR}/branding-about.png" >> ${config}
-	use branding && echo "--with-intro-bitmap=${WORKDIR}/branding-intro.png" >> ${config}
+	# new feature: --with-branding
+	#use branding && echo "--with-branding=${WORKDIR}" >> ${config}
+	use branding && echo "--with-intro-bitmap=${WORKDIR}/branding-intro.png" \
+		>> ${config}
 	echo "$(use_enable !debug release-build)" >> ${config}
 	echo "$(use_enable gtk)" >> ${config}
 	echo "$(use_enable gtk3)" >> ${config}
 	echo "$(use_enable kde kde4)" >> ${config}
 	echo "$(use_enable odk)" >> ${config}
 	echo "$(use_with java)" >> ${config}
+	echo "$(use_with odk doxygen)" >> ${config}
 	echo "$(use_with templates sun-templates)" >> ${config}
 
 	# extensions
 	echo "$(use_enable mysql ext-mysql-connector)" >> ${config}
-	echo "$(use_enable nlpsolver ext-nlpsolver)" >> ${config}
-	echo "$(use_enable pdfimport ext-pdfimport)" >> ${config}
-	echo "$(use_enable reportbuilder ext-report-builder)" >> ${config}
-	echo "$(use_enable wiki ext-wiki-publisher)" >> ${config}
+
+	for extension in ${EXTENSIONS}; do
+		echo "$(use_enable libreoffice_extension_${extension} \
+			ext-${extension})" >> ${config}
+	done
 
 	# internal
 	echo "$(use_enable dbus)" >> ${config}
@@ -363,16 +375,10 @@ libreoffice_src_prepare() {
 	# java
 	if use java; then
 		echo "--with-ant-home=${ANT_HOME}" >> ${config}
-		echo "--with-jdk-home=$(java-config --jdk-home 2>/dev/null)" >> ${config}
+		echo "--with-jdk-home=$(java-config \
+			--jdk-home 2>/dev/null)" >> ${config}
 		echo "--with-java-target-version=${_libreoffice_java}" >> ${config}
 		echo "--with-jvm-path=/usr/$(get_libdir)/" >> ${config}
-		echo "--with-system-beanshell" >> ${config}
-		echo "--with-system-lucene" >> ${config}
-		echo "--with-beanshell-jar=$(java-pkg_getjar bsh bsh.jar)" >> ${config}
-		echo "--with-lucene-core-jar=$(java-pkg_getjar \
-			lucene-2.9 lucene-core.jar)" >> ${config}
-		echo "--with-lucene-analyzers-jar=$(java-pkg_getjar \
-			lucene-2.9 lucene-analyzers.jar)" >> ${config}
 
 		# junit:4
 		use junit && echo "--with-junit=$(java-pkg_getjar \
@@ -382,8 +388,13 @@ libreoffice_src_prepare() {
 	# junit:4
 	use !junit && echo "--without-junit" >> ${config}
 
-	# wiki extension
-	if use wiki; then
+	if use libreoffice_extension_scripting-beanshell; then
+		echo "--with-system-beanshell" >> ${config}
+		echo "--with-beanshell-jar=$(java-pkg_getjar bsh bsh.jar)" >> ${config}
+	fi
+
+	# extensions
+	if use libreoffice_extension_wiki-publisher; then
 		echo "--with-system-servlet-api" >> ${config}
 		echo "--with-commons-codec-jar=$(java-pkg_getjar \
 			commons-codec commons-codec.jar)" >> ${config}
@@ -392,22 +403,22 @@ libreoffice_src_prepare() {
 		echo "--with-commons-lang-jar=$(java-pkg_getjar \
 			commons-lang-2.1 commons-lang.jar)" >> ${config}
 		echo "--with-servlet-api-jar=$(java-pkg_getjar \
-			tomcat-servlet-api-2.4 servlet-api.jar)" >> ${config}
+			tomcat-servlet-api-3.0 servlet-api.jar)" >> ${config}
 	fi
 
-	# reportbuilder & wiki extension
-	if use reportbuilder || use wiki; then
+	if use libreoffice_extension_report-builder \
+	|| use libreoffice_extension_wiki-publisher; then
 		echo "--with-commons-logging-jar=$(java-pkg_getjar \
 			commons-logging commons-logging.jar)" >> ${config}
 		echo "--with-system-apache-commons" >> ${config}
 	fi
 
-	eautoreconf
+	AT_M4DIR="m4" eautoreconf
 }
 
 libreoffice_src_configure() {
-	# set allowed flags for libreoffice
-	# by default '-g' and the like are allowed which blow up the code: bug 345799
+	# bug 345799: set allowed flags for libreoffice
+	# by default '-g' and the like are allowed which blow up the code
 
 	# compiler flags
 	use custom-cflags || strip-flags
@@ -419,14 +430,15 @@ libreoffice_src_configure() {
 
 	# optimize
 	export ARCH_FLAGS="${CXXFLAGS}"
+	export GMAKE_OPTIONS="${MAKEOPTS}"
 
 	# linker flags
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
 	boost-utils_add_library_path
 
-	# qt/kde --- yay
-	use kde && export KDE4DIR="${KDEDIR}"
-	use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
+	# qt/kde --- yay --- still necessary?!
+	#use kde && export KDE4DIR="${KDEDIR}"
+	#use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
 
 	./autogen.sh --with-distro="GentooUnstable" \
 		|| die "configure failed"
@@ -446,13 +458,17 @@ libreoffice_src_compile() {
 		perl "${WORKDIR}/help/helpcontent2/helpers/create_ilst.pl" \
 			-dir=default_images/res/helpimg \
 			> "${path}/helpimg.ilst"
+
+		[[ -s "${path}/helpimg.ilst" ]] \
+			|| ewarn "The help images list is empty, something is fishy, report a bug."
 	)
 
 	make build || die "make failed"
 }
 
 libreoffice_src_test() {
-	use test && make check
+	use test && make unitcheck
+	use test && make slowcheck
 }
 
 libreoffice_src_install() {
@@ -472,9 +488,6 @@ libreoffice_src_install() {
 		newins "${WORKDIR}/branding-sofficerc" sofficerc \
 			|| ewarn "branding config failed"
 	fi
-
-	use nsplugin && inst_plugin \
-		/usr/$(get_libdir)/${PN}/program/libnpsoplugin.so
 
 	# hack for offlinehelp, this needs fixing upstream at some point
 	# it is broken because we send --without-help
@@ -509,12 +522,11 @@ libreoffice_pkg_postinst() {
 	elog "__________________________________________________________________"
 	elog " Some parts have to be installed via Extension Manager now"
 	ewarn " - VBA (VisualBasic-Assistant) support is no longer an extension"
-	use pdfimport && elog " - pdfimport"
-	elog " - presentation console"
-	elog " - presentation minimizer"
-	elog " - presentation ui"
-	use reportbuilder && elog " - report builder"
-	use wiki && elog " - wiki publisher"
+	use libreoffice_extension_pdfimport && elog " - pdfimport"
+	use libreoffice_extension_presenter-console && elog " - presentation console"
+	use libreoffice_extension_presenter-minimizer && elog " - presentation minimizer"
+	use libreoffice_extension_report-builder && elog " - report builder"
+	use libreoffice_extension_wiki-publisher && elog " - wiki publisher"
 	use mysql && elog " - MySQL (native) database connector"
 	elog " ... more may come"
 	elog
@@ -537,9 +549,10 @@ libreoffice_pkg_postrm() {
 }
 
 _libreoffice_pax_fix() {
-	local bin="${EPREFIX}/usr/$(get_libdir)/${PN}/program/soffice.bin"
+	local path="${EPREFIX}/usr/$(get_libdir)/${PN}/program"
 
-	pax-mark -m "${bin}"
+	pax-mark -m "${path}/soffice.bin"
+	pax-mark -m "${path}/unopkg.bin"
 }
 
 _libreoffice_custom-cflags_message() {
