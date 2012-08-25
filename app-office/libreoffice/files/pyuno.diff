@@ -1,5 +1,5 @@
---- desktop/scripts/soffice.sh.in
-+++ desktop/scripts/soffice.sh.in
+--- desktop/scripts/soffice.sh
++++ desktop/scripts/soffice.sh
 @@ -128,6 +128,8 @@ if echo "$checks" | grep -q "cc" ; then
      exit 1;
  fi

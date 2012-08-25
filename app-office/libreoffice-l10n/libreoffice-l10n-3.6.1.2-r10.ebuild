@@ -4,32 +4,35 @@
 
 EAPI="4"
 
-inherit eutils rpm versionator
+inherit eutils multilib rpm versionator
 
 DESCRIPTION="Translations for LibreOffice"
 HOMEPAGE="http://www.libreoffice.org"
 
 SLOT="0"
 
-LICENSE="LGPL-3"
+LICENSE="|| ( LGPL-3 MPL-1.1 )"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux"
 IUSE="offlinehelp"
 
 RESTRICT="binchecks mirror strip"
 
-LANGUAGES="af ar as ast be bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el en
-en_GB en_ZA eo es et eu fa fi fr ga gd gl gu he hi hr hu id is it ja ka kk km kn
-kok ko ks ku lb lo lt lv mai mk ml mn mni mr my nb ne nl nn nr nso oc om or
+LANGUAGES="af am ar as be bg bn bo br brx bs ca ca_XV cs cy da de dgo dz el en
+en_GB en_ZA eo es et eu fa fi fr ga gd gl gu he hi hr hu id is it ja ka kk km
+kn kok ko ks ku lb lo lt lv mai mk ml mn mni mr my nb ne nl nn nr nso oc om or
 pa_IN pl pt pt_BR ro ru rw sa_IN sat sd sh si sk sl sq sr ss st sv sw_TZ ta te
 tg th tn tr ts tt ug uk uz ve vi xh zh_CN zh_TW zu"
 LANGUAGES_HELP="bg bn bo bs ca ca_XV cs da de dz el en-US en-GB en-ZA eo es et
-eu fi fr gl gu he hi hr hu id is it ja ka km ko lb mk nb ne nl nn om pl pt pt_BR
-ru si sk sl sq sv tg tr ug uk vi zh_CN zh_TW"
+eu fi fr gl gu he hi hr hu id is it ja ka km ko lb mk nb ne nl nn om pl pt
+pt_BR ru si sk sl sq sv tg tr ug uk vi zh_CN zh_TW"
 
-MY_PN="${PN/-l10n}"
-MY_PVR=""
-BASE_URI="http://download.documentfoundation.org/${MY_PN}/stable/${PV}"
-RPM_LANG_URI="${BASE_URI}/rpm/x86/LibO_${PV}${MY_PVR}_Linux_x86_langpack-rpm"
+LN="${PN/-l10n}"
+LV2="$(get_version_component_range 1-2)"
+LV3="$(get_version_component_range 1-3)"
+
+L10N_RPM="LibO_${PV}_Linux_x86_langpack-rpm"
+L10N_URI="http://download.documentfoundation.org/${LN}/testing/${LV3}"
+RPM_LANG_URI="${L10N_URI}/rpm/x86/${L10N_RPM}"
 RPM_HELP_URI="${RPM_LANG_URI/langpack/helppack}"
 
 for language in ${LANGUAGES}; do
@@ -44,17 +47,9 @@ for language in ${LANGUAGES}; do
 	SRC_URI+=" linguas_${language}? ( ${langpack} ${helppack} )"
 done
 
-# available app-dicts/myspell dictionaries
-MYSPELLS="af bg ca cs cy da de el en eo es et fr ga gl he hr hu it ku lt mk nb
-nl nn pl pt ru sk sl sv tn zu"
+RDEPEND="app-text/hunspell"
 
-SDEPEND=""
-for language in ${MYSPELLS}; do
-	SDEPEND+=" linguas_${language}? ( app-dicts/myspell-${language} )"
-done
-
-DEPEND="=app-office/libreoffice-${PV}*"
-PDEPEND="${SDEPEND}"
+RESTRICT="mirror strip"
 
 S="${WORKDIR}"
 
@@ -67,7 +62,10 @@ src_unpack() {
 
 	local lang_path help_path
 	for language in ${LINGUAS//_/-}; do
-		lang_path="LibO_${PV}rc2_Linux_x86_langpack-rpm_${language}/RPMS/"
+		# break away if not enabled (paludis support)
+		use_if_iuse linguas_${language} || continue
+
+		lang_path="${L10N_RPM}_${language}/RPMS/"
 		help_path="${lang_path/langpack/helppack}"
 
 		if [[ ${language} != en ]]; then
@@ -96,12 +94,11 @@ src_configure() { :; }
 src_compile() { :; }
 
 src_install() {
-	local version="$(get_version_component_range 1-2)"
-	local path="${S}/opt/${MY_PN}${version}"
+	local path="${S}/opt/${LN}${LV2}"
 
-	# no linguas set or en without offlinehelp
+	# no lingua set or en without offlinehelp
 	if [ -d "${path}" ] ; then
-		insinto /usr/$(get_libdir)/${MY_PN}
+		insinto /usr/$(get_libdir)/${LN}
 		doins -r "${path}"/*
 	fi
 }

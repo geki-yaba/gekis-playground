@@ -46,8 +46,12 @@ svn_clean()
 # functions
 call_function()
 {
-	[[ $(type -t ${1}) == function ]] && ${1} \
-		|| warn "function: ${1}: not found! code left in unknown state"
+	if [[ $(type -t ${1}) == function ]]
+	then
+		${1}
+	else
+		warn "function: ${1}: not found! code left in unknown state"
+	fi
 }
 
 die()
