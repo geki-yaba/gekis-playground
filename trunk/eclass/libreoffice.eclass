@@ -41,6 +41,10 @@ IUSE="+branding custom-cflags dbus debug eds +fonts gnome graphite gstreamer gtk
 gtk3 junit kde ldap mysql odbc odk opengl postgres +python templates test webdav
 +xmlsec"
 
+# config
+LV2="$(get_version_component_range 1-2)"
+LV3="$(get_version_component_range 1-3)"
+
 # available template languages
 LANGUAGES="de en en_GB en_ZA es fr hu it"
 
@@ -181,9 +185,7 @@ DEPEND="${CDEPEND}
 	x11-proto/xineramaproto
 	x11-proto/xproto"
 
-#PDEPEND="=app-office/libreoffice-l10n-${LV2}*"
-
-PDEPEND="
+PDEPEND="=app-office/libreoffice-l10n-${LV2}*
 	fonts? ( media-fonts/liberation-fonts
 		media-fonts/libertine-ttf
 		media-fonts/urw-fonts )"
