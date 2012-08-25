@@ -4,19 +4,13 @@
 
 EAPI="4"
 
-inherit versionator
-
-# config
-LV2="$(get_version_component_range 1-2)"
-LV3="$(get_version_component_range 1-3)"
-
-# base configuration flags
-CONFBASE="3.6"
-
 inherit libreoffice
 
 # keywords
 KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux"
+
+# base configuration flags
+CONFBASE="3.6"
 
 # root
 S="${WORKDIR}/core"
