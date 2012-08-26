@@ -108,7 +108,7 @@ CDEPEND="
 	webdav? ( net-libs/neon )
 	xmlsec? ( dev-libs/nspr
 		dev-libs/nss )
-	libreoffice_extension_pdfimport? ( app-text/poppler[cxx,xpdf-headers] )
+	libreoffice_extension_pdfimport? ( app-text/poppler[cxx] )
 	libreoffice_extension_scripting-beanshell? ( dev-java/bsh )
 	libreoffice_extension_report-builder? ( dev-java/commons-logging:0 )
 	libreoffice_extension_wiki-publisher? ( dev-java/commons-codec:0
