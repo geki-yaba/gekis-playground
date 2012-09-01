@@ -15,7 +15,7 @@ EAPI="4"
 
 _libreoffice_java="1.6"
 _libreoffice_kde="never"
-_libreoffice_python="*:3.1:3.1"
+_libreoffice_python="3"
 _libreoffice_qt="4.7.4"
 
 CMAKE_REQUIRED="${_libreoffice_kde}"
@@ -165,7 +165,7 @@ DEPEND="${CDEPEND}
 	app-arch/zip
 	app-arch/unzip
 	dev-lang/perl
-	dev-libs/boost-headers
+	dev-libs/boost[date_time]
 	dev-perl/Archive-Zip
 	dev-util/cppunit
 	dev-util/gperf
@@ -246,7 +246,7 @@ libreoffice_pkg_setup() {
 
 	use kde && kde4-base_pkg_setup
 
-	python_set_active_version 3
+	python_set_active_version ${_libreoffice_python}
 	python_pkg_setup
 }
 
@@ -313,9 +313,11 @@ libreoffice_src_prepare() {
 	echo "--libdir=${EPREFIX}/usr/$(get_libdir)" >> ${config}
 	echo "--mandir=${EPREFIX}/usr/share/man" >> ${config}
 	echo "--docdir=${EPREFIX}/usr/share/doc/${PF}" >> ${config}
+	echo "--with-boost-libdir=$(boost-utils_get_library_path)" >> ${config}
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${config}
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
 	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
+	echo "--enable-mergelibs" >> ${config}
 	# new feature: --with-branding
 	#use branding && echo "--with-branding=${WORKDIR}" >> ${config}
 	use branding && echo "--with-intro-bitmap=${WORKDIR}/branding-intro.png" \
@@ -436,7 +438,6 @@ libreoffice_src_configure() {
 
 	# linker flags
 	use debug || export LINKFLAGSOPTIMIZE="${LDFLAGS}"
-	boost-utils_add_library_path
 
 	# qt/kde --- yay --- still necessary?!
 	#use kde && export KDE4DIR="${KDEDIR}"
@@ -451,14 +452,17 @@ libreoffice_src_compile() {
 	# it is broken because we send --without-help
 	# https://bugs.freedesktop.org/show_bug.cgi?id=46506
 	(
-		grep -v ^WORKDIR "${S}/Env.Host.sh" > "${S}/My.Host.sh"
-		source "${S}/My.Host.sh"
+		grep -v WORKDIR "${S}/config_host.mk" > "${S}/my_host.mk"
+		sed -r \
+			-e "s:(export [A-Z0-9_]+)=(.*)$:\1=\"\2\":" \
+			-i my_host.mk || die
+		source "${S}/my_host.mk"
 
 		local path="${SOLARVER}/${INPATH}/res/img"
-		mkdir -p "${path}"
+		mkdir -p "${path}" || die
 
 		perl "${WORKDIR}/help/helpcontent2/helpers/create_ilst.pl" \
-			-dir=default_images/res/helpimg \
+			-dir=icon-themes/galaxy/res/helpimg \
 			> "${path}/helpimg.ilst"
 
 		[[ -s "${path}/helpimg.ilst" ]] \
@@ -496,6 +500,9 @@ libreoffice_src_install() {
 	# https://bugs.freedesktop.org/show_bug.cgi?id=46506
 	insinto /usr/$(get_libdir)/libreoffice/help
 	doins xmlhelp/util/*.xsl
+
+	# remove old cruft
+	rm -rf "${ED}"/usr/share/mimelnk/
 }
 
 libreoffice_pkg_preinst() {
