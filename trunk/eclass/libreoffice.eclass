@@ -38,8 +38,7 @@ LICENSE="|| ( LGPL-3 MPL-1.1 )"
 RESTRICT="binchecks mirror"
 
 IUSE="+branding custom-cflags dbus debug eds +fonts gnome graphite gstreamer gtk
-gtk3 junit kde ldap mysql odbc odk opengl postgres +python templates test webdav
-+xmlsec"
+gtk3 junit kde ldap mysql odbc odk opengl postgres templates test webdav +xmlsec"
 
 # config
 LV2="$(get_version_component_range 1-2)"
