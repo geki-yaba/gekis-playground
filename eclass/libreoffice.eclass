@@ -122,7 +122,7 @@ CDEPEND="
 	  app-text/libwps:0
 	  app-text/mythes
 	>=dev-cpp/clucene-2.3
-	>=dev-cpp/libcmis-0.2
+	>=dev-cpp/libcmis-0.2:0.2
 	  dev-libs/expat
 	  dev-libs/hyphen
 	  dev-libs/icu
