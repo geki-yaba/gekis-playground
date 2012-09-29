@@ -38,7 +38,7 @@ LICENSE="|| ( LGPL-3 MPL-1.1 )"
 RESTRICT="binchecks mirror"
 
 IUSE="+branding custom-cflags dbus debug eds +fonts gnome graphite gstreamer gtk
-gtk3 junit kde ldap mysql odbc odk opengl postgres templates test webdav +xmlsec"
+gtk3 kde ldap mysql odbc odk opengl postgres templates test webdav +xmlsec"
 
 # config
 LV2="$(get_version_component_range 1-2)"
@@ -158,15 +158,15 @@ RDEPEND="${CDEPEND}
 DEPEND="${CDEPEND}
 	java? ( virtual/jdk:${_libreoffice_java}
 		dev-java/ant-core )
-	junit? ( dev-java/junit:4 )
 	odbc? ( dev-db/unixODBC )
 	odk? ( app-doc/doxygen )
+	test? ( java? ( dev-java/junit:4 )
+		dev-util/cppunit )
 	app-arch/zip
 	app-arch/unzip
 	dev-lang/perl
 	dev-libs/boost[date_time]
 	dev-perl/Archive-Zip
-	dev-util/cppunit
 	dev-util/gperf
 	dev-util/intltool
 	dev-util/mdds
@@ -192,7 +192,6 @@ PDEPEND="=app-office/libreoffice-l10n-${LV2}*
 _libreoffice_use_gtk="|| ( gtk gtk3 )"
 REQUIRED_USE="eds? ( ${_libreoffice_use_gtk} )
 	gnome? ( ${_libreoffice_use_gtk} )
-	junit? ( java )
 	libreoffice_extension_report-builder? ( java )
 	libreoffice_extension_nlpsolver? ( java )
 	libreoffice_extension_scripting-beanshell? ( java )
@@ -383,13 +382,14 @@ libreoffice_src_prepare() {
 		echo "--with-java-target-version=${_libreoffice_java}" >> ${config}
 		echo "--with-jvm-path=/usr/$(get_libdir)/" >> ${config}
 
-		# junit:4
-		use junit && echo "--with-junit=$(java-pkg_getjar \
+		# test: java/junit:4
+		use test && echo "--with-junit=$(java-pkg_getjar \
 			junit-4 junit.jar)" >> ${config}
 	fi
 
-	# junit:4
-	use !junit && echo "--without-junit" >> ${config}
+	# test: cpp/cppunit java/junit:4
+	use test && echo "--with-system-cppunit" >> ${config}
+	use !test && echo "--without-junit" >> ${config}
 
 	if use libreoffice_extension_scripting-beanshell; then
 		echo "--with-system-beanshell" >> ${config}
@@ -472,8 +472,7 @@ libreoffice_src_compile() {
 }
 
 libreoffice_src_test() {
-	use test && make unitcheck
-	use test && make slowcheck
+	use test && make check
 }
 
 libreoffice_src_install() {

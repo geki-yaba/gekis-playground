@@ -1,0 +1,52 @@
+--- Makefile.top
++++ Makefile.top
+@@ -243,7 +243,7 @@ xsltml\
+ zlib\
+ 
+ gb_TAILBUILDMODULES := $(shell $(GNUMAKE) -r -f $(SRCDIR)/tail_build/Makefile showmodules)
+-export gb_TAILBUILDTARGET=all slowcheck
++export gb_TAILBUILDTARGET=all
+ 
+ define gbuild_module_rules
+ .PHONY: $(1) $(1).all $(1).clean $(1).deliver
+@@ -480,11 +480,17 @@ findunusedcode:
+               | grep -v WPX \
+               > unusedcode.easy
+ 
+-check: dev-install subsequentcheck
++check: unitcheck slowcheck dev-install subsequentcheck
+ 
+ subsequentcheck :| $(if $(filter-out subsequentcheck,$(MAKECMDGOALS)),dev-install)
+ 	$(GNUMAKE) -j $(GMAKE_PARALLELISM) $(GMAKE_OPTIONS) -f Makefile.post $@
+ 
++unitcheck:
++	$(GNUMAKE) -j $(GMAKE_PARALLELISM) $(GMAKE_OPTIONS) -f Makefile.post $@
++
++slowcheck:
++	$(GNUMAKE) -j $(GMAKE_PARALLELISM) $(GMAKE_OPTIONS) -f Makefile.post $@
++
+ debugrun:
+ 	$(GNUMAKE) -j $(GMAKE_PARALLELISM) $(GMAKE_OPTIONS) -f Makefile.post $@
+ 
+--- solenv/bin/build.pl
++++ solenv/bin/build.pl
+@@ -1901,7 +1901,7 @@ sub run_job {
+             return 1 if (! $path =~ /prj$/ );
+             mkpath("$workdir/Logs");
+             my $gbuild_flags = '-j' . $ENV{GMAKE_MODULE_PARALLELISM};
+-            my $gbuild_target = 'all slowcheck';
++            my $gbuild_target = 'all';
+             if ($registered_name =~ /tail_build\/prj$/ )
+             {
+                 $gbuild_flags = '-j' . $ENV{GMAKE_PARALLELISM};
+--- solenv/gbuild/Module.mk
++++ solenv/gbuild/Module.mk
+@@ -129,7 +129,7 @@ gb_Module_DEVINSTALLHINT=
+ debugrun :| build
+ endif
+ 
+-all : build unitcheck
++all : build
+ 	$(info $(gb_Module_BUILDHINT))
+ 
+ build : 
