@@ -1,6 +1,6 @@
---- driver/CMakeLists.txt.orig	2010-11-06 12:45:20.584004580 +0100
-+++ driver/CMakeLists.txt	2010-11-06 12:46:37.212004579 +0100
-@@ -273,6 +273,7 @@
+--- driver/CMakeLists.txt	2012-10-17 21:53:03.646955984 +0200
++++ driver/CMakeLists.txt	2012-10-17 21:48:36.462941599 +0200
+@@ -277,6 +277,7 @@
  	INSTALL(TARGETS mysqlcppconn mysqlcppconn-static
  		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
  		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
