@@ -7,10 +7,10 @@ EAPI="4"
 inherit cmake-utils eutils flag-o-matic
 
 DEBIAN_URI="mirror://debian/pool/main/${PN:0:1}/${PN}"
-DEBIAN_SRC="${PN}_${PV}-4.debian.tar.gz"
+DEBIAN_SRC="${PN}_${PV}-2.debian.tar.gz"
 
 DESCRIPTION="MySQL database connector for C++ (mimics JDBC 4.0 API)"
-HOMEPAGE="http://forge.mysql.com/wiki/Connector_C++"
+HOMEPAGE="http://dev.mysql.com/downloads/connector/cpp/"
 SRC_URI="${DEBIAN_URI}/${DEBIAN_SRC}
 	mirror://mysql/Downloads/Connector-C++/${P}.tar.gz"
 
@@ -29,13 +29,18 @@ RDEPEND="${DEPEND}"
 CMAKE_IN_SOURCE_BUILD="1"
 
 src_prepare() {
+	local debian_patches="${WORKDIR}/debian/patches"
+
+	rm -v "${debian_patches}/no_README_LICENSE.mysql.diff"
+
 	EPATCH_SUFFIX="diff"
 	EPATCH_FORCE="yes"
 	EPATCH_MULTI_MSG="Applying Debian patches"
-	epatch "${WORKDIR}"/debian/patches
-	epatch "${FILESDIR}/${PN}"-1.1.0_pre814-libdir.patch
-	epatch "${FILESDIR}/${PN}"-1.1.0-clean-doc.patch
-	epatch "${FILESDIR}/${PN}"-1.1.0-install-components.patch
+	epatch "${debian_patches}"
+
+	epatch "${FILESDIR}"/libdir.diff
+	epatch "${FILESDIR}"/install_components.diff
+	epatch "${FILESDIR}"/kill_fubar.diff
 }
 
 src_configure() {
