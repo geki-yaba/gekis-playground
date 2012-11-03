@@ -55,6 +55,13 @@ REQUIRED_USE="graph_parallel? ( mpi )"
 S="${WORKDIR}/${BOOST_P}"
 
 boost_pkg_pretend() {
+	if has_version 'dev-libs/boost:0' ; then
+		eerror "Found installed package dev-libs/boost:0."
+		eerror
+		eerror "	emerge --unmerge dev-libs/boost:0"
+		die
+	fi
+
 	einfo "Enable useflag[test] to run developer tests!"
 
 	if use test ; then
