@@ -217,6 +217,10 @@ boost_src_install() {
 
 	cd "${S}"
 
+	# install boostcpp.jam to build external libraries
+	insinto /usr/share/boost-${BOOST_SLOT}
+	doins boostcpp.jam
+	
 	# install docs
 	if use doc ; then
 		local docdir="/usr/share/doc/${PF}/html"
