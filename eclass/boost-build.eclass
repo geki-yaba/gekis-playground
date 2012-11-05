@@ -129,4 +129,3 @@ boost-build_src_test() {
 	cd "${BOOST_JAM_TEST}" || die
 	./test.sh || die "tests failed"
 }
-

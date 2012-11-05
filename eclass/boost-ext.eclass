@@ -114,6 +114,14 @@ boost-ext_src_install() {
 			ln -s ../${f} "${ED}"/${path}/${f/-${dbgver}} || die
 		done
 	fi
+
+	cd "${S}"
+
+	local dir="/usr/include/${PN}-${SLOT}"
+
+	dodir "${dir}"
+	insinto "${dir}"
+	doins -r boost
 }
 
 _boost_root() {

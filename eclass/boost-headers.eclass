@@ -82,10 +82,9 @@ boost-headers_src_configure() { :; }
 boost-headers_src_compile() { :; }
 
 boost-headers_src_install() {
-	dir="/usr/include/boost-${BOOST_SLOT}"
+	local dir="/usr/include/boost-${BOOST_SLOT}"
 
 	dodir "${dir}"
 	insinto "${dir}"
 	doins -r boost
 }
-

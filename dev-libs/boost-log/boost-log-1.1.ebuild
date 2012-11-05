@@ -10,7 +10,6 @@ DESCRIPTION="Boost.Log c++ library"
 HOMEPAGE="http://boost-log.sourceforge.net/libs/log/doc/html/index.html"
 SRC_URI="mirror://sourceforge/${PN}/${P}.zip"
 
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 SLOT="0"
 
 RDEPEND="dev-libs/boost[datetime,filesystem,regex]"
