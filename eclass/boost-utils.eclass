@@ -37,7 +37,7 @@ boost-utils_get_library_path() {
 		slot="$(boost-utils_get_slot)"
 	fi
 
-	local path="${EPREFIX}/usr/$(get_libdir)/boost-${slot/./_}"
+	local path="${EPREFIX}/usr/$(get_libdir)/boost-${slot}"
 
 	if [ -d "${path}" ] ; then
 		echo -n "${path}"
@@ -51,9 +51,27 @@ boost-utils_get_slot() {
 	local slot="$(grep -o -e "[0-9]_[0-9][0-9]" ${header})"
 
 	if [ "${slot}" ] ; then
-		echo -n "${slot/_/.}"
+		echo -n "${slot}"
 	else
 		die "${FUNCNAME}: could not find boost slot"
+	fi
+}
+
+boost-utils_get_version() {
+	local header="${EPREFIX}/usr/include/boost/version.hpp"
+	local version="$(grep -o -e "BOOST_VERSION [0-9][0-9][0-9][0-9][0-9][0-9]" \
+		${header} | cut -d' ' -f2)"
+
+	local major=$(( ${version} / 100000 ))
+	local minor=$(( ${version} / 100 % 1000 ))
+	local micro=$(( ${version} % 100 ))
+
+	version="${major}_${minor}_${micro}"
+
+	if [ "${version}" ] ; then
+		echo -n "${version}"
+	else
+		die "${FUNCNAME}: could not find boost version"
 	fi
 }
 
