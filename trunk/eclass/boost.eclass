@@ -64,10 +64,7 @@ boost_pkg_pretend() {
 
 	einfo "Enable useflag[test] to run developer tests!"
 
-	if use test ; then
-		CHECKREQS_DISK_BUILD="15G"
-		check-reqs_pkg_pretend
-	fi
+	use test && CHECKREQS_DISK_BUILD="15G" check-reqs_pkg_pretend
 }
 
 boost_pkg_setup() {
@@ -565,4 +562,3 @@ _boost_fix_jamtest() {
 		fi
 	done
 }
-
