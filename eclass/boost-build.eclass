@@ -120,7 +120,7 @@ boost-build_src_install() {
 		notes/build_dir_option.txt notes/relative_source_paths.txt
 
 	if use examples ; then
-		insinto /usr/share/doc/${PF}
+		insinto /usr/share/${PN}-${SLOT}
 		doins -r example
 	fi
 }

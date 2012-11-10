@@ -39,7 +39,7 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 LICENSE="Boost-1.0"
 KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
 
-IUSE="debug doc icu static test +threads tools"
+IUSE="debug doc examples icu static test +threads tools"
 # add available libraries of boost version 
 IUSE+=" ${BOOST_LIBRARIES}"
 
@@ -214,17 +214,31 @@ boost_src_install() {
 
 	cd "${S}"
 
-	# install Jamroot, boostcpp.jam to build external libraries
 	insinto /usr/share/boost-${BOOST_SLOT}
+
+	# install Jamroot, boostcpp.jam to build external libraries
 	doins Jamroot boostcpp.jam
-	
+
+	# install examples
+	if use examples ; then
+		for d in libs/*/build libs/*/example libs/*/examples libs/*/samples; do
+			[ -d "${d}" ] && doins -r "${d}"
+		done
+	fi
+
 	# install docs
 	if use doc ; then
-		local docdir="/usr/share/doc/${PF}/html"
+		find libs/*/* -type d \
+			-iname "test" \
+			-or -iname "src" \
+			-or -iname "samples" \
+			-or -iname "examples" \
+			-or -iname "example" \
+			-or -iname "build" | \
+			xargs rm -rf
 
-		find libs/*/* -type d -iname "test" -or -iname "src" | xargs rm -rf
+		insinto "/usr/share/doc/${PN}-${SLOT}/html"
 
-		insinto ${docdir}
 		doins -r libs
 		# avoid broken links
 		doins LICENSE_1_0.txt
