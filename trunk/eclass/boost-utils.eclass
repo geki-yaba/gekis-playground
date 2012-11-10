@@ -46,6 +46,16 @@ boost-utils_get_library_path() {
 	fi
 }
 
+boost-utils_has_libraries() {
+	local path="$(boost-utils_get_library_path)"
+
+	if [ -d "${path}" ] ; then
+		if [ "$(ls -A ${path})" ] ; then
+			echo -n "true"
+		fi
+	fi
+}
+
 boost-utils_get_slot() {
 	local header="${EPREFIX}/usr/include/boost/version.hpp"
 	local slot="$(grep -o -e "[0-9]_[0-9][0-9]" ${header})"
@@ -85,4 +95,3 @@ boost-utils_add_library_path() {
 boost-utils_add_paths() {
 	boost-utils_add_library_path
 }
-

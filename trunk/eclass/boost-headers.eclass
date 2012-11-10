@@ -45,6 +45,13 @@ SOURCE="/usr/include/boost"
 ALTERNATIVES="/usr/include/boost-[0-9]_[0-9][0-9]/boost"
 
 boost-headers_pkg_pretend() {
+	if has_version 'dev-libs/boost:0' ; then
+		eerror "Found installed package dev-libs/boost:0."
+		eerror
+		eerror "	emerge --unmerge dev-libs/boost:0"
+		die
+	fi
+
 	local err=
 
 	# old libraries
@@ -82,9 +89,6 @@ boost-headers_src_configure() { :; }
 boost-headers_src_compile() { :; }
 
 boost-headers_src_install() {
-	local dir="/usr/include/boost-${BOOST_SLOT}"
-
-	dodir "${dir}"
-	insinto "${dir}"
+	insinto "/usr/include/boost-${BOOST_SLOT}"
 	doins -r boost
 }
