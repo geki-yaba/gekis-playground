@@ -275,7 +275,7 @@ boost_src_install() {
 	local path="/usr/$(get_libdir)/${PN}-${BOOST_SLOT}"
 
 	dodir ${path}
-	for f in $(ls -1 ${library_targets} | grep -v debug) ; do
+	for f in $(ls -1 ${library_targets} 2>/dev/null | grep -v debug) ; do
 		ln -s ../${f} "${ED}"/${path}/${f/-${libver}} || die
 	done
 
@@ -283,7 +283,7 @@ boost_src_install() {
 		path+="-debug"
 
 		dodir ${path}
-		for f in $(ls -1 ${library_targets} | grep debug) ; do
+		for f in $(ls -1 ${library_targets} 2>/dev/null | grep debug) ; do
 			ln -s ../${f} "${ED}"/${path}/${f/-${dbgver}} || die
 		done
 	fi

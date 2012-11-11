@@ -121,24 +121,22 @@ boost-ext_src_install() {
 
 	cd "${ED}/usr/$(get_libdir)" || die
 
-	# debug version
-	local libver="${boost_version/_0}"
-	local dbgver="${libver}-debug"
-
 	# subdirectory with unversioned symlinks
 	local path="/usr/$(get_libdir)/boost-${slot}"
+	local libver="${boost_version/_0}"
 
 	dodir ${path}
-	for f in $(ls -1 ${library_targets} | grep -v debug) ; do
+	for f in $(ls -1 ${library_targets} 2>/dev/null | grep -v debug) ; do
 		ln -s ../${f} "${ED}"/${path}/${f/-${libver}} || die
 	done
 
 	if use debug ; then
 		path+="-debug"
+		libver+="-debug"
 
 		dodir ${path}
-		for f in $(ls -1 ${library_targets} | grep debug) ; do
-			ln -s ../${f} "${ED}"/${path}/${f/-${dbgver}} || die
+		for f in $(ls -1 ${library_targets} 2>/dev/null | grep debug) ; do
+			ln -s ../${f} "${ED}"/${path}/${f/-${libver}} || die
 		done
 	fi
 
@@ -159,7 +157,7 @@ _boost_root() {
 		local libpost="$(get_libname)"
 		local libname=""
 
-		for library in $(ls -1 ${path}/${libpre}*${libpost} | \
+		for library in $(ls -1 ${path}/${libpre}*${libpost} 2>/dev/null | \
 			grep -v '\-mt' | grep -v python); do
 			libname="$(basename ${library})"
 			libname="${libname/${libpre}}"

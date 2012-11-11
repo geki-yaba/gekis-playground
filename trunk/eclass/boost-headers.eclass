@@ -45,17 +45,19 @@ SOURCE="/usr/include/boost"
 ALTERNATIVES="/usr/include/boost-[0-9]_[0-9][0-9]/boost"
 
 boost-headers_pkg_pretend() {
+	local err=0
+
 	if has_version 'dev-libs/boost:0' ; then
+		eerror
 		eerror "Found installed package dev-libs/boost:0."
 		eerror
 		eerror "	emerge --unmerge dev-libs/boost:0"
-		die
+		err=1
 	fi
 
-	local err=
-
 	# old libraries
-	ls -1 "${EPREFIX}"/usr/$(get_libdir)/libboost_* | grep -v boost_*_*
+	ls -1 "${EPREFIX}"/usr/$(get_libdir)/libboost_* 2>/dev/null | \
+		grep -v boost_*_* >/dev/null
 	[ -z ${?} ] && err=1
 
 	# old includes
@@ -65,7 +67,7 @@ boost-headers_pkg_pretend() {
 	# unslotted boost-headers
 	[ -e "${EPREFIX}${SOURCE}" ] && [ ! -L "${EPREFIX}${SOURCE}" ] && err=1
 
-	if [ ${err} ] ; then
+	if [ -n ${err} ] ; then
 		eerror
 		eerror "Files from old dev-libs/boost package found."
 		eerror "Please clean your system following the howto at:"
