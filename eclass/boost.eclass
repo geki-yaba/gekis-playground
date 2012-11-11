@@ -20,7 +20,7 @@ RESTRICT_PYTHON_ABIS="*-jython *-pypy-*"
 
 inherit base check-reqs flag-o-matic multilib python toolchain-funcs versionator
 
-EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test pkg_postinst pkg_postrm
 
 SLOT="$(get_version_component_range 1-2)"
 BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
@@ -363,6 +363,14 @@ __EOF__
 	fi
 }
 
+boost_pkg_postinst() {
+	use mpi && use python && python_mod_optimize boost
+}
+
+boost_pkg_postrm() {
+	use mpi && use python && python_mod_cleanup boost
+}
+
 _boost_config() {
 	[[ "${#}" -gt "1" ]] && die "${FUNCNAME}: wrong parameter"
 
@@ -533,7 +541,7 @@ _boost_options() {
 
 	local use_icu="disable"
 	use regex && use icu && use_icu="enable"
-	options+=" --${use_icu}-icu"
+	options+=" --${use_icu}-icu boost.locale.icu=off"
 
 	echo -n ${options}
 }
