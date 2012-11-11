@@ -98,7 +98,7 @@ boost_src_prepare() {
 
 	# boost.random library: /dev/urandom support
 	if [[ ${SLOT} < 1.48 ]] && use random && [[ -e /dev/urandom ]] ; then
-		local lib_random="${S}/libs/random"
+		local lib_random="libs/random"
 
 		mkdir -p "${lib_random}"/build
 		cp -v "${FILESDIR}"/random-Jamfile "${lib_random}"/build
@@ -107,6 +107,9 @@ boost_src_prepare() {
 			-i "${lib_random}"/src/random_device.cpp \
 			|| die
 	fi
+
+	# fix glibc conflict
+	[[ ${SLOT} < 1.50 ]] && _boost_fix_glibc
 
 	# fix tests
 	use test && _boost_fix_jamtest
@@ -558,8 +561,14 @@ _boost_threading() {
 	echo -n ${threading}
 }
 
+_boost_fix_glibc() {
+	for f in $(grep -rl "TIME_UTC" * 2>/dev/null) ; do
+		sed -e "s:TIME_UTC:TIME_UTC_:" -i ${f}
+	done
+}
+
 _boost_fix_jamtest() {
-	local jam libraries="$(find "${S}"/libs/ -type d -name test)"
+	local jam libraries="$(find libs/ -type d -name test)"
 
 	for library in ${libraries} ; do
 		jam="${library}/Jamfile.v2"
@@ -567,8 +576,7 @@ _boost_fix_jamtest() {
 		if [ -f ${jam} ] ; then
 			if grep -s -q ^project "${jam}" ; then
 				if ! grep -s -q "import testing" "${jam}" ; then
-					eerror "Jamfile broken for testing: 'import testing' missing."
-					eerror "Report upstream broken file: ${jam}"
+					eerror "Jamfile broken for testing: 'import testing' missing. fixing ..."
 
 					sed -e "s:^project:import testing ;\n\0:" -i "${jam}"
 				fi
