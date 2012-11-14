@@ -45,7 +45,7 @@ SOURCE="/usr/include/boost"
 ALTERNATIVES="/usr/include/boost-[0-9]_[0-9][0-9]/boost"
 
 boost-headers_pkg_pretend() {
-	local err=0
+	local err=
 
 	if has_version 'dev-libs/boost:0' ; then
 		eerror
@@ -67,7 +67,11 @@ boost-headers_pkg_pretend() {
 	# unslotted boost-headers
 	[ -e "${EPREFIX}${SOURCE}" ] && [ ! -L "${EPREFIX}${SOURCE}" ] && err=1
 
-	if [ -n ${err} ] ; then
+	# old eselect cruft
+	local boostbook="/usr/share/boostbook"
+	[ -e "${EPREFIX}${boostbook}" ] && [ -L "${EPREFIX}${boostbook}" ] && err=1
+
+	if [ ${err} ] ; then
 		eerror
 		eerror "Files from old dev-libs/boost package found."
 		eerror "Please clean your system following the howto at:"
