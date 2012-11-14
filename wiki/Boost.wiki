@@ -16,6 +16,7 @@ Remove boost & eselect-boost and its left-overs located at:
 {{{
 /usr/include/boost
 /usr/lib/libboost_*
+/usr/share/boostbook
 }}}
 
 Check the system for boost libraries used:
