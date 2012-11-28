@@ -92,8 +92,8 @@ CDEPEND="
 	eds? ( gnome-extra/evolution-data-server )
 	gnome? ( gnome-base/gconf:2 )
 	graphite? ( media-gfx/graphite2 )
-	gstreamer? ( media-libs/gstreamer
-		media-libs/gst-plugins-base )
+	gstreamer? ( media-libs/gstreamer:0.10
+		media-libs/gst-plugins-base:0.10 )
 	gtk? ( x11-libs/gtk+:2 )
 	gtk3? ( x11-libs/gtk+:3 )
 	kde? ( x11-libs/qt-core
