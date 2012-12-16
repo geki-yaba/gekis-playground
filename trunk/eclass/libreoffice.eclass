@@ -15,7 +15,7 @@ EAPI="4"
 
 _libreoffice_java="1.6"
 _libreoffice_kde="never"
-_libreoffice_python="3"
+_libreoffice_python="3:3.3"
 _libreoffice_qt="4.7.4"
 
 CMAKE_REQUIRED="${_libreoffice_kde}"
@@ -37,8 +37,9 @@ SLOT="0"
 LICENSE="|| ( LGPL-3 MPL-1.1 )"
 RESTRICT="binchecks mirror"
 
-IUSE="+branding custom-cflags dbus debug eds +fonts gnome graphite gstreamer gtk
-gtk3 kde ldap mysql odbc odk opengl postgres templates test webdav +xmlsec"
+IUSE="bluetooth +branding custom-cflags dbus debug eds extensions +fonts glib
+gnome graphite gstreamer gtk gtk3 kde nsplugin odbc odk opengl pdfimport
+postgres scripting telepathy test webdav"
 
 # config
 LV2="$(get_version_component_range 1-2)"
@@ -52,11 +53,19 @@ for language in ${LANGUAGES}; do
 done
 
 # extensions
-EXTENSIONS="nlpsolver pdfimport presenter-console presenter-minimizer
-report-builder scripting-beanshell scripting-javascript wiki-publisher"
+EXTENSIONS="barcode ct2n diagram google-docs hunart languagetool mysql-connector
+nlpsolver numbertext presenter-minimizer report-builder typo validator
+watch-window wiki-publisher"
 
 for extension in ${EXTENSIONS}; do
 	IUSE+=" libreoffice_extension_${extension}"
+done
+
+# scripting
+SCRIPTINGS="beanshell javascript"
+
+for scripting in ${SCRIPTINGS}; do
+	IUSE+=" libreoffice_scripting_${scripting}"
 done
 
 # paths
@@ -65,21 +74,8 @@ EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
 BRAND_URI="http://dev.gentoo.org/~dilfridge/distfiles"
 
 # branding
-BRAND_SRC="${PN}-branding-gentoo-0.6.tar.xz"
-
-# templates
-TDEPEND=""
-TDEPEND+=" linguas_de? ( ${EXT_URI}/53ca5e56ccd4cab3693ad32c6bd13343-Sun-ODF-Template-Pack-de_1.0.0.oxt )"
-TDEPEND+=" linguas_en? ( ${EXT_URI}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
-TDEPEND+=" linguas_en_GB? ( ${EXT_URI}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
-TDEPEND+=" linguas_en_ZA? ( ${EXT_URI}/472ffb92d82cf502be039203c606643d-Sun-ODF-Template-Pack-en-US_1.0.0.oxt )"
-TDEPEND+=" linguas_es? ( ${EXT_URI}/4ad003e7bbda5715f5f38fde1f707af2-Sun-ODF-Template-Pack-es_1.0.0.oxt )"
-TDEPEND+=" linguas_fr? ( ${EXT_URI}/a53080dc876edcddb26eb4c3c7537469-Sun-ODF-Template-Pack-fr_1.0.0.oxt )"
-TDEPEND+=" linguas_hu? ( ${EXT_URI}/09ec2dac030e1dcd5ef7fa1692691dc0-Sun-ODF-Template-Pack-hu_1.0.0.oxt )"
-TDEPEND+=" linguas_it? ( ${EXT_URI}/b33775feda3bcf823cad7ac361fd49a6-Sun-ODF-Template-Pack-it_1.0.0.oxt )"
-
-SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )
-	templates? ( ${TDEPEND} )"
+BRAND_SRC="${PN}-branding-gentoo-0.7.tar.xz"
+SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )"
 
 # modules
 MODULES="core help"
@@ -88,50 +84,53 @@ MODULES="core help"
 PATCHES=( "${FILESDIR}" )
 
 CDEPEND="
+	bluetooth? ( net-wireless/bluez )
 	dbus? ( dev-libs/dbus-glib )
 	eds? ( gnome-extra/evolution-data-server )
 	gnome? ( gnome-base/gconf:2 )
 	graphite? ( media-gfx/graphite2 )
-	gstreamer? ( media-libs/gstreamer:0.10
-		media-libs/gst-plugins-base:0.10 )
+	gstreamer? ( media-libs/gstreamer:1.0
+		media-libs/gst-plugins-base:1.0 )
 	gtk? ( x11-libs/gtk+:2 )
 	gtk3? ( x11-libs/gtk+:3 )
-	kde? ( x11-libs/qt-core
+	kde? ( x11-libs/qt-core[glib?]
 		x11-libs/qt-gui
 		kde-base/kdelibs
 		kde-base/kstyles )
-	ldap? ( net-nds/openldap )
-	mysql? ( dev-db/mysql-connector-c++:0 )
 	opengl? ( virtual/opengl virtual/glu )
+	pdfimport? ( app-text/poppler[cxx] )
 	postgres? ( dev-db/postgresql-base[kerberos] )
 	webdav? ( net-libs/neon )
-	xmlsec? ( dev-libs/nspr
-		dev-libs/nss )
-	libreoffice_extension_pdfimport? ( app-text/poppler[cxx] )
-	libreoffice_extension_scripting-beanshell? ( dev-java/bsh )
+	libreoffice_extension_mysql-connector? ( dev-db/mysql-connector-c++:0 )
 	libreoffice_extension_report-builder? ( dev-java/commons-logging:0 )
 	libreoffice_extension_wiki-publisher? ( dev-java/commons-codec:0
 		dev-java/commons-httpclient:3
 		dev-java/commons-lang:2.1
 		dev-java/commons-logging:0
 		dev-java/tomcat-servlet-api:3.0 )
+	libreoffice_scripting_beanshell? ( dev-java/bsh )
+	telepathy? ( >=net-libs/telepathy-glib-0.18.0 )
 	  app-text/hunspell
 	  app-text/libexttextcat
+	  app-text/liblangtag
+	  app-text/libmspub
 	  app-text/libwpd:0.9[tools]
 	  app-text/libwpg:0.2
 	  app-text/libwps:0
 	  app-text/mythes
 	>=dev-cpp/clucene-2.3
-	>=dev-cpp/libcmis-0.2:0.2
+	  dev-cpp/libcmis:0.3
 	  dev-libs/expat
 	  dev-libs/hyphen
 	  dev-libs/icu
 	  dev-libs/jemalloc
+	>=dev-libs/liborcus-0.3
 	  dev-libs/libxml2
 	  dev-libs/libxslt
+	  dev-libs/nspr
+	  dev-libs/nss
 	  dev-libs/openssl
 	  dev-libs/redland[ssl]
-	  gnome-base/librsvg
 	  media-libs/fontconfig
 	  media-libs/freetype:2
 	  media-libs/lcms:2
@@ -139,9 +138,9 @@ CDEPEND="
 	  media-libs/libpng
 	  media-libs/libvisio
 	  net-misc/curl
+	  net-nds/openldap
 	  net-print/cups
 	  sci-mathematics/lpsolve
-	>=sys-libs/db-4.7
 	  sys-libs/zlib
 	  x11-libs/libXrender
 	  x11-libs/cairo[X,svg]
@@ -156,7 +155,7 @@ RDEPEND="${CDEPEND}
 	java? ( >=virtual/jre-${_libreoffice_java} )"
 
 DEPEND="${CDEPEND}
-	java? ( virtual/jdk:${_libreoffice_java}
+	java? ( >=virtual/jdk-${_libreoffice_java}
 		dev-java/ant-core )
 	odbc? ( dev-db/unixODBC )
 	odk? ( app-doc/doxygen )
@@ -179,24 +178,29 @@ DEPEND="${CDEPEND}
 	sys-devel/bison
 	sys-devel/flex
 	sys-devel/gettext
+	sys-devel/ucpp
 	x11-proto/randrproto
 	x11-proto/xextproto
 	x11-proto/xineramaproto
 	x11-proto/xproto"
 
-PDEPEND="=app-office/libreoffice-l10n-${LV2}*
+#	=app-office/libreoffice-l10n-${LV2}*
+PDEPEND="
 	fonts? ( media-fonts/liberation-fonts
 		media-fonts/libertine-ttf
 		media-fonts/urw-fonts )"
 
 _libreoffice_use_gtk="|| ( gtk gtk3 )"
-REQUIRED_USE="eds? ( ${_libreoffice_use_gtk} )
+REQUIRED_USE="
+	bluetooth? ( dbus )
+	eds? ( ${_libreoffice_use_gtk} )
 	gnome? ( ${_libreoffice_use_gtk} )
 	libreoffice_extension_report-builder? ( java )
 	libreoffice_extension_nlpsolver? ( java )
-	libreoffice_extension_scripting-beanshell? ( java )
-	libreoffice_extension_scripting-javascript? ( java )
-	libreoffice_extension_wiki-publisher? ( java )"
+	libreoffice_extension_wiki-publisher? ( java )
+	libreoffice_scripting_beanshell? ( java )
+	libreoffice_scripting_javascript? ( java )
+	nsplugin? ( ${_libreoffice_use_gtk} )"
 
 libreoffice_pkg_pretend() {
 	elog
@@ -211,10 +215,10 @@ libreoffice_pkg_pretend() {
 		ewarn "	# USE=\"java\" emerge ${CATEGORY}/${PN}"
 	fi
 
-	_libreoffice_custom-cflags_message
-
 	# skip build-time info for binary merge
 	[[ ${MERGE_TYPE} == binary ]] && return
+
+	_libreoffice_custom-cflags_message
 
 	elog
 	einfo "There are various extensions to ${PN}."
@@ -237,6 +241,17 @@ libreoffice_pkg_pretend() {
 			die "PostgreSQL slot is not set to 9.0 or higher."
 		fi
 	fi
+
+	# developer flags
+	if [ -z ${I_WANT_TO_DEVELOP_LIBREOFFICE} ]; then
+		for u in extensions scripting; do
+			if use !${u}; then
+				eerror "I_WANT_TO_DEVELOP_LIBREOFFICE is not set!"
+				eerror "So, you are no developer, do not unset useflag[${u}]!"
+				die
+			fi
+		done
+	fi
 }
 
 libreoffice_pkg_setup() {
@@ -244,8 +259,10 @@ libreoffice_pkg_setup() {
 
 	use kde && kde4-base_pkg_setup
 
-	python_set_active_version ${_libreoffice_python}
+	python_set_active_version 3
 	python_pkg_setup
+
+	echo $PYTHON
 }
 
 libreoffice_src_unpack() {
@@ -267,24 +284,6 @@ libreoffice_src_unpack() {
 		cd "${WORKDIR}"
 		unpack "${BRAND_SRC}"
 	fi
-
-	# copy extension templates; o what fun ...
-	if use templates; then
-		local tmplfile tmplname
-		local dest="${S}/extras/source/extensions"
-		mkdir -p "${dest}"
-
-		for template in ${TDEPEND}; do
-			if [[ ${template: -3:3} == oxt ]]; then
-				tmplfile="${DISTDIR}/$(basename ${template})"
-				tmplname="$(echo "${template}" | \
-					cut -f 2- -s -d - | cut -f 1 -d _)"
-
-				[ -f ${tmplfile} ] && [ ! -f "${dest}/${tmplname}".oxt ] \
-					&& { cp -v "${tmplfile}" "${dest}/${tmplname}".oxt || die; }
-			fi
-		done
-	fi
 }
 
 libreoffice_src_prepare() {
@@ -301,7 +300,7 @@ libreoffice_src_prepare() {
 	# create distro config
 	local config="${S}/distro-configs/GentooUnstable.conf"
 	sed -e /^#/d \
-		< "${FILESDIR}"/conf/GentooUnstable-${CONFBASE} \
+		< "${FILESDIR}"/conf/GentooUnstable-${LV2} \
 		> ${config} \
 		|| die "base configuration generation failed"
 
@@ -314,7 +313,7 @@ libreoffice_src_prepare() {
 	echo "--with-boost-libdir=$(boost-utils_get_library_path)" >> ${config}
 	echo "--with-build-version=geki built ${PV} (unsupported)" >> ${config}
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
-	echo "--with-num-cpus=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
+	echo "--with-parallelism=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
 	echo "--enable-mergelibs" >> ${config}
 	# new feature: --with-branding
 	#use branding && echo "--with-branding=${WORKDIR}" >> ${config}
@@ -327,28 +326,27 @@ libreoffice_src_prepare() {
 	echo "$(use_enable odk)" >> ${config}
 	echo "$(use_with java)" >> ${config}
 	echo "$(use_with odk doxygen)" >> ${config}
-	echo "$(use_with templates sun-templates)" >> ${config}
 
 	# extensions
-	echo "$(use_enable mysql ext-mysql-connector)" >> ${config}
-
 	for extension in ${EXTENSIONS}; do
 		echo "$(use_enable libreoffice_extension_${extension} \
 			ext-${extension})" >> ${config}
+	done
+
+	for scripting in ${SCRIPTINGS}; do
+		echo "$(use_enable libreoffice_scripting_${scripting} \
+			scripting-${scripting})" >> ${config}
 	done
 
 	# internal
 	echo "$(use_enable dbus)" >> ${config}
 	echo "$(use_enable debug symbols)" >> ${config}
 	echo "$(use_enable test linkoo)" >> ${config}
-	echo "$(use_enable xmlsec)" >> ${config}
 
 	# system
 	echo "$(use_enable eds evolution2)" >> ${config}
 	echo "$(use_enable graphite)" >> ${config}
 	echo "$(use_with graphite system-graphite)" >> ${config}
-	echo "$(use_enable ldap)" >> ${config}
-	echo "$(use_with ldap openldap)" >> ${config}
 	echo "$(use_with odbc system-odbc)" >> ${config}
 	echo "$(use_enable opengl)" >> ${config}
 	echo "$(use_with opengl system-mesa-headers)" >> ${config}
@@ -356,8 +354,10 @@ libreoffice_src_prepare() {
 	echo "$(use_with webdav system-neon)" >> ${config}
 
 	# sql
-	echo "$(use_with mysql system-mysql)" >> ${config}
-	echo "$(use_with mysql system-mysql-cppconn)" >> ${config}
+	echo "$(use_with libreoffice_extension_mysql-connector \
+		system-mysql)" >> ${config}
+	echo "$(use_with libreoffice_extension_mysql-connector \
+		system-mysql-cppconn)" >> ${config}
 	echo "$(use_enable postgres postgresql-sdbc)" >> ${config}
 	echo "$(use_with postgres system-postgresql)" >> ${config}
 
@@ -379,7 +379,6 @@ libreoffice_src_prepare() {
 		echo "--with-ant-home=${ANT_HOME}" >> ${config}
 		echo "--with-jdk-home=$(java-config \
 			--jdk-home 2>/dev/null)" >> ${config}
-		echo "--with-java-target-version=${_libreoffice_java}" >> ${config}
 		echo "--with-jvm-path=/usr/$(get_libdir)/" >> ${config}
 
 		# test: java/junit:4
@@ -391,10 +390,10 @@ libreoffice_src_prepare() {
 	use test && echo "--with-system-cppunit" >> ${config}
 	use !test && echo "--without-junit" >> ${config}
 
-	if use libreoffice_extension_scripting-beanshell; then
-		echo "--with-system-beanshell" >> ${config}
-		echo "--with-beanshell-jar=$(java-pkg_getjar bsh bsh.jar)" >> ${config}
-	fi
+	# extras
+	echo "$(use_enable bluetooth sdremote)" >> ${config}
+	echo "$(use_enable bluetooth sdremote-bluetooth)" >> ${config}
+	echo "$(use_enable telepathy)" >> ${config}
 
 	# extensions
 	if use libreoffice_extension_wiki-publisher; then
@@ -415,6 +414,16 @@ libreoffice_src_prepare() {
 			commons-logging commons-logging.jar)" >> ${config}
 		echo "--with-system-apache-commons" >> ${config}
 	fi
+
+	# scripting
+	if use libreoffice_scripting_beanshell; then
+		echo "--with-system-beanshell" >> ${config}
+		echo "--with-beanshell-jar=$(java-pkg_getjar bsh bsh.jar)" >> ${config}
+	fi
+
+	# developer
+	echo "$(use_enable extensions)" >> ${config}
+	echo "$(use_enable scripting)" >> ${config}
 
 	AT_M4DIR="m4" eautoreconf
 }
@@ -442,6 +451,11 @@ libreoffice_src_configure() {
 	#use kde && export KDE4DIR="${KDEDIR}"
 	#use kde && export QT4LIB="/usr/$(get_libdir)/qt4"
 
+	# pdfimport fubar'ed configure flag
+	local want_pdfimport="FALSE"
+	use pdfimport && want_pdfimport="TRUE"
+
+	ENABLE_PDFIMPORT="${want_pdfimport}" \
 	./autogen.sh --with-distro="GentooUnstable" \
 		|| die "configure failed"
 }
@@ -451,8 +465,10 @@ libreoffice_src_compile() {
 	# it is broken because we send --without-help
 	# https://bugs.freedesktop.org/show_bug.cgi?id=46506
 	(
-		grep -v WORKDIR "${S}/config_host.mk" > "${S}/my_host.mk"
+		grep ^export "${S}/config_host.mk" | grep -v WORKDIR > "${S}/my_host.mk"
 		sed -r \
+			-e "s:\$(gb_SPACE): :g" \
+			-e "s:\$(gb_Space): :g" \
 			-e "s:(export [A-Z0-9_]+)=(.*)$:\1=\"\2\":" \
 			-i my_host.mk || die
 		source "${S}/my_host.mk"
@@ -460,7 +476,7 @@ libreoffice_src_compile() {
 		local path="${SOLARVER}/${INPATH}/res/img"
 		mkdir -p "${path}" || die
 
-		perl "${WORKDIR}/help/helpcontent2/helpers/create_ilst.pl" \
+		perl "${WORKDIR}/help/helpers/create_ilst.pl" \
 			-dir=icon-themes/galaxy/res/helpimg \
 			> "${path}/helpimg.ilst"
 
@@ -492,6 +508,9 @@ libreoffice_src_install() {
 		newins "${WORKDIR}/branding-sofficerc" sofficerc \
 			|| ewarn "branding config failed"
 	fi
+
+	# proper location for nsplugin
+	use nsplugin && inst_plugin /usr/$(get_libdir)/${PN}/program/libnpsoplugin.so
 
 	# hack for offlinehelp, this needs fixing upstream at some point
 	# it is broken because we send --without-help
@@ -528,13 +547,16 @@ libreoffice_pkg_postinst() {
 	elog
 	elog "__________________________________________________________________"
 	elog " Some parts have to be installed via Extension Manager now"
-	ewarn " - VBA (VisualBasic-Assistant) support is no longer an extension"
-	use libreoffice_extension_pdfimport && elog " - pdfimport"
-	use libreoffice_extension_presenter-console && elog " - presentation console"
-	use libreoffice_extension_presenter-minimizer && elog " - presentation minimizer"
-	use libreoffice_extension_report-builder && elog " - report builder"
-	use libreoffice_extension_wiki-publisher && elog " - wiki publisher"
-	use mysql && elog " - MySQL (native) database connector"
+	elog
+	elog " Extensions:"
+	for extension in ${EXTENSIONS}; do
+		use libreoffice_extension_${extension} && elog " - ${extension}"
+	done
+	elog
+	elog " Scripting:"
+	for scripting in ${SCRIPTINGS}; do
+		use libreoffice_scripting_${scripting} && elog " - ${scripting}"
+	done
 	elog " ... more may come"
 	elog
 	elog " from /usr/$(get_libdir)/${PN}/share/extension/install/"

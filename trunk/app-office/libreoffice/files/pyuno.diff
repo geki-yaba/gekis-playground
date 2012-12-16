@@ -1,34 +1,33 @@
 --- desktop/scripts/soffice.sh
 +++ desktop/scripts/soffice.sh
-@@ -128,6 +128,8 @@ if echo "$checks" | grep -q "cc" ; then
+@@ -129,6 +129,9 @@ if echo "$checks" | grep -q "cc" ; then
      exit 1;
  fi
  
-+export PYTHONPATH="$sd_prog${PYTHONPATH+:$PYTHONPATH}"
++PYTHONPATH=$sd_prog${PYTHONPATH+:$PYTHONPATH}
++export PYTHONPATH
 +
  case "`uname -s`" in
  NetBSD|OpenBSD|FreeBSD|DragonFly)
  # this is a temporary hack until we can live with the default search paths
 --- pyuno/source/module/uno.py
 +++ pyuno/source/module/uno.py
-@@ -26,8 +26,12 @@
- # for a copy of the LGPLv3 License.
+@@ -16,8 +16,12 @@
+ #   except in compliance with the License. You may obtain a copy of
+ #   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  #
- #*************************************************************************
 +import os
  import sys
  
 +sys.path.append('%eprefix%/usr/%libdir%/libreoffice/program')
 +if getattr(os.environ, 'URE_BOOTSTRAP', None) is None:
-+     os.environ['URE_BOOTSTRAP'] = "vnd.sun.star.pathname:%eprefix%/usr/%libdir%/libreoffice/program/fundamentalrc"
++    os.environ['URE_BOOTSTRAP'] = "vnd.sun.star.pathname:%eprefix%/usr/%libdir%/libreoffice/program/fundamentalrc"
  import pyuno
  
  try:
-diff --git a/scripting/source/pyprov/officehelper.py b/scripting/source/pyprov/officehelper.py
-index 610ac5f..df243d0 100755
 --- scripting/source/pyprov/officehelper.py
 +++ scripting/source/pyprov/officehelper.py
-@@ -53,7 +53,7 @@ def bootstrap():
+@@ -44,7 +44,7 @@ def bootstrap():
          if "UNO_PATH" in os.environ:
              sOffice = os.environ["UNO_PATH"]
          else:
