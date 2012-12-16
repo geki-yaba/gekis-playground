@@ -37,9 +37,9 @@ SLOT="0"
 LICENSE="|| ( LGPL-3 MPL-1.1 )"
 RESTRICT="binchecks mirror"
 
-IUSE="bluetooth +branding custom-cflags dbus debug eds extensions +fonts glib
+IUSE="bluetooth +branding custom-cflags dbus debug eds +extensions +fonts glib
 gnome graphite gstreamer gtk gtk3 kde nsplugin odbc odk opengl pdfimport
-postgres scripting telepathy test webdav"
+postgres +scripting telepathy test webdav"
 
 # config
 LV2="$(get_version_component_range 1-2)"
