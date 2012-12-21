@@ -11,21 +11,22 @@
 # TODO: proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-EAPI="4"
+EAPI="5"
 
 _libreoffice_java="1.6"
 _libreoffice_kde="never"
-_libreoffice_python="3:3.3"
 _libreoffice_qt="4.7.4"
 
 CMAKE_REQUIRED="${_libreoffice_kde}"
 KDE_REQUIRED="${_libreoffice_kde}"
-PYTHON_DEPEND="${_libreoffice_python}"
 QT_MINIMAL="${_libreoffice_qt}"
 
+PYTHON_COMPAT=( python3_3 )
+PYTHON_REQ_USE="threads,xml"
+
 inherit autotools base bash-completion-r1 boost-utils check-reqs flag-o-matic \
-	java-pkg-opt-2 kde4-base multilib nsplugins pax-utils python versionator \
-	git-2
+	java-pkg-opt-2 kde4-base multilib nsplugins pax-utils python-single-r1 \
+	versionator git-2
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_configure src_compile src_test src_install pkg_preinst pkg_postinst pkg_postrm
 
@@ -83,7 +84,7 @@ MODULES="core help"
 # patches
 PATCHES=( "${FILESDIR}" )
 
-CDEPEND="
+CDEPEND="${PYTHON_DEPS}
 	bluetooth? ( net-wireless/bluez )
 	dbus? ( dev-libs/dbus-glib )
 	eds? ( gnome-extra/evolution-data-server )
@@ -259,8 +260,7 @@ libreoffice_pkg_setup() {
 
 	use kde && kde4-base_pkg_setup
 
-	python_set_active_version 3
-	python_pkg_setup
+	python-single-r1_pkg_setup
 
 	echo $PYTHON
 }
@@ -603,8 +603,4 @@ fi
 
 _libreoffice_die() {
 	_libreoffice_custom-cflags_message
-
-	[[ ${EBUILD_PHASE} != "pretend" ]] \
-		&& echo "Python: $(python_get_version)"
 }
-
