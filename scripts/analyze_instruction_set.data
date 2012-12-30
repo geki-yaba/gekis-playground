@@ -9,6 +9,8 @@ psignb|psignw|psignd|pabsb|pabsw|pabsd|palignr|pshufb|pmulhrsw|pmaddubsw|phsubw|
 mpsadbw|phminposuw|pmuldq|pmulld|dpps|dppd|blendps|blendpd|blendvps|blendvpd|pblendvb|pblendw|pminsb|pmaxsb|pminuw|pmaxuw|pminud|pmaxud|pminsd|pmaxsd|roundps|roundss|roundpd|roundsd|insertps|pinsrb|pinsrd|pinsrq|extractps|pextrb|pextrw|pextrd|pextrq|pmovsxbw|pmovzxbw|pmovsxbd|pmovzxbd|pmovsxbq|pmovzxbq|pmovsxwd|pmovzxwd|pmovsxwq|pmovzxwq|pmovsxdq|pmovzxdq|ptest|pcmpeqq|packusdw|movntdqa)++data.sse4_1;
 crc32|pcmpestri|pcmpestrm|pcmpistri|pcmpistrm|pcmpgtq|popcnt)++data.sse4_2;
 lzcnt|popcnt|extrq|insertq|movntsd|movntss)++data.sse4a;
+vbroadcastss|vbroadcastsd|vbroadcastf128|vinsertf128|vextractf128|vmaskmovps|vmaskmovpd|vpermilps|vpermilpd|vperm2f128|vzeroall|vzeroupper)++data.avx;
+aesenc|aesenclast|aesdec|aesdeclast|aeskeygenassist|aesimc|pclmulqdq)++data.aes;
 pavgusb|pfadd|pfsub|pfsubr|pfacc|pfcmpge|pfcmpgt|pfcmpeq|pfmin|pfmax|pi2fw|pi2fd|pf2iw|pf2id|pfrcp|pfrsqrt|pfmul|pfrcpit1|pfrsqit1|pfrcpit2|pmulhrw|pswapw|femms|prefetch)++data.tdnow1;
 pf2iw|pfnacc|pfpnacc|pi2fw|pswapd|maskmovq|movntq|pavgb|pavgw|pextrw|pinsrw|pmaxsw|pmaxub|pminsw|pminub|pmovmskb|pmulhuw|prefetchnta|prefetcht0|prefetcht1|prefetcht2|psadbw|pshufw|sfence)++data.tdnow2;
 cpuid)++data.cpuid;++data.i586;

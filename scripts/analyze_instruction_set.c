@@ -21,8 +21,8 @@
 /*
  * COMPILE
  *
- *     gcc -O2 -march=native -pipe scripts/analyze_instruction_set.c \
- *         -o /usr/local/bin/analyze-instruction-set
+       gcc -O2 -march=native -pipe scripts/analyze_instruction_set.c \
+           -o /usr/local/bin/analyze-instruction-set
  */
 
 /*
@@ -61,6 +61,8 @@ typedef struct data_t {
     unsigned int sse4a;
     unsigned int sse4_1;
     unsigned int sse4_2;
+    unsigned int avx;
+    unsigned int aes;
     unsigned int cpuid;
     unsigned int unused;
 } data_t;
@@ -182,6 +184,10 @@ void printcount()
         fprintf(stdout, "sse41:%4u ", data.sse4_1);
     if (data.sse4_2)
         fprintf(stdout, "sse42:%4u ", data.sse4_2);
+    if (data.avx)
+        fprintf(stdout, "avx:%4u ", data.avx);
+    if (data.aes)
+        fprintf(stdout, "aes:%4u ", data.aes);
     if (data.cpuid)
         fprintf(stdout, "cpuid:%4u ", data.cpuid);
     if (data.unused)
@@ -206,6 +212,8 @@ void init()
     data.sse4a  = 0;
     data.sse4_1 = 0;
     data.sse4_2 = 0;
+    data.avx    = 0;
+    data.aes    = 0;
     data.cpuid  = 0;
     data.unused = 0;
 }
@@ -229,7 +237,11 @@ void summary()
     if (data.unused)
         fprintf(stdout, "Interesting, there are unknown instruction sets used!\n\n");
 
-    if (data.sse4_2)
+    if (data.avx)
+        sprintf(buffer, "Pentium/Sandy Bridge (sandy)");
+    else if (data.aes)
+        sprintf(buffer, "Pentium Nehalem (nehalem)");
+    else if (data.sse4_2)
         sprintf(buffer, "Pentium Nehalem (nehalem)");
     else if (data.sse4_1)
         sprintf(buffer, "Pentium x8000+ (penryn)");
@@ -332,4 +344,3 @@ int  vendor()
 
     return i;
 }
-
