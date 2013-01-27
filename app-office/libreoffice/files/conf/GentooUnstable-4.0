@@ -50,7 +50,6 @@
 --without-ppds
 --without-stlport
 --enable-cairo-canvas
---enable-python=system
 --disable-ccache
 --disable-crashdump
 --disable-epm
