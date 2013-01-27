@@ -48,7 +48,6 @@
 --without-helppack-integration
 --without-myspell-dicts
 --without-ppds
---without-stlport
 --enable-cairo-canvas
 --disable-ccache
 --disable-crashdump
