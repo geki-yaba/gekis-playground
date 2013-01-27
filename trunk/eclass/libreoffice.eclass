@@ -13,6 +13,7 @@
 
 EAPI="5"
 
+_libreoffice_python="python3_3"
 _libreoffice_java="1.6"
 _libreoffice_kde="never"
 _libreoffice_qt="4.7.4"
@@ -21,7 +22,7 @@ CMAKE_REQUIRED="${_libreoffice_kde}"
 KDE_REQUIRED="${_libreoffice_kde}"
 QT_MINIMAL="${_libreoffice_qt}"
 
-PYTHON_COMPAT=( python3_3 )
+PYTHON_COMPAT=( ${_libreoffice_python} )
 PYTHON_REQ_USE="threads,xml"
 
 inherit autotools base bash-completion-r1 boost-utils check-reqs flag-o-matic \
@@ -261,7 +262,8 @@ libreoffice_pkg_setup() {
 
 	use kde && kde4-base_pkg_setup
 
-	python-single-r1_pkg_setup
+	use python_single_target_${_libreoffice_python} \
+		&& python-single-r1_pkg_setup
 }
 
 libreoffice_src_unpack() {
@@ -349,7 +351,8 @@ libreoffice_src_prepare() {
 	echo "$(use_with odbc system-odbc)" >> ${config}
 	echo "$(use_enable opengl)" >> ${config}
 	echo "$(use_with opengl system-mesa-headers)" >> ${config}
-	echo "$(use_enable python_single_target_python3_3 python system)" >> ${config}
+	echo "$(use_enable python_single_target_${_libreoffice_python} \
+		python system)" >> ${config}
 	echo "$(use_enable webdav neon)" >> ${config}
 	echo "$(use_with webdav system-neon)" >> ${config}
 
