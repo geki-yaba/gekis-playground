@@ -262,8 +262,6 @@ libreoffice_pkg_setup() {
 	use kde && kde4-base_pkg_setup
 
 	python-single-r1_pkg_setup
-
-	echo $PYTHON
 }
 
 libreoffice_src_unpack() {
@@ -351,6 +349,7 @@ libreoffice_src_prepare() {
 	echo "$(use_with odbc system-odbc)" >> ${config}
 	echo "$(use_enable opengl)" >> ${config}
 	echo "$(use_with opengl system-mesa-headers)" >> ${config}
+	echo "$(use_enable python_single_target_python3_3 python system)" >> ${config}
 	echo "$(use_enable webdav neon)" >> ${config}
 	echo "$(use_with webdav system-neon)" >> ${config}
 
