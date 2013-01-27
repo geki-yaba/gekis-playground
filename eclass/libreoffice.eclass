@@ -121,7 +121,7 @@ CDEPEND="${PYTHON_DEPS}
 	  app-text/libwps:0
 	  app-text/mythes
 	>=dev-cpp/clucene-2.3
-	  dev-cpp/libcmis:0.3
+	>=dev-cpp/libcmis-0.3.1:0.3
 	  dev-libs/expat
 	  dev-libs/hyphen
 	  dev-libs/icu:=
