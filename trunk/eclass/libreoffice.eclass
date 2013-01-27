@@ -123,7 +123,7 @@ CDEPEND="${PYTHON_DEPS}
 	  dev-cpp/libcmis:0.3
 	  dev-libs/expat
 	  dev-libs/hyphen
-	  dev-libs/icu
+	  dev-libs/icu:=
 	  dev-libs/jemalloc
 	>=dev-libs/liborcus-0.3
 	  dev-libs/libxml2
@@ -201,7 +201,8 @@ REQUIRED_USE="
 	libreoffice_extension_wiki-publisher? ( java )
 	libreoffice_scripting_beanshell? ( java )
 	libreoffice_scripting_javascript? ( java )
-	nsplugin? ( ${_libreoffice_use_gtk} )"
+	nsplugin? ( ${_libreoffice_use_gtk} )
+	telepathy? ( ${_libreoffice_use_gtk} )"
 
 libreoffice_pkg_pretend() {
 	elog
