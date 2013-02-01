@@ -35,7 +35,7 @@ boost-ext_src_prepare() {
 	cp /usr/share/boost-${slot}/Jamroot "${S}" \
 		|| die "Jamroot not found! remerge dev-libs/boost"
 
-	_boost_execute "_boost_root" || die "root configuration not written"
+	_boost_execute "_boost_fakeroot" || die "fakeroot configuration not written"
 }
 
 boost-ext_src_configure() {
@@ -147,7 +147,7 @@ boost-ext_src_install() {
 	doins -r boost
 }
 
-_boost_root() {
+_boost_fakeroot() {
 	# boost libraries
 	if [ "$(boost-utils_has_libraries)" ] ; then
 		local slot="$(boost-utils_get_slot)"
@@ -188,6 +188,7 @@ lib boost_${libname}
  :
  : <name>boost_${libname}-mt <search>/usr/$(get_libdir)/boost-${slot}-debug <variant>gentoodebug <threading>multi ;
 __EOF__
+
 		done
 	fi
 }
