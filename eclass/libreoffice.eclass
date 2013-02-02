@@ -470,8 +470,8 @@ libreoffice_src_compile() {
 	(
 		grep ^export "${S}/config_host.mk" | grep -v WORKDIR > "${S}/my_host.mk"
 		sed -r \
-			-e "s:\$(gb_SPACE): :g" \
-			-e "s:\$(gb_Space): :g" \
+			-e 's:\$\(gb_SPACE\): :g' \
+			-e 's:\$\(gb_Space\): :g' \
 			-e "s:(export [A-Z0-9_]+)=(.*)$:\1=\"\2\":" \
 			-i my_host.mk || die
 		source "${S}/my_host.mk"
