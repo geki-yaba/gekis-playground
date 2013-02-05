@@ -11,16 +11,13 @@
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-EAPI="4"
+EAPI="5"
 
-_boost_python="*:2.6"
-PYTHON_DEPEND="python? ${_boost_python}"
-SUPPORT_PYTHON_ABIS="1"
-RESTRICT_PYTHON_ABIS="*-jython *-pypy-*"
+PYTHON_COMPAT=( python{2_5,2_6,2_7,3_1,3_2,3_3} )
 
-inherit base check-reqs flag-o-matic multilib python toolchain-funcs versionator
+inherit base check-reqs flag-o-matic multilib python-r1 toolchain-funcs versionator
 
-EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test pkg_postinst pkg_postrm
+EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test
 
 SLOT="$(get_version_component_range 1-2)"
 BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
@@ -44,8 +41,9 @@ IUSE="debug doc examples icu static test +threads tools"
 IUSE+=" ${BOOST_LIBRARIES}"
 
 RDEPEND="sys-libs/zlib
-	regex? ( icu? ( dev-libs/icu ) )
-	tools? ( dev-libs/icu )"
+	python? ( ${PYTHON_DEPS} )
+	regex? ( icu? ( dev-libs/icu:= ) )
+	tools? ( dev-libs/icu:= )"
 DEPEND="${RDEPEND}
 	~dev-libs/boost-headers-${PV}
 	~dev-util/boost-build-${PV}"
@@ -89,8 +87,6 @@ boost_pkg_setup() {
 		ewarn "penalty and linking other packages against the debug version of boost"
 		ewarn "is _not_ recommended."
 	fi
-
-	use python && python_pkg_setup
 }
 
 boost_src_prepare() {
@@ -131,7 +127,7 @@ boost_src_configure() {
 	local cmd="_boost_config"
 	_boost_execute "${cmd} default" || die "configuration file not written"
 
-	use python && _boost_execute "python_execute_function ${cmd}"
+	use python && _boost_execute "python_foreach_impl ${cmd}"
 }
 
 boost_src_compile() {
@@ -155,7 +151,7 @@ boost_src_compile() {
 		_boost_library_mpi=""
 
 		cmd="_boost_python_compile"
-		_boost_execute "python_execute_function ${cmd}"
+		_boost_execute "python_foreach_impl ${cmd}"
 	fi
 
 	if use tools ; then
@@ -185,7 +181,7 @@ boost_src_install() {
 	# feature: python abi
 	if use python ; then
 		cmd="_boost_python_install"
-		_boost_execute "python_execute_function ${cmd}"
+		_boost_execute "python_foreach_impl ${cmd}"
 	fi
 
 	# install tools
@@ -363,14 +359,6 @@ __EOF__
 	fi
 }
 
-boost_pkg_postinst() {
-	use mpi && use python && python_mod_optimize boost
-}
-
-boost_pkg_postrm() {
-	use mpi && use python && python_mod_cleanup boost
-}
-
 _boost_config() {
 	[[ "${#}" -gt "1" ]] && die "${FUNCNAME}: wrong parameter"
 
@@ -388,10 +376,10 @@ _boost_config() {
 	local jam_options=""
 	use mpi && jam_options+="using mpi ;"
 	[[ "${python_abi}" != "default" ]] \
-		&& jam_options+="using python : $(python_get_version) : /usr : $(python_get_includedir) : $(python_get_libdir) ;"
+		&& jam_options+="using python : : ${PYTHON} ;"
 
 	local config="user"
-	[[ "${python_abi}" != "default" ]] && config="${PYTHON_ABI}"
+	[[ "${python_abi}" != "default" ]] && config="${EPYTHON}"
 
 	einfo "Writing new Jamfile: ${config}-config.jam"
 	cat > "${S}/${config}-config.jam" << __EOF__
@@ -412,12 +400,12 @@ __EOF__
 }
 
 _boost_python_compile() {
-	local options="$(_boost_basic_options ${PYTHON_ABI})"
+	local options="$(_boost_basic_options ${EPYTHON})"
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
 	# feature: python abi
-	options+=" --with-python --python-buildid=${PYTHON_ABI}"
+	options+=" --with-python --python-buildid=${EPYTHON#python}"
 	use mpi && options+=" --with-mpi"
 
 	local cmd="${BOOST_JAM} ${jobs} -q -d+1 gentoorelease"
@@ -438,8 +426,8 @@ _boost_python_compile() {
 	fi
 
 	for directory in ${_boost_python_dir} ; do
-		_boost_execute "mv ${directory} ${directory}-${PYTHON_ABI}" \
-			|| die "move '${directory}' -> '${directory}-${PYTHON_ABI}' failed"
+		_boost_execute "mv ${directory} ${directory}-${EPYTHON}" \
+			|| die "move '${directory}' -> '${directory}-${EPYTHON}' failed"
 	done
 
 	if use mpi ; then
@@ -454,30 +442,30 @@ _boost_python_compile() {
 			die "python/mpi library path changed"
 		fi
 
-		_boost_execute "mv stage/lib/mpi.so stage/lib/mpi.so-${PYTHON_ABI}" \
-			|| die "move 'stage/lib/mpi.so' -> 'stage/lib/mpi.so-${PYTHON_ABI}' failed"
+		_boost_execute "mv stage/lib/mpi.so stage/lib/mpi.so-${EPYTHON}" \
+			|| die "move 'stage/lib/mpi.so' -> 'stage/lib/mpi.so-${EPYTHON}' failed"
 	fi
 }
 
 _boost_python_install() {
 	for directory in ${_boost_python_dir} ; do
-		_boost_execute "mv ${directory}-${PYTHON_ABI} ${directory}" \
-			|| die "move '${directory}-${PYTHON_ABI}' -> '${directory}' failed"
+		_boost_execute "mv ${directory}-${EPYTHON} ${directory}" \
+			|| die "move '${directory}-${EPYTHON}' -> '${directory}' failed"
 	done
 
 	if use mpi ; then
-		_boost_execute "mv stage/lib/mpi.so-${PYTHON_ABI} stage/lib/mpi.so" \
-			|| die "move 'stage/lib/mpi.so-${PYTHON_ABI}' -> 'stage/lib/mpi.so' failed"
-		_boost_execute "mv stage/lib/mpi.so-${PYTHON_ABI} ${_boost_library_mpi}" \
-			|| die "move 'stage/lib/mpi.so-${PYTHON_ABI}' -> '${_boost_library_mpi}' failed"
+		_boost_execute "mv stage/lib/mpi.so-${EPYTHON} stage/lib/mpi.so" \
+			|| die "move 'stage/lib/mpi.so-${EPYTHON}' -> 'stage/lib/mpi.so' failed"
+		_boost_execute "mv stage/lib/mpi.so-${EPYTHON} ${_boost_library_mpi}" \
+			|| die "move 'stage/lib/mpi.so-${EPYTHON}' -> '${_boost_library_mpi}' failed"
 	fi
 
-	local options="$(_boost_basic_options ${PYTHON_ABI})"
+	local options="$(_boost_basic_options ${EPYTHON})"
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
 	# feature: python abi
-	options+=" --with-python --python-buildid=${PYTHON_ABI}"
+	options+=" --with-python --python-buildid=${EPYTHON#python}"
 	use mpi && options+=" --with-mpi"
 
 	local cmd="${BOOST_JAM} -q -d+1 gentoorelease threading=${threading}"
@@ -500,6 +488,8 @@ _boost_python_install() {
 
 		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die
 	fi
+
+	python_optimize
 }
 
 _boost_execute() {

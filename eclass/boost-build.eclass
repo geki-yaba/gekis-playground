@@ -50,7 +50,10 @@ boost-build_pkg_setup() {
 	BOOST_JAM_SRC="${S}/engine"
 	BOOST_JAM_TEST="${S}/test/engine"
 
-	use python && python_pkg_setup
+	if use python; then
+		python_set_active_version 2
+		python_pkg_setup
+	fi
 }
 
 boost-build_src_unpack() {
