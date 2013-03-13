@@ -14,6 +14,7 @@ app-emulation
 app-forensics
 app-i18n
 app-laptop
+app-leechcraft
 app-misc
 app-mobilephone
 app-office
@@ -40,6 +41,7 @@ dev-ml
 dev-perl
 dev-php
 dev-python
+dev-qt
 dev-ruby
 dev-scheme
 dev-tcltk

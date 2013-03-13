@@ -11,6 +11,21 @@
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
+#
+# Things the Gentoo package is missing:
+#
+#	- header-only distribution
+#	- at least make Boost.Math and Boost.Wave libraries optional
+#	  (taking far too much compile time and noone uses that ... .. .)
+#	- make Boost.Regex library optional
+#	  (taking mediocre compile time and rarely used ...)
+#
+#	... until then I have to manage this. :/
+#
+# https://bugs.gentoo.org/show_bug.cgi?id=260404
+# https://bugs.gentoo.org/show_bug.cgi?id=307921
+#
+
 EAPI="5"
 
 PYTHON_COMPAT=( python{2_5,2_6,2_7,3_1,3_2,3_3} )
