@@ -100,7 +100,7 @@ CDEPEND="${PYTHON_DEPS}
 		kde-base/kdelibs
 		kde-base/kstyles )
 	opengl? ( virtual/opengl virtual/glu )
-	pdfimport? ( app-text/poppler[cxx] )
+	pdfimport? ( app-text/poppler:=[cxx] )
 	postgres? ( dev-db/postgresql-base[kerberos] )
 	webdav? ( net-libs/neon )
 	libreoffice_extension_mysql-connector? ( dev-db/mysql-connector-c++:0 )

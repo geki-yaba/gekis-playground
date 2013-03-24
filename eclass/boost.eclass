@@ -161,10 +161,6 @@ boost_src_compile() {
 
 	# feature: python abi
 	if use python ; then
-		# FIXME: global?!
-		_boost_python_dir=""
-		_boost_library_mpi=""
-
 		cmd="_boost_python_compile"
 		_boost_execute "python_foreach_impl ${cmd}"
 	fi
@@ -432,30 +428,18 @@ _boost_python_compile() {
 		_boost_execute "${cmd}" || die "build failed for options: ${options}"
 	fi
 
-	local python_dir="$(find bin.v2/libs -type d -name python | sort)"
+	local python_dir="$(find bin.v2/libs -type d -name python)"
 
-	if [ -z "${_boost_python_dir}" ] ; then
-		_boost_python_dir="${python_dir}"
-	elif [[ "${python_dir}" != "${_boost_python_dir}" ]] ; then
-		die "python path changed"
-	fi
-
-	for directory in ${_boost_python_dir} ; do
+	for directory in ${python_dir} ; do
 		_boost_execute "mv ${directory} ${directory}-${EPYTHON}" \
 			|| die "move '${directory}' -> '${directory}-${EPYTHON}' failed"
 	done
 
 	if use mpi ; then
-		local library_mpi="$(find bin.v2/libs/mpi/build/*/gentoorelease -type f -name mpi.so)"
+		local mpi_library="$(find bin.v2/libs/mpi/build/*/gentoo* -type f -name mpi.so)"
+		local count="$(echo "${mpi_library}" | wc -l)"
 
-		if [ -z "${_boost_library_mpi}" ] ; then
-			local count="$(echo "${library_mpi}" | wc -l)"
-			[[ "${count}" -ne 1 ]] && die "multiple mpi.so files found"
-
-			_boost_library_mpi="${library_mpi}"
-		elif [[ "${library_mpi}" != "${_boost_library_mpi}" ]] ; then
-			die "python/mpi library path changed"
-		fi
+		[[ "${count}" -ne 1 ]] && die "multiple mpi.so files found"
 
 		_boost_execute "mv stage/lib/mpi.so stage/lib/mpi.so-${EPYTHON}" \
 			|| die "move 'stage/lib/mpi.so' -> 'stage/lib/mpi.so-${EPYTHON}' failed"
@@ -463,16 +447,23 @@ _boost_python_compile() {
 }
 
 _boost_python_install() {
-	for directory in ${_boost_python_dir} ; do
-		_boost_execute "mv ${directory}-${EPYTHON} ${directory}" \
-			|| die "move '${directory}-${EPYTHON}' -> '${directory}' failed"
+	local python_dir="$(find bin.v2/libs -type d -name python-${EPYTHON})"
+
+	for directory in ${python_dir} ; do
+		_boost_execute "mv ${directory} ${directory/-${EPYTHON}}" \
+			|| die "move '${directory}' -> '${directory/-${EPYTHON}}' failed"
 	done
 
 	if use mpi ; then
+		local mpi_library="$(find bin.v2/libs/mpi/build/*/gentoo* -type f -name mpi.so)"
+		local count="$(echo "${mpi_library}" | wc -l)"
+
+		[[ "${count}" -ne 1 ]] && die "multiple mpi.so files found"
+
 		_boost_execute "mv stage/lib/mpi.so-${EPYTHON} stage/lib/mpi.so" \
 			|| die "move 'stage/lib/mpi.so-${EPYTHON}' -> 'stage/lib/mpi.so' failed"
-		_boost_execute "mv stage/lib/mpi.so-${EPYTHON} ${_boost_library_mpi}" \
-			|| die "move 'stage/lib/mpi.so-${EPYTHON}' -> '${_boost_library_mpi}' failed"
+		_boost_execute "mv stage/lib/mpi.so-${EPYTHON} ${mpi_library}" \
+			|| die "move 'stage/lib/mpi.so-${EPYTHON}' -> '${mpi_library}' failed"
 	fi
 
 	local options="$(_boost_basic_options ${EPYTHON})"
@@ -493,7 +484,7 @@ _boost_python_install() {
 		_boost_execute "${cmd}" || die "install failed for options: ${options}"
 	fi
 
-	rm -rf ${_boost_python_dir} || die "clean python paths"
+	rm -rf ${python_dir} || die "clean python paths"
 
 	# move mpi.so to python sitedir
 	if use mpi ; then
