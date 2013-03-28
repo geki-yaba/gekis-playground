@@ -284,6 +284,12 @@ libreoffice_src_unpack() {
 	if use branding; then
 		cd "${WORKDIR}"
 		unpack "${BRAND_SRC}"
+
+		# yippie yay yeah - let's see when the branding is updated for
+		# http://cgit.freedesktop.org/libreoffice/core/tree/configure.ac?h=libreoffice-4-0#n11671
+		for i in about intro; do
+			mv branding-${i}.png ${i}.png
+		done
 	fi
 }
 
@@ -316,10 +322,7 @@ libreoffice_src_prepare() {
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
 	echo "--with-parallelism=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
 	echo "--enable-mergelibs" >> ${config}
-	# new feature: --with-branding
-	#use branding && echo "--with-branding=${WORKDIR}" >> ${config}
-	use branding && echo "--with-intro-bitmap=${WORKDIR}/branding-intro.png" \
-		>> ${config}
+	use branding && echo "--with-branding=${WORKDIR}" >> ${config}
 	echo "$(use_enable !debug release-build)" >> ${config}
 	echo "$(use_enable gtk)" >> ${config}
 	echo "$(use_enable gtk3)" >> ${config}
