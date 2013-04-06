@@ -8,7 +8,7 @@ inherit boost-ext
 
 DESCRIPTION="Boost.Log c++ library"
 HOMEPAGE="http://boost-log.sourceforge.net/libs/log/doc/html/index.html"
-SRC_URI="mirror://sourceforge/${PN}/${P//_/-}-${PR}.zip"
+SRC_URI="mirror://sourceforge/${PN}/${P//_rc/-RC}-${PR}.zip"
 
 SLOT="0"
 
