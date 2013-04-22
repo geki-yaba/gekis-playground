@@ -126,9 +126,10 @@ CDEPEND="${PYTHON_DEPS}
 	  dev-libs/hyphen
 	  dev-libs/icu:=
 	  dev-libs/jemalloc
-	>=dev-libs/liborcus-0.3
+	 =dev-libs/liborcus-0.3*
 	  dev-libs/libxml2
 	  dev-libs/libxslt
+	  dev-libs/libzip
 	  dev-libs/nspr
 	  dev-libs/nss
 	  dev-libs/openssl
