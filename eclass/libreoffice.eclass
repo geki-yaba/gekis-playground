@@ -291,6 +291,9 @@ libreoffice_src_unpack() {
 		for i in about intro; do
 			mv branding-${i}.png ${i}.png
 		done
+
+		cp -v "${S}"/icon-themes/galaxy/brand/flat_logo.svg ${WORKDIR}
+		cp -v "${S}"/icon-themes/galaxy/brand/shell/* ${WORKDIR}
 	fi
 }
 
