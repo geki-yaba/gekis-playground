@@ -78,7 +78,7 @@ BRAND_LO_URI="http://gekis-playground.googlecode.com/files"
 
 # branding
 BRAND_GO_SRC="${PN}-branding-gentoo-0.7.tar.xz"
-BRAND_LO_SRC="${PN}-branding-${LV2}_0.tar.xz"
+BRAND_LO_SRC="${PN}-branding-${LV2}_1.tar.xz"
 SRC_URI="branding? ( ${BRAND_GO_URI}/${BRAND_GO_SRC}
 	${BRAND_LO_URI}/${BRAND_LO_SRC} )"
 
