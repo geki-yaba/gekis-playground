@@ -73,11 +73,14 @@ done
 # paths
 LIBRE_URI="http://dev-www.libreoffice.org/bundles"
 EXT_URI="http://ooo.itc.hu/oxygenoffice/download/libreoffice"
-BRAND_URI="http://dev.gentoo.org/~dilfridge/distfiles"
+BRAND_GO_URI="http://dev.gentoo.org/~dilfridge/distfiles"
+BRAND_LO_URI="http://gekis-playground.googlecode.com/files"
 
 # branding
-BRAND_SRC="${PN}-branding-gentoo-0.7.tar.xz"
-SRC_URI="branding? ( ${BRAND_URI}/${BRAND_SRC} )"
+BRAND_GO_SRC="${PN}-branding-gentoo-0.7.tar.xz"
+BRAND_LO_SRC="${PN}-branding-${LV2}_0.tar.xz"
+SRC_URI="branding? ( ${BRAND_GO_URI}/${BRAND_GO_SRC}
+	${BRAND_LO_URI}/${BRAND_LO_SRC} )"
 
 # modules
 MODULES="core help"
@@ -284,16 +287,8 @@ libreoffice_src_unpack() {
 
 	if use branding; then
 		cd "${WORKDIR}"
-		unpack "${BRAND_SRC}"
-
-		# yippie yay yeah - let's see when the branding is updated for
-		# http://cgit.freedesktop.org/libreoffice/core/tree/configure.ac?h=libreoffice-4-0#n11671
-		for i in about intro; do
-			mv branding-${i}.png ${i}.png
-		done
-
-		cp -v "${S}"/icon-themes/galaxy/brand/flat_logo.svg ${WORKDIR}
-		cp -v "${S}"/icon-themes/galaxy/brand/shell/* ${WORKDIR}
+		unpack "${BRAND_GO_SRC}"
+		unpack "${BRAND_LO_SRC}"
 	fi
 }
 
@@ -326,7 +321,7 @@ libreoffice_src_prepare() {
 	echo "--with-external-tar=${DISTDIR}" >> ${config}
 	echo "--with-parallelism=$(grep -s -c ^processor /proc/cpuinfo)" >> ${config}
 	echo "--enable-mergelibs" >> ${config}
-	use branding && echo "--with-branding=${WORKDIR}" >> ${config}
+	use branding && echo "--with-branding=${WORKDIR}/branding" >> ${config}
 	echo "$(use_enable !debug release-build)" >> ${config}
 	echo "$(use_enable gtk)" >> ${config}
 	echo "$(use_enable gtk3)" >> ${config}
