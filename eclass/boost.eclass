@@ -107,7 +107,8 @@ boost_pkg_setup() {
 }
 
 boost_src_prepare() {
-	[ "${BOOST_PATCHSET}" ] && EPATCH_SUFFIX="diff" base_src_prepare
+	[ "${BOOST_PATCHSET}" ] \
+		&& EPATCH_OPTS="--ignore-whitespace" EPATCH_SUFFIX="diff" base_src_prepare
 
 	# boost.random library: /dev/urandom support
 	if [[ ${SLOT} < 1.48 ]] && use random && [[ -e /dev/urandom ]] ; then
