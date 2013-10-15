@@ -35,7 +35,8 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86
 IUSE=""
 
 RDEPEND="!app-admin/eselect-boost"
-DEPEND="${RDEPEND}"
+DEPEND="${RDEPEND}
+	app-arch/bzip2"
 PDEPEND="~dev-libs/boost-${PV}"
 
 S="${WORKDIR}/${BOOST_P}"

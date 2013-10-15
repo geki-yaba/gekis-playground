@@ -28,7 +28,7 @@
 
 EAPI="5"
 
-PYTHON_COMPAT=( python{2_5,2_6,2_7,3_1,3_2,3_3} )
+PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3} )
 
 inherit base check-reqs flag-o-matic multilib python-r1 toolchain-funcs versionator
 
@@ -49,7 +49,7 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd"
+KEYWORDS="~alpha ~amd64 ~amd64-fbsd ~amd64-linux ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd ~x86-linux"
 
 IUSE="debug doc examples icu static test +threads tools"
 # add available libraries of boost version 
@@ -60,10 +60,12 @@ RDEPEND="sys-libs/zlib
 	regex? ( icu? ( dev-libs/icu:= ) )
 	tools? ( dev-libs/icu:= )"
 DEPEND="${RDEPEND}
+	app-arch/bzip2
 	~dev-libs/boost-headers-${PV}
 	~dev-util/boost-build-${PV}"
 
-REQUIRED_USE="graph_parallel? ( mpi )"
+REQUIRED_USE="graph_parallel? ( mpi )
+	python? ( ${PYTHON_REQUIRED_USE} )"
 
 S="${WORKDIR}/${BOOST_P}"
 
@@ -303,7 +305,6 @@ boost_src_install() {
 	# DESTROOT, dynamic libraries on Darwin end messed up, referencing the
 	# DESTROOT instead of the actual EPREFIX.  There is no way out of here
 	# but to do it the dirty way of manually setting the right install_names.
-	[[ -z ${ED+set} ]] && local ED=${D%/}${EPREFIX}/
 
 	if [[ ${CHOST} == *-darwin* ]] ; then
 		einfo "Working around completely broken build-system(tm)"
