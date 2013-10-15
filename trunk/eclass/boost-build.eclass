@@ -65,7 +65,8 @@ boost-build_src_unpack() {
 }
 
 boost-build_src_prepare() {
-	[ "${BOOST_PATCHSET}" ] && EPATCH_SUFFIX="diff" base_src_prepare
+	[ "${BOOST_PATCHSET}" ] \
+		&& EPATCH_OPTS="--ignore-whitespace" EPATCH_SUFFIX="diff" base_src_prepare
 
 	cd "${BOOST_JAM_SRC}" || die
 
