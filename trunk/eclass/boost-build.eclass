@@ -36,7 +36,7 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86
 
 IUSE="examples python"
 
-DEPEND=""
+DEPEND="app-arch/bzip2"
 RDEPEND=""
 
 S="${WORKDIR}/${BOOST_B}"
