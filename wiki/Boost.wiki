@@ -51,7 +51,7 @@ _... or ..._
 
  * fix configure options in ebuilds like the example of mkvtoolnix:
 
-http://code.google.com/p/gekis-playground/source/browse/trunk/media-video/mkvtoolnix/mkvtoolnix-4.9.1.ebuild#61
+https://code.google.com/p/gekis-playground/source/browse/trunk/media-video/mkvtoolnix/mkvtoolnix-4.9.1.ebuild?r=310#61
 
 _... or ..._
 
