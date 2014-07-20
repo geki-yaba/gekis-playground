@@ -19,10 +19,17 @@ inherit base flag-o-matic python toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_compile src_install src_test
 
-BOOST_P="boost_$(replace_all_version_separators _)"
+BOOST_SP="${BOOST_SP:="_"}"
+BOOST_P="boost${BOOST_SP}$(replace_all_version_separators _)"
 BOOST_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))"
-BOOST_B="${BOOST_P}/tools/build/v2"
 PATCHES=( "${BOOST_PATCHDIR:="${WORKDIR}/patches"}" )
+
+if [ "${BOOST_BETA}" ]; then
+	BOOST_P="${BOOST_P/_beta/${BOOST_BETA}}"
+fi
+
+BOOST_TOOLSRC="${BOOST_TOOLSRC:="tools/build/v2"}"
+BOOST_B="${BOOST_P}/${BOOST_TOOLSRC}"
 
 DESCRIPTION="A system for large project software construction, which is simple to use and powerful."
 HOMEPAGE="http://www.boost.org/doc/tools/build/index.html"
@@ -61,6 +68,9 @@ boost-build_src_unpack() {
 		|| tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "./${BOOST_B}" \
 		|| die
 
+	# example folder moved with 1_56_0_beta1
+	tar xjpf "${DISTDIR}/${BOOST_P}.tar.bz2" "${BOOST_P}/tools/build/example"
+	
 	[ "${BOOST_PATCHSET}" ] && unpack "${BOOST_PATCHSET}"
 }
 
@@ -117,19 +127,31 @@ boost-build_src_install() {
 
 	cd "${S}"
 	insinto /usr/share/boost-build-${BOOST_PV}
-	doins -r boost-build.jam bootstrap.jam build-system.jam site-config.jam user-config.jam \
-		build kernel options tools util
+	doins -r bootstrap.jam build-system.jam build kernel options tools util
 
-	dodoc changes.txt hacking.txt release_procedure.txt \
-		notes/build_dir_option.txt notes/relative_source_paths.txt
+	# gone with 1_56_0_beta1
+	for jam in boost-build.jam site-config.jam user-config.jam; do
+		[ -e ${jam} ] && doins ${jam}
+	done
 
-	if use examples ; then
+	for txt in changes.txt hacking.txt release_procedure.txt \
+		notes/build_dir_option.txt notes/relative_source_paths.txt; do
+		[ -e ${txt} ] && dodoc ${txt}
+	done
+
+	if use examples; then
 		insinto /usr/share/${PN}-${SLOT}
-		doins -r example
+		[ -d example ] && doins -r example
+		[ -d ../example ] && doins -r ../example
 	fi
 }
 
 boost-build_src_test() {
-	cd "${BOOST_JAM_TEST}" || die
-	./test.sh || die "tests failed"
+	if [ -d "${BOOST_JAM_TEST}" ]; then
+		cd "${BOOST_JAM_TEST}" || die
+		./test.sh || die "tests failed"
+	else
+		ewarn "Test framework unsupported. Patches are welcomed!"
+	fi
 }
+

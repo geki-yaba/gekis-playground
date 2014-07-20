@@ -28,7 +28,7 @@
 
 EAPI="5"
 
-PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3} )
+PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4} )
 
 inherit base check-reqs flag-o-matic multilib python-r1 toolchain-funcs versionator
 
@@ -38,9 +38,14 @@ SLOT="$(get_version_component_range 1-2)"
 BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
 BOOST_JAM="bjam-${BOOST_SLOT}"
 
+BOOST_SP="${BOOST_SP:="_"}"
 BOOST_PV="$(replace_all_version_separators _)"
-BOOST_P="${PN}_${BOOST_PV}"
+BOOST_P="${PN}${BOOST_SP}${BOOST_PV}"
 PATCHES=( "${BOOST_PATCHDIR:="${WORKDIR}/patches"}" )
+
+if [ "${BOOST_BETA}" ]; then
+	BOOST_P="${BOOST_P/_beta/${BOOST_BETA}}"
+fi
 
 DESCRIPTION="boost.org c++ libraries"
 HOMEPAGE="http://www.boost.org/"
