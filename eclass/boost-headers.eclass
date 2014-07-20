@@ -20,8 +20,13 @@ EXPORT_FUNCTIONS pkg_pretend src_unpack src_configure src_compile src_install
 SLOT="$(get_version_component_range 1-2)"
 BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
 
-BOOST_P="boost_$(replace_all_version_separators _)"
+BOOST_SP="${BOOST_SP:="_"}"
+BOOST_P="boost${BOOST_SP}$(replace_all_version_separators _)"
 BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
+
+if [ "${BOOST_BETA}" ]; then
+	BOOST_P="${BOOST_P/_beta/${BOOST_BETA}}"
+fi
 
 DESCRIPTION="boost.org c++ header libraries"
 HOMEPAGE="http://www.boost.org/"
