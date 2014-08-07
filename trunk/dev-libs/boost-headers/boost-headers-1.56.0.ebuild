@@ -4,8 +4,8 @@
 
 EAPI="4"
 
-BOOST_SP="-"
-BOOST_BETA="_b"
+#BOOST_SP="-"
+#BOOST_BETA="_b"
 
 inherit boost-headers
 

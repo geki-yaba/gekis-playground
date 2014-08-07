@@ -10,8 +10,8 @@ signals system test thread timer wave"
 
 BOOST_PATCHSET="gentoo-boost-1.51.0.tar.xz"
 
-BOOST_SP="-"
-BOOST_BETA="_b"
+#BOOST_SP="-"
+#BOOST_BETA="_b"
 
 inherit boost
 
