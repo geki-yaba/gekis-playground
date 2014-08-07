@@ -8,8 +8,8 @@ BOOST_PATCHSET="gentoo-boost-build-1.48.0.tar.xz"
 
 BOOST_TOOLSRC="tools/build/src"
 
-BOOST_SP="-"
-BOOST_BETA="_b"
+#BOOST_SP="-"
+#BOOST_BETA="_b"
 
 inherit boost-build
 
