@@ -39,7 +39,8 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86
 
 IUSE=""
 
-RDEPEND="!app-admin/eselect-boost"
+RDEPEND="!app-admin/eselect-boost
+	abi_x86_32? ( !app-emulation/emul-linux-x86-cpplibs[-abi_x86_32(-)] )"
 DEPEND="${RDEPEND}
 	app-arch/bzip2"
 PDEPEND="~dev-libs/boost-${PV}"

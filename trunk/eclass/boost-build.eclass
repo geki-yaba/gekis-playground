@@ -44,7 +44,7 @@ KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86
 IUSE="examples python"
 
 DEPEND="app-arch/bzip2"
-RDEPEND=""
+RDEPEND="abi_x86_32? ( !app-emulation/emul-linux-x86-cpplibs[-abi_x86_32(-)] )"
 
 S="${WORKDIR}/${BOOST_B}"
 
