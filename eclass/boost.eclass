@@ -434,7 +434,6 @@ _boost_config() {
 	local jam_options=""
 	use mpi && jam_options+="using mpi ;"
 	[[ "${python_abi}" != "default" ]] \
-		&& use python \
 		&& jam_options+="using python : : ${PYTHON} ;"
 
 	local config="user"
