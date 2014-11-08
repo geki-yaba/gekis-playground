@@ -71,8 +71,9 @@ DEPEND="${RDEPEND}
 	~dev-util/boost-build-${PV}"
 
 REQUIRED_USE="graph_parallel? ( mpi )
-	tools? ( icu )
-	python? ( ${PYTHON_REQUIRED_USE} )"
+	mpi? ( threads )
+	python? ( ${PYTHON_REQUIRED_USE} )
+	tools? ( icu )"
 
 S="${WORKDIR}/${BOOST_P}"
 
