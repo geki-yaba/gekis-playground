@@ -4,7 +4,7 @@
 
 EAPI="5"
 
-BOOST_LIBRARIES="chrono date_time filesystem graph graph_parallel iostreams
+IUSE_BOOST_LIBS="chrono date_time filesystem graph graph_parallel iostreams
 locale math mpi program_options python random regex serialization signals system
 test thread timer wave"
 
