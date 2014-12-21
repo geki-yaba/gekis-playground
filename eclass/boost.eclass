@@ -57,12 +57,22 @@ LICENSE="Boost-1.0"
 KEYWORDS="~alpha ~amd64 ~amd64-fbsd ~amd64-linux ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd ~x86-linux"
 
 IUSE="debug doc examples icu static test +threads tools"
-# add available libraries of boost version 
-IUSE+=" ${BOOST_LIBRARIES}"
+
+#
+# TODO: for gentoo to use
+#
+
+#USE_EXPAND="BOOST_LIBS"
+for library in ${IUSE_BOOST_LIBS}; do
+	IUSE+=" boost_libs_${library}"
+done
+
+unset library
 
 RDEPEND="sys-libs/zlib[${MULTILIB_USEDEP}]
 	abi_x86_32? ( !app-emulation/emul-linux-x86-cpplibs[-abi_x86_32(-)] )
-	python? ( ${PYTHON_DEPS} )
+	boost_libs_mpi? ( virtual/mpi )
+	boost_libs_python? ( ${PYTHON_DEPS} )
 	icu? ( dev-libs/icu:=[${MULTILIB_USEDEP}] )
 	!icu? ( virtual/libiconv[${MULTILIB_USEDEP}] )"
 DEPEND="${RDEPEND}
@@ -70,15 +80,15 @@ DEPEND="${RDEPEND}
 	~dev-libs/boost-headers-${PV}
 	~dev-util/boost-build-${PV}"
 
-REQUIRED_USE="graph_parallel? ( mpi )
-	mpi? ( threads )
-	python? ( ${PYTHON_REQUIRED_USE} )
+REQUIRED_USE="boost_libs_mpi? ( threads )
+	boost_libs_graph_parallel? ( boost_libs_mpi )
+	boost_libs_python? ( ${PYTHON_REQUIRED_USE} )
 	tools? ( icu )"
 
 S="${WORKDIR}/${BOOST_P}"
 
 boost_pkg_pretend() {
-	if has_version 'dev-libs/boost:0' ; then
+	if has_version 'dev-libs/boost:0'; then
 		eerror "Found installed package dev-libs/boost:0."
 		eerror
 		eerror "	emerge --unmerge dev-libs/boost:0"
@@ -95,7 +105,7 @@ boost_pkg_setup() {
 	jobs="$(sed -r -e "s:.*[-]{1,2}j(obs)?[ =]?([0-9]*).*:\2:" <<< "${MAKEOPTS}")"
 	jobs="-j${jobs:=1}"
 
-	if use test ; then
+	if use test; then
 		ewarn "The tests may take several hours on a recent machine"
 		ewarn "but they will not fail (unless something weird happens ;-)"
 		ewarn "This is because the tests depend on the used compiler/-version"
@@ -105,7 +115,7 @@ boost_pkg_setup() {
 		ewarn "  ${ROOT}usr/share/doc/${PF}/status/cs-$(uname).html"
 	fi
 
-	if use debug ; then
+	if use debug; then
 		ewarn "The debug USE-flag means that a second set of the boost libraries"
 		ewarn "will be built containing debug-symbols. But even though the optimization"
 		ewarn "flags you might have set are not stripped, there will be a performance"
@@ -119,7 +129,7 @@ boost_src_prepare() {
 		&& EPATCH_OPTS="--ignore-whitespace" EPATCH_SUFFIX="diff" base_src_prepare
 
 	# boost.random library: /dev/urandom support
-	if [[ ${SLOT} < 1.48 ]] && use random && [[ -e /dev/urandom ]] ; then
+	if [[ ${SLOT} < 1.48 ]] && use random && [[ -e /dev/urandom ]]; then
 		local lib_random="libs/random"
 
 		mkdir -p "${lib_random}"/build
@@ -146,14 +156,14 @@ boost_src_configure() {
 	[[ ${CHOST} == *-darwin* ]] && append-ldflags -Wl,-headerpad_max_install_names
 
 	# bug 298489
-	if use ppc || use ppc64 ; then
+	if use ppc || use ppc64; then
 		[[ $(gcc-version) > 4.3 ]] && append-flags -mno-altivec
 	fi
 
 	local cmd="_boost_config"
 	_boost_execute "${cmd} default" || die "configuration file not written"
 
-	use python && _boost_execute "python_foreach_impl ${cmd}"
+	use boost_libs_python && _boost_execute "python_foreach_impl ${cmd}"
 
 	multilib_copy_sources
 }
@@ -175,18 +185,18 @@ multilib_src_compile() {
 	cmd+=" threading=${threading} ${link_opts} runtime-link=shared ${options}"
 	_boost_execute "${cmd}" || die "build failed for options: ${options}"
 
-	if use debug ; then
+	if use debug; then
 		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
 		_boost_execute "${cmd}" || die "build failed for options: ${options}"
 	fi
 
 	# feature: python abi
-	if use python && multilib_is_native_abi ; then
+	if use boost_libs_python && multilib_is_native_abi; then
 		cmd="_boost_python_compile"
 		_boost_execute "python_foreach_impl ${cmd}"
 	fi
 
-	if use tools && multilib_is_native_abi ; then
+	if use tools && multilib_is_native_abi; then
 		cd "${BOOST_ROOT}/tools"
 
 		cmd="${BOOST_JAM} ${jobs} -q -d+1 gentoorelease ${options}"
@@ -204,7 +214,7 @@ multilib_src_install_all() {
 	cd "${S}/status" || die
 
 	# install tests
-	if [ -f regress.log ] ; then
+	if [ -f regress.log ]; then
 		docinto status
 		dohtml *.html "${S}"/boost.png
 		dodoc regress.log
@@ -218,7 +228,7 @@ multilib_src_install_all() {
 	doins Jamroot boostcpp.jam
 
 	# install examples
-	if use examples ; then
+	if use examples; then
 		local directory
 		for directory in libs/*/build libs/*/example libs/*/examples libs/*/samples; do
 			[ -d "${directory}" ] && doins -r "${directory}"
@@ -226,7 +236,7 @@ multilib_src_install_all() {
 	fi
 
 	# install docs
-	if use doc ; then
+	if use doc; then
 		find libs/*/* -type d \
 			-iname "test" \
 			-or -iname "src" \
@@ -258,22 +268,22 @@ multilib_src_install() {
 	cmd+=" --libdir=${ED}/usr/$(get_libdir) ${options} install"
 	_boost_execute "${cmd}" || die "install failed for options: ${options}"
 
-	if use debug ; then
+	if use debug; then
 		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
 		_boost_execute "${cmd}" || die "install failed for options: ${options}"
 	fi
 
 	# feature: python abi
-	if use python && multilib_is_native_abi ; then
+	if use boost_libs_python && multilib_is_native_abi; then
 		cmd="_boost_python_install"
 		_boost_execute "python_foreach_impl ${cmd}"
 	fi
 
 	# install tools
-	if use tools && multilib_is_native_abi ; then
+	if use tools && multilib_is_native_abi; then
 		cd "${BOOST_ROOT}/dist/bin" || die
 
-		for b in * ; do
+		for b in *; do
 			newbin "${b}" "${b}-${BOOST_SLOT}"
 		done
 
@@ -297,19 +307,19 @@ multilib_src_install() {
 	# some packages seem to have a problem with it. Creating symlinks ...
 	# The same goes for the mpi libs
 	local libraries="thread" libs
-	use mpi && multilib_is_native_abi && libraries+=" mpi"
+	use boost_libs_mpi && multilib_is_native_abi && libraries+=" mpi"
 
-	for library in ${libraries} ; do
-		if use ${library} ; then
+	for library in ${libraries}; do
+		if use boost_libs_${library}; then
 			libs="lib${PN}_${library}-mt-${libver}$(get_libname)"
 			use static && libs+=" lib${PN}_${library}-mt-${libver}.a"
 
-			if use debug ; then
+			if use debug; then
 				libs+=" lib${PN}_${library}-mt-${dbgver}$(get_libname)"
 				use static && libs+=" lib${PN}_${library}-mt-${dbgver}.a"
 			fi
 
-			for lib in ${libs} ; do
+			for lib in ${libs}; do
 				ln -s ${lib} \
 					"${ED}"/usr/$(get_libdir)/"$(sed -e 's:-mt::' <<< ${lib})" \
 					|| die
@@ -321,15 +331,15 @@ multilib_src_install() {
 	local path="/usr/$(get_libdir)/${PN}-${BOOST_SLOT}"
 
 	dodir ${path}
-	for f in $(ls -1 ${library_targets} 2>/dev/null | grep -v debug) ; do
+	for f in $(ls -1 ${library_targets} 2>/dev/null | grep -v debug); do
 		ln -s ../${f} "${ED}"/${path}/${f/-${libver}} || die
 	done
 
-	if use debug ; then
+	if use debug; then
 		path+="-debug"
 
 		dodir ${path}
-		for f in $(ls -1 ${library_targets} 2>/dev/null | grep debug) ; do
+		for f in $(ls -1 ${library_targets} 2>/dev/null | grep debug); do
 			ln -s ../${f} "${ED}"/${path}/${f/-${dbgver}} || die
 		done
 	fi
@@ -340,10 +350,10 @@ multilib_src_install() {
 	# DESTROOT instead of the actual EPREFIX.  There is no way out of here
 	# but to do it the dirty way of manually setting the right install_names.
 
-	if [[ ${CHOST} == *-darwin* ]] ; then
+	if [[ ${CHOST} == *-darwin* ]]; then
 		einfo "Working around completely broken build-system(tm)"
-		for d in "${ED}"usr/lib/*.dylib ; do
-			if [[ -f ${d} ]] ; then
+		for d in "${ED}"usr/lib/*.dylib; do
+			if [[ -f ${d} ]]; then
 				# fix the "soname"
 				ebegin "  correcting install_name of ${d#${ED}}"
 					install_name_tool -id "/${d#${ED}}" "${d}"
@@ -355,7 +365,7 @@ multilib_src_install() {
 					grep "^libboost_" | \
 					cut -f1 -d' ')
 
-				for r in ${refs} ; do
+				for r in ${refs}; do
 					ebegin "    correcting reference to ${r}"
 						install_name_tool -change "${r}" \
 							"${EPREFIX}/usr/lib/${r}" "${d}"
@@ -369,7 +379,7 @@ multilib_src_install() {
 boost_src_test() {
 	# FIXME: python tests disabled by design
 	# FIXME: multilib testing?!
-	if use test ; then
+	if use test; then
 		local options="$(_boost_options)"
 
 		cd "${S}/tools/regression/build" || die
@@ -415,15 +425,15 @@ _boost_config() {
 	local compilerVersion="$(gcc-version)"
 	local compilerExecutable="$(tc-getCXX)"
 
-	if [[ ${CHOST} == *-darwin* ]] ; then
+	if [[ ${CHOST} == *-darwin* ]]; then
 		compiler="darwin"
 		compilerVersion="$(gcc-fullversion)"
-	elif [[ ${CHOST} == *-winnt* ]] ; then
+	elif [[ ${CHOST} == *-winnt* ]]; then
 		local version="$(tc-getCXX) -v"
 
 		compiler="parity"
 
-		if [[ ${version} == *trunk* ]] ; then
+		if [[ ${version} == *trunk* ]]; then
 			compilerVersion="trunk"
 		else
 			compilerVersion="$(${version}
@@ -433,7 +443,7 @@ _boost_config() {
 	fi
 
 	local jam_options=""
-	use mpi && jam_options+="using mpi ;"
+	use boost_libs_mpi && jam_options+="using mpi ;"
 	[[ "${python_abi}" != "default" ]] \
 		&& jam_options+="using python : : ${PYTHON} ;"
 
@@ -451,7 +461,7 @@ using ${compiler} : ${compilerVersion} : ${compilerExecutable} : <cxxflags>"${CX
 $(sed -e "s:;:;\n:g" <<< ${jam_options})
 __EOF__
 
-	if use mpi ; then
+	if use boost_libs_mpi; then
 		einfo "[WORKAROUND] mpi is not multilib aware"
 		einfo "Writing new Jamfile: ${config}-no-mpi-config.jam"
 		grep -v "using mpi" "${S}/${config}-config.jam" > "${S}/${config}-no-mpi-config.jam"
@@ -471,25 +481,25 @@ _boost_python_compile() {
 
 	# feature: python abi
 	options+=" --with-python --python-buildid=${EPYTHON#python}"
-	use mpi && options+=" --with-mpi"
+	use boost_libs_mpi && options+=" --with-mpi"
 
 	local cmd="${BOOST_JAM} ${jobs} -q -d+1 gentoorelease"
 	cmd+=" threading=${threading} ${link_opts} runtime-link=shared ${options}"
 	_boost_execute "${cmd}" || die "build failed for options: ${options}"
 
-	if use debug ; then
+	if use debug; then
 		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
 		_boost_execute "${cmd}" || die "build failed for options: ${options}"
 	fi
 
 	local python_dir="$(find bin.v2/libs -type d -name python)"
 
-	for directory in ${python_dir} ; do
+	for directory in ${python_dir}; do
 		_boost_execute "mv ${directory} ${directory}-${EPYTHON}" \
 			|| die "move '${directory}' -> '${directory}-${EPYTHON}' failed"
 	done
 
-	if use mpi ; then
+	if use boost_libs_mpi; then
 		local mpi_library="$(find bin.v2/libs/mpi/build/*/gentoo* -type f -name mpi.so)"
 		local count="$(echo "${mpi_library}" | wc -l)"
 
@@ -503,12 +513,12 @@ _boost_python_compile() {
 _boost_python_install() {
 	local python_dir="$(find bin.v2/libs -type d -name python-${EPYTHON})"
 
-	for directory in ${python_dir} ; do
+	for directory in ${python_dir}; do
 		_boost_execute "mv ${directory} ${directory/-${EPYTHON}}" \
 			|| die "move '${directory}' -> '${directory/-${EPYTHON}}' failed"
 	done
 
-	if use mpi ; then
+	if use boost_libs_mpi; then
 		local mpi_library="$(find bin.v2/libs/mpi/build/*/gentoo* -type f -name mpi.so)"
 		local count="$(echo "${mpi_library}" | wc -l)"
 
@@ -526,14 +536,14 @@ _boost_python_install() {
 
 	# feature: python abi
 	options+=" --with-python --python-buildid=${EPYTHON#python}"
-	use mpi && options+=" --with-mpi"
+	use boost_libs_mpi && options+=" --with-mpi"
 
 	local cmd="${BOOST_JAM} -q -d+1 gentoorelease threading=${threading}"
 	cmd+=" ${link_opts} runtime-link=shared --includedir=${ED}/usr/include"
 	cmd+=" --libdir=${ED}/usr/$(get_libdir) ${options} install"
 	_boost_execute "${cmd}" || die "install failed for options: ${options}"
 
-	if use debug ; then
+	if use debug; then
 		cmd="${cmd/gentoorelease/gentoodebug --buildid=debug}"
 		_boost_execute "${cmd}" || die "install failed for options: ${options}"
 	fi
@@ -541,7 +551,7 @@ _boost_python_install() {
 	rm -rf ${python_dir} || die "clean python paths"
 
 	# move mpi.so to python sitedir
-	if use mpi ; then
+	if use boost_libs_mpi; then
 		exeinto "$(python_get_sitedir)/boost_${BOOST_SLOT}"
 		doexe "${ED}/usr/$(get_libdir)/mpi.so"
 		doexe "${BOOST_ROOT}"/libs/mpi/build/__init__.py
@@ -553,7 +563,7 @@ _boost_python_install() {
 }
 
 _boost_execute() {
-	if [ -n "${@}" ] ; then
+	if [ -n "${@}" ]; then
 		# pretty print
 		einfo "${@//--/\n\t--}"
 		${@}
@@ -569,7 +579,7 @@ _boost_basic_options() {
 
 	local config="${1:-"user"}"
 
-	if use mpi && ! multilib_is_native_abi ; then
+	if use boost_libs_mpi && ! multilib_is_native_abi; then
 		einfo "[WORKAROUND] mpi multilib ${MULTILIB_ABI_FLAG} not available"
 		config+="-no-mpi"
 	fi
@@ -590,8 +600,8 @@ _boost_options() {
 	local options="$(_boost_basic_options)"
 
 	# feature: python abi
-	for library in ${BOOST_LIBRARIES/python} ; do
-		use ${library} && options+=" --with-${library}"
+	for library in ${IUSE_BOOST_LIBS/boost_libs_python}; do
+		use ${library} && options+=" --with-${library/boost_libs_}"
 	done
 
 	options+=" $(use_enable icu) boost.locale.icu=off"
@@ -625,7 +635,7 @@ _boost_threading() {
 }
 
 _boost_fix_glibc() {
-	for f in $(grep -rl "TIME_UTC" * 2>/dev/null) ; do
+	for f in $(grep -rl "TIME_UTC" * 2>/dev/null); do
 		sed -e "s:TIME_UTC:TIME_UTC_:" -i ${f}
 	done
 }
@@ -633,12 +643,12 @@ _boost_fix_glibc() {
 _boost_fix_jamtest() {
 	local jam libraries="$(find libs/ -type d -name test)"
 
-	for library in ${libraries} ; do
+	for library in ${libraries}; do
 		jam="${library}/Jamfile.v2"
 
-		if [ -f ${jam} ] ; then
-			if grep -s -q ^project "${jam}" ; then
-				if ! grep -s -q "import testing" "${jam}" ; then
+		if [ -f ${jam} ]; then
+			if grep -s -q ^project "${jam}"; then
+				if ! grep -s -q "import testing" "${jam}"; then
 					eerror "Jamfile broken for testing: 'import testing' missing. fixing ..."
 
 					sed -e "s:^project:import testing ;\n\0:" -i "${jam}"
