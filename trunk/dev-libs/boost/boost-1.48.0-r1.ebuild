@@ -4,9 +4,7 @@
 
 EAPI="5"
 
-IUSE_BOOST_LIBS="date_time filesystem graph graph_parallel iostreams math mpi
-program_options python random regex serialization signals system test thread
-wave"
+IUSE_BOOST_LIBS=" date_time filesystem graph graph_parallel iostreams math mpi program_options python random regex serialization signals system test thread wave"
 
 BOOST_PATCHSET="gentoo-boost-1.48.0.tar.xz"
 

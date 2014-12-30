@@ -55,19 +55,7 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 
 LICENSE="Boost-1.0"
 KEYWORDS="~alpha ~amd64 ~amd64-fbsd ~amd64-linux ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd ~x86-linux"
-
-IUSE="debug doc examples icu static test +threads tools"
-
-#
-# TODO: for gentoo to use
-#
-
-#USE_EXPAND="BOOST_LIBS"
-for library in ${IUSE_BOOST_LIBS}; do
-	IUSE+=" boost_libs_${library}"
-done
-
-unset library
+IUSE="debug doc examples icu static test +threads tools ${IUSE_BOOST_LIBS// / boost_libs_}"
 
 RDEPEND="sys-libs/zlib[${MULTILIB_USEDEP}]
 	abi_x86_32? ( !app-emulation/emul-linux-x86-cpplibs[-abi_x86_32(-)] )
