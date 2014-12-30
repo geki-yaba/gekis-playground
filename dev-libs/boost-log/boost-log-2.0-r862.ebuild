@@ -12,5 +12,5 @@ SRC_URI="mirror://sourceforge/${PN}/${P//_rc/-RC}-${PR}.zip"
 
 SLOT="0"
 
-RDEPEND="dev-libs/boost[datetime,filesystem,regex]"
+RDEPEND="dev-libs/boost[date_time,filesystem,regex]"
 DEPEND="${RDEPEND}"
