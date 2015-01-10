@@ -54,7 +54,7 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
-KEYWORDS="~alpha ~amd64 ~amd64-fbsd ~amd64-linux ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~x86-fbsd ~x86-linux"
+KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x86-solaris ~x86-winnt"
 IUSE="debug doc examples icu static test +threads tools ${IUSE_BOOST_LIBS// / boost_libs_}"
 
 RDEPEND="sys-libs/zlib[${MULTILIB_USEDEP}]
@@ -432,8 +432,14 @@ _boost_config() {
 
 	local jam_options=""
 	use boost_libs_mpi && jam_options+="using mpi ;"
-	[[ "${python_abi}" != "default" ]] \
-		&& jam_options+="using python : : ${PYTHON} ;"
+
+	if [[ "${python_abi}" != "default" ]]; then
+		if tc-is-cross-compiler; then
+			jam_options+="using python : ${EPYTHON#python} : : ${SYSROOT:-${EROOT}}/usr/include/${EPYTHON} : ${SYSROOT:-${EROOT}}/usr/$(get_libdir) ;"
+		else
+			jam_options+="using python : : ${PYTHON} ;"
+		fi
+	fi
 
 	local config="user"
 	[[ "${python_abi}" != "default" ]] && config="${EPYTHON}"
