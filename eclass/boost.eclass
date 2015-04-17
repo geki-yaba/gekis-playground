@@ -54,12 +54,12 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
-KEYWORDS="~alpha ~amd64 ~arm ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x86-solaris ~x86-winnt"
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x86-solaris ~x86-winnt"
 IUSE="debug doc examples icu static test +threads tools ${IUSE_BOOST_LIBS// / boost_libs_}"
 
 RDEPEND="sys-libs/zlib[${MULTILIB_USEDEP}]
 	abi_x86_32? ( !app-emulation/emul-linux-x86-cpplibs[-abi_x86_32(-)] )
-	boost_libs_mpi? ( virtual/mpi )
+	boost_libs_mpi? ( virtual/mpi[cxx,threads] )
 	boost_libs_python? ( ${PYTHON_DEPS} )
 	icu? ( dev-libs/icu:=[${MULTILIB_USEDEP}] )
 	!icu? ( virtual/libiconv[${MULTILIB_USEDEP}] )"
@@ -594,8 +594,8 @@ _boost_options() {
 	local options="$(_boost_basic_options)"
 
 	# feature: python abi
-	for library in ${IUSE_BOOST_LIBS/boost_libs_python}; do
-		use ${library} && options+=" --with-${library/boost_libs_}"
+	for library in ${IUSE_BOOST_LIBS/ python}; do
+		use boost_libs_${library} && options+=" --with-${library}"
 	done
 
 	options+=" $(use_enable icu) boost.locale.icu=off"
