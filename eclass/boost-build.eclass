@@ -35,7 +35,7 @@ DESCRIPTION="A system for large project software construction, which is simple t
 HOMEPAGE="http://www.boost.org/doc/tools/build/index.html"
 SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 [ "${BOOST_PATCHSET}" ] && \
-	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
+	SRC_URI+=" http://geki.selfhost.eu/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
 SLOT="$(get_version_component_range 1-2)"

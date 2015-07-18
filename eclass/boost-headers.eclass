@@ -32,7 +32,7 @@ DESCRIPTION="boost.org c++ header libraries"
 HOMEPAGE="http://www.boost.org/"
 SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 [ "${BOOST_PATCHSET}" ] && \
-	SRC_URI+=" http://gekis-playground.googlecode.com/files/${BOOST_PATCHSET}"
+	SRC_URI+=" http://geki.selfhost.eu/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x86-solaris ~x86-winnt"
@@ -83,7 +83,7 @@ boost-headers_pkg_pretend() {
 		eerror "Files from old dev-libs/boost package found."
 		eerror "Please clean your system following the howto at:"
 		eerror
-		eerror "	http://code.google.com/p/gekis-playground/wiki/Boost"
+		eerror "	https://github.com/geki-yaba/gekis-playground/blob/wiki/Boost.md"
 		eerror
 		die "keep cool and clean! ;)"
 	fi
