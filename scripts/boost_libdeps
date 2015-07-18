@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BOOST_MAKEFILE="Jamfile.v2"
-BOOST_PREFIX="boost_"
+BOOST_PREFIX="boost_libs_"
 
 build_b2()
 {
