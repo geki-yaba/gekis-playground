@@ -1,0 +1,72 @@
+## [split build of Boost.org libraries](Boost.md) ##
+
+### What the ... happened? ###
+
+  * enable boost libraries by useflags!
+
+  * code moved from ebuilds to eclasses
+  * created tarball for generic diff files
+  * no eselect code necessary
+  * **not** supported is unversioned libraries in LIBDIR with SLOTing => automagic is evil(tm)
+
+### What to do before? ###
+
+Remove boost & eselect-boost and its left-overs located at:
+
+```
+/usr/include/boost
+/usr/lib/libboost_*
+/usr/share/boostbook
+```
+
+Check the system for boost libraries used:
+
+```
+# libraries
+for f in $(find /usr/lib/ -type f -name '*.so*'); do echo $f; ldd $f | grep boost; done
+
+# binaries
+for f in $(find /usr/bin/ -type f -perm -111); do echo $f; ldd $f | grep boost; done
+
+# binaries under LIBDIR
+for f in $(find /usr/lib/ -type f -perm -111 ! -name '*.so*'); do echo $f; ldd $f | grep boost; done
+```
+
+### What now? ###
+
+Install _dev-libs/boost_ with its respective useflags!
+
+### How to fix packages from Gentoo repository? ###
+
+  * copy the boost-utils.eclass to the repository which holds the edited ebuild ( portage feature )
+  * add 'boost-utils' to 'inherit' at the top of the ebuild
+  * add this line to src\_configure before configure:
+
+```
+boost-utils_add_paths
+```
+_It checks for the respective library path of the boost-headers version!_
+
+_... or ..._
+
+  * fix configure options in ebuilds like the example of mkvtoolnix:
+
+https://code.google.com/p/gekis-playground/source/browse/trunk/media-video/mkvtoolnix/mkvtoolnix-4.9.1.ebuild?r=310#61
+
+_... or ..._
+
+  * cmake based builds should use FindBoost.cmake properly, works then!
+
+  * cmake based builds with useflag`[-threads]` need to add a cmake define in /etc/make.conf
+
+```
+Boost_USE_MULTITHREADED=OFF
+```
+
+<br><br>
+Truely fixes these bugs:<br>
+<a href='https://bugs.gentoo.org/306151'>306151</a> &<br>
+<a href='http://sources.gentoo.org/viewcvs.py/gentoo-x86/dev-python/visual/visual-5.13.ebuild?r1=1.1&r2=1.2'>hackerly ebuild diff</a>
+
+<br><br>
+That is about it!
