@@ -1,0 +1,76 @@
+#!/bin/bash
+
+BOOST_MAKEFILE="Jamfile.v2"
+BOOST_PREFIX="boost_"
+
+build_b2()
+{
+	./bootstrap.sh
+}
+
+show_libs()
+{
+	./b2 --show-libraries
+}
+
+print_libdep()
+{
+	[ ${#} -ne 1 ] && echo "${FUNCNAME}: bad parameters given (${@})" && exit 1
+
+	sed -re "s:libs/([a-z_]+)/build/.*:\t${BOOST_PREFIX}\1? (:" <<< "${file}"
+	sed -nre "s:.*build//[a-z]+_([a-z_]+).*:\t\t${BOOST_PREFIX}\1:p" "${file}"
+	echo -e "\t)"
+}
+
+print_libdeps()
+{
+	echo "interdependencies of boost libraries (list needs minor manual cleanup)"
+	echo
+
+	local file
+	for file in $(find libs/*/build/ -type f -name "${BOOST_MAKEFILE}")
+	do
+		if grep -q -E "build//[a-z_]+" "${file}"
+		then
+			print_libdep "${file}"
+		fi
+	done
+}
+
+if [ ! -x bootstrap.sh ]
+then
+	echo "b2 bootstrapper not there my dear?!"
+	exit 1
+fi
+
+if [ ! -d libs ]
+then
+	echo "got no libraries my dear?!"
+	exit 1
+fi
+
+if [ ! -x b2 ]
+then
+	if [ -e b2 ]
+	then
+		echo "got no rights my dear?!"
+		exit 1
+	fi
+
+	build_b2
+else
+	echo "b2 already built"
+	echo
+
+fi
+
+if [ ! -x b2 ]
+then
+	echo "b2 not executable my dear?!"
+	exit 1
+fi
+
+show_libs
+print_libdeps
+
+exit 0
