@@ -6,7 +6,7 @@ EAPI="5"
 
 BOOST_PATCHSET="gentoo-boost-1.47.0-r1.tar.xz"
 
-PATCHES=( "${BOOST_PATCHDIR}/boost-exceptions-5731.diff" )
-
 inherit boost-headers
+
+PATCHES=( "${BOOST_PATCHDIR}/boost-exceptions-5731.diff" )
 

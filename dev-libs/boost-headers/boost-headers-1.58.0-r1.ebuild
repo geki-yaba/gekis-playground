@@ -9,8 +9,7 @@ EAPI="5"
 
 BOOST_PATCHSET="gentoo-boost-1.58.0.tar.xz"
 
-PATCHES=( "${BOOST_PATCHDIR}/60_boost-python-exec_file.diff"
-	"${BOOST_PATCHDIR}/61_boost-fusion-constexpr-types.diff" )
-
 inherit boost-headers
+
+PATCHES=( "${BOOST_PATCHDIR}/61_boost-fusion-constexpr-types.diff" )
 
