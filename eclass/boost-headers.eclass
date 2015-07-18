@@ -11,9 +11,9 @@
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-EAPI="4"
+EAPI="5"
 
-inherit alternatives base multilib versionator
+inherit alternatives base multilib multilib-minimal versionator
 
 EXPORT_FUNCTIONS pkg_pretend src_unpack src_configure src_compile src_install
 
@@ -42,7 +42,7 @@ IUSE=""
 RDEPEND="!app-admin/eselect-boost
 	abi_x86_32? ( !app-emulation/emul-linux-x86-cpplibs[-abi_x86_32(-)] )"
 DEPEND="${RDEPEND}
-	app-arch/bzip2"
+	app-arch/bzip2[${MULTILIB_USEDEP}]"
 PDEPEND="~dev-libs/boost-${PV}"
 
 S="${WORKDIR}/${BOOST_P}"
