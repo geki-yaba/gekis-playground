@@ -78,6 +78,9 @@ boost-build_src_prepare() {
 	[ "${BOOST_PATCHSET}" ] \
 		&& EPATCH_OPTS="--ignore-whitespace" EPATCH_SUFFIX="diff" base_src_prepare
 
+	# apply user patchsets
+	epatch_user
+
 	cd "${BOOST_JAM_SRC}" || die
 
 	# remove stripping option

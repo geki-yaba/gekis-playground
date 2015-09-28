@@ -15,7 +15,7 @@ EAPI="5"
 
 inherit alternatives base multilib multilib-minimal versionator
 
-EXPORT_FUNCTIONS pkg_pretend src_unpack src_configure src_compile src_install
+EXPORT_FUNCTIONS pkg_pretend src_unpack src_prepare src_configure src_compile src_install
 
 SLOT="$(get_version_component_range 1-2)"
 BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
@@ -95,6 +95,14 @@ boost-headers_src_unpack() {
 		|| die
 
 	[ "${BOOST_PATCHSET}" ] && unpack "${BOOST_PATCHSET}"
+}
+
+boost-headers_src_prepare() {
+	[ "${BOOST_PATCHSET}" ] \
+		&& EPATCH_OPTS="--ignore-whitespace" EPATCH_SUFFIX="diff" base_src_prepare
+
+	# apply user patchsets
+	epatch_user
 }
 
 boost-headers_src_configure() { :; }
