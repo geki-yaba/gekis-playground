@@ -437,10 +437,19 @@ _boost_config() {
 	use boost_libs_mpi && jam_options+="using mpi ;"
 
 	if [[ "${python_abi}" != "default" ]]; then
+		# boost expects libpython$(pyver) and doesn't allow overrides
+		# and the build system is so creepy that it's easier just to
+		# provide a symlink (linker's going to use SONAME anyway)
+		# TODO: replace it with proper override one day
+		ln -sf "$(python_get_library_path)" "${T}/lib${EPYTHON}$(get_libname)" || die
+
 		if tc-is-cross-compiler; then
 			jam_options+="using python : ${EPYTHON#python} : : ${SYSROOT:-${EROOT}}/usr/include/${EPYTHON} : ${SYSROOT:-${EROOT}}/usr/$(get_libdir) ;"
 		else
-			jam_options+="using python : : ${PYTHON} ;"
+			# note: we need to provide version explicitly because of
+			# a bug in the build system:
+			# https://github.com/boostorg/build/pull/104
+			jam_options+="using python : ${EPYTHON#python} : ${PYTHON} : $(python_get_includedir) : ${T} ;"
 		fi
 	fi
 
@@ -511,6 +520,7 @@ _boost_python_install() {
 	local python_dir="$(find bin.v2/libs -type d -name python-${EPYTHON})"
 
 	for directory in ${python_dir}; do
+		rm -rf ${directory/-${EPYTHON}}
 		_boost_execute "mv ${directory} ${directory/-${EPYTHON}}" \
 			|| die "move '${directory}' -> '${directory/-${EPYTHON}}' failed"
 	done
@@ -521,9 +531,9 @@ _boost_python_install() {
 
 		[[ "${count}" -ne 1 ]] && die "multiple mpi.so files found"
 
-		_boost_execute "mv stage/lib/mpi.so-${EPYTHON} stage/lib/mpi.so" \
+		_boost_execute "cp stage/lib/mpi.so-${EPYTHON} stage/lib/mpi.so" \
 			|| die "move 'stage/lib/mpi.so-${EPYTHON}' -> 'stage/lib/mpi.so' failed"
-		_boost_execute "mv stage/lib/mpi.so-${EPYTHON} ${mpi_library}" \
+		_boost_execute "cp stage/lib/mpi.so-${EPYTHON} ${mpi_library}" \
 			|| die "move 'stage/lib/mpi.so-${EPYTHON}' -> '${mpi_library}' failed"
 	fi
 

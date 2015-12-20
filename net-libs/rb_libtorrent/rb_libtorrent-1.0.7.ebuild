@@ -9,7 +9,7 @@ PYTHON_REQ_USE="threads"
 DISTUTILS_OPTIONAL=true
 AUTOTOOLS_AUTORECONF=true
 
-inherit autotools-utils multilib distutils-r1 versionator
+inherit autotools-utils boost-utils multilib distutils-r1 versionator
 
 MY_P=${P/rb_/}
 MY_P=${MY_P/torrent/torrent-rasterbar}
@@ -50,7 +50,7 @@ AUTOTOOLS_IN_SOURCE_BUILD=1
 src_configure() {
 	local myeconfargs=(
 		--disable-silent-rules # bug 441842
-		--with-boost-libdir=/usr/$(get_libdir)
+		--with-boost-libdir=$(boost-utils_get_library_path)
 		$(use_enable debug)
 		$(use_enable test tests)
 		$(use_enable examples)
