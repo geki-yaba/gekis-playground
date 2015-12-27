@@ -1,7 +1,7 @@
 # gekis-playground
 The playground of gekis hacking on Gentoo Linux distribution.
 
-System composed of EFI-based kernel, sysvinit/eudev-based startup process and lightdm/mate desktop experience.
+System composed of EFI-based kernel, sysvinit/old openrc/eudev-based startup process and lightdm/mate desktop experience.
 
 Featured by wpa_supplicant/dhcpcd-transparent network connections
 and seamless switch of display/audio from internal components to hdmi.
@@ -21,7 +21,7 @@ ifconfig wlp1s0
 udevadm control --reload
 ```
 
-## udev: switch display/audio to hdmi
+## udev: switch display/audio(pulseaudio) to hdmi
 
 ~ cat /etc/udev/rules.d/90-display.rules
 ```bash
