@@ -58,7 +58,6 @@ KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~spa
 IUSE="debug doc examples icu static test +threads tools ${IUSE_BOOST_LIBS// / boost_libs_}"
 
 RDEPEND="sys-libs/zlib[${MULTILIB_USEDEP}]
-	abi_x86_32? ( !app-emulation/emul-linux-x86-cpplibs[-abi_x86_32(-)] )
 	boost_libs_mpi? ( virtual/mpi[cxx,threads] )
 	boost_libs_python? ( ${PYTHON_DEPS} )
 	icu? ( dev-libs/icu:=[${MULTILIB_USEDEP}] )
