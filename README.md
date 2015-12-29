@@ -37,12 +37,12 @@ DISPLAY=":0"
 # function
 function select_display()
 {
-	local mode="default"
+        local mode="default"
 
-	# add tests for other cards
+        # add tests for other cards
         if [ "connected" == "$(/bin/cat /sys/class/drm/card0-HDMI-A-1/status)" ]
         then
-        	mode="hdmi"
+                mode="hdmi"
         #elif  [ other card ]
         fi
 
