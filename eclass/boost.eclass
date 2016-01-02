@@ -28,7 +28,7 @@
 
 EAPI="5"
 
-PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4} )
+PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4,3_5} )
 
 inherit base check-reqs flag-o-matic multilib multilib-minimal python-r1 toolchain-funcs versionator
 
