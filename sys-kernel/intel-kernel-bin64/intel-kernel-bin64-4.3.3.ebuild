@@ -27,3 +27,14 @@ src_install()
 	doins -r "${S}"/*
 }
 
+pkg_postinst()
+{
+	if [ -d "${ROOT}"boot/EFI/BOOT ]
+	then
+		[ -e "${ROOT}"boot/EFI/BOOT/bootx64.efi ] \
+			&& rm "${ROOT}"boot/EFI/BOOT/bootx64.efi
+
+		cp "${ROOT}"boot/kernel-${PV}-intel "${ROOT}"boot/EFI/BOOT/bootx64.efi
+	fi
+}
+
