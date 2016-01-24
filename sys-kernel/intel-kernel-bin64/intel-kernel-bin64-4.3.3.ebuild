@@ -16,8 +16,7 @@ KEYWORDS="amd64"
 IUSE=""
 
 DEPEND="app-arch/xz-utils"
-RDEPEND="${DEPEND}
-	sys-kernel/gentoo-sources:${PV}"
+RDEPEND="${DEPEND}"
 
 S="${WORKDIR}"
 
