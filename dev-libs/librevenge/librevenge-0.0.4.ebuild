@@ -4,7 +4,7 @@
 
 EAPI=5
 
-inherit boost-utils eutils multilib-minimal
+inherit eutils multilib-minimal
 
 DESCRIPTION="A helper library for REVerse ENGineered formats filters"
 HOMEPAGE="http://sf.net/p/libwpd/librevenge"
@@ -35,9 +35,6 @@ src_prepare() {
 }
 
 multilib_src_configure() {
-	boost-utils_add_library_path
-	append-ldflags "-lboost_system-mt"
-
 	ECONF_SOURCE=${S} \
 	econf \
 		--disable-static \
