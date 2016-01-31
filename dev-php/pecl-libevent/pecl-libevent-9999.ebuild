@@ -29,6 +29,10 @@ src_unpack()
 {
 	git-r3_src_unpack
 
+	pushd "${S}" 2>/dev/null
+	epatch "${FILESDIR}"/libevent.c.patch
+	popd 2>/dev/null
+
 	# php-ext-source-r2_src_unpack: no git support :)
 	local slot orig_s="${PHP_EXT_S}"
 	for slot in $(php_get_slots); do
