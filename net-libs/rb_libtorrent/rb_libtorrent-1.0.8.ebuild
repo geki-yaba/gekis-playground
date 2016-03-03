@@ -1,23 +1,22 @@
-# Copyright 1999-2015 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
 EAPI=5
 
-PYTHON_COMPAT=( python2_7 python3_{3,4} )
+PYTHON_COMPAT=( python2_7 python3_{3,4,5} )
 PYTHON_REQ_USE="threads"
 DISTUTILS_OPTIONAL=true
 AUTOTOOLS_AUTORECONF=true
 
 inherit autotools-utils boost-utils multilib distutils-r1 versionator
 
-MY_PN=${PN/rb_/}
 MY_PV=$(replace_all_version_separators '_' )
-S=${WORKDIR}/${MY_PN}-${MY_PN}-${MY_PV}
+S=${WORKDIR}/libtorrent-libtorrent-${MY_PV}
 
 DESCRIPTION="C++ BitTorrent implementation focusing on efficiency and scalability"
 HOMEPAGE="http://libtorrent.org"
-SRC_URI="https://github.com/arvidn/libtorrent/archive/${MY_PN}-${MY_PV}.tar.gz"
+SRC_URI="https://github.com/arvidn/libtorrent/archive/libtorrent-${MY_PV}.tar.gz -> rb_libtorrent-${PV}.tar.gz"
 
 LICENSE="BSD"
 SLOT="0"
@@ -33,66 +32,81 @@ RDEPEND="
 	ssl? ( dev-libs/openssl:0= )
 	python? (
 		${PYTHON_DEPS}
-		dev-libs/boost:=[boost_libs_python,${PYTHON_USEDEP}]
+		dev-libs/boost:=[boost_libs_system,boost_libs_python,${PYTHON_USEDEP}]
 	)"
 DEPEND="${RDEPEND}
 	>=sys-devel/libtool-2.2"
 
 RESTRICT="test"
 
-PATCHES=(
-	"${FILESDIR}"/${PN}-1.0.2-python.patch
-)
-
 AUTOTOOLS_IN_SOURCE_BUILD=1
 
-src_unpack() {
-	default
-
-	# taken from libtorrent-rasterbar autotool.sh
-	cd "${S}"
-
-	##########################################
-	# Copy config.rpath to build dir
-	##########################################
-	local build_dir="$(cat configure.ac | grep '^AC_CONFIG_AUX_DIR' | \
-		sed -n -e 's/AC_CONFIG_AUX_DIR(\([^()]*\))/\1/p' | sed -e 's/^\[\(.*\)\]$/\1/' | sed -e 1q)"
-
-	if [ -n "$build_dir" ]; then
-		mkdir "$build_dir"
-	fi
-
-	local config_rpath=m4/config.rpath
-	echo "Copying $config_rpath to $build_dir"
-	cp $config_rpath "$build_dir/"
+src_prepare() {
+	chmod a-x docs/*.rst docs/*.htm* src/*.cpp include/libtorrent/*.hpp || die
+	./autotool.sh
 }
 
 src_configure() {
+	if use python_targets_python3_3 ;then
+		boost_py3="--with-boost-python=3.3"
+	elif use python_targets_python3_4 ;then
+		boost_py3="--with-boost-python=3.4"
+	elif use python_targets_python3_5 ;then
+		boost_py3="--with-boost-python=3.5"
+	else
+		boost_py3=""
+	fi
+
+	if use python_targets_python2_7 ;then
+		boost_py2="--with-boost-python=2.7"
+	else
+		boost_py2=""
+	fi
+
 	local myeconfargs=(
 		--disable-silent-rules # bug 441842
 		--with-boost-libdir=$(boost-utils_get_library_path)
+		--with-boost-system=mt
 		$(use_enable debug)
 		$(use_enable test tests)
 		$(use_enable examples)
 		$(use_enable ssl encryption)
 		$(use_enable python python-binding)
 		$(usex debug "--enable-logging=verbose" "")
+		${boost_py3}
+		${boost_py2}
 	)
 
-	use python && python_setup
+	if use python ;then
+		python_setup
+	fi
 
 	autotools-utils_src_configure
-	use python && cd "${BUILD_DIR}"/bindings/python && distutils-r1_src_configure
+
+	if use python ;then
+		cd "${BUILD_DIR}"/bindings/python || die && \
+		distutils-r1_src_configure
+	fi
 }
 
 src_compile() {
 	autotools-utils_src_compile
-	use python && cd "${BUILD_DIR}"/bindings/python && distutils-r1_src_compile
+
+	if use python ;then
+		cd "${BUILD_DIR}"/bindings/python || die && \
+		distutils-r1_src_compile
+	fi
 }
 
 src_install() {
-	use doc && HTML_DOCS=( "${S}"/docs/. )
+	if use doc ;then
+		HTML_DOCS=( "${S}"/docs/. )
+	fi
 
 	autotools-utils_src_install
-	use python && cd "${BUILD_DIR}"/bindings/python && distutils-r1_src_install
+
+	if use python ;then
+		cd "${BUILD_DIR}"/bindings/python || die && \
+		distutils-r1_src_install
+	fi
 }
