@@ -5,21 +5,24 @@
 EAPI=5
 
 XORG_DRI=dri
+XORG_EAUTORECONF=yes
 inherit linux-info xorg-2
 
 DESCRIPTION="X.Org driver for Intel cards"
 
 KEYWORDS="~amd64 ~x86 ~amd64-fbsd -x86-fbsd"
-IUSE="debug +sna +udev uxa xvmc"
+IUSE="debug +dri3 +sna +udev uxa xvmc"
 
 REQUIRED_USE="
 	|| ( sna uxa )
 "
-
 RDEPEND="x11-libs/libXext
 	x11-libs/libXfixes
 	>=x11-libs/pixman-0.27.1
 	>=x11-libs/libdrm-2.4.29[video_cards_intel]
+	dri3? (
+		>=x11-base/xorg-server-1.18
+	)
 	sna? (
 		>=x11-base/xorg-server-1.10
 	)
@@ -42,17 +45,19 @@ src_configure() {
 	XORG_CONFIGURE_OPTIONS=(
 		$(use_enable debug)
 		$(use_enable dri)
+		$(use_enable dri3)
+		$(usex dri3 "--with-default-dri=3")
 		$(use_enable sna)
-		$(use_enable uxa)
 		$(use_enable udev)
+		$(use_enable uxa)
 		$(use_enable xvmc)
 	)
 	xorg-2_src_configure
 }
 
 pkg_postinst() {
-	if linux_config_exists \
-		&& ! linux_chkconfig_present DRM_I915_KMS; then
+	if linux_config_exists && \
+		kernel_is -lt 4 3 && ! linux_chkconfig_present DRM_I915_KMS; then
 		echo
 		ewarn "This driver requires KMS support in your kernel"
 		ewarn "  Device Drivers --->"
