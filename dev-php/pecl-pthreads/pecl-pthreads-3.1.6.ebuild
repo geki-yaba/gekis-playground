@@ -10,12 +10,12 @@ PHP_EXT_ZENDEXT="no"
 USE_PHP="php7-0"
 inherit php-ext-pecl-r2
 
-KEYWORDS="~amd64 ~x86"
-
 DESCRIPTION="PHP wrapper for pthreads"
+
+KEYWORDS="~amd64 ~x86"
 LICENSE="PHP-3"
 SLOT="0"
 IUSE=""
 
 DEPEND=""
-RDEPEND="${DEPEND}"
+RDEPEND=""
