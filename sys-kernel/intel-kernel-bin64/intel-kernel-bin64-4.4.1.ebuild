@@ -28,12 +28,16 @@ src_install()
 
 pkg_postinst()
 {
+	mount-boot_pkg_preinst
+
 	if [ -d "${ROOT}"boot/EFI/BOOT ]
 	then
+		echo "efi i am"
 		[ -e "${ROOT}"boot/EFI/BOOT/bootx64.efi ] \
-			&& rm "${ROOT}"boot/EFI/BOOT/bootx64.efi
+			&& rm -v "${ROOT}"boot/EFI/BOOT/bootx64.efi
 
-		cp "${ROOT}"boot/kernel-${PV}-intel "${ROOT}"boot/EFI/BOOT/bootx64.efi
+		cp -v "${ROOT}"boot/kernel-${PV}-intel "${ROOT}"boot/EFI/BOOT/bootx64.efi
 	fi
-}
 
+	mount-boot_pkg_postinst
+}

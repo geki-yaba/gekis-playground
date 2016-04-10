@@ -14,6 +14,9 @@ inherit php-ext-pecl-r2
 DESCRIPTION="PHP wrapper for libevent"
 
 EGIT_COMMIT="3784a2b0c52e20d3d4314dccee45c6f7604d22d0"
+#EGIT_COMMIT="6887d83fcb315d5dfb6d27e92bc2e979bea69169"
+#EGIT_COMMIT="ac255b86138de94d53388487e52d87fa9b92e278"
+#EGIT_COMMIT="9e72744ce6224beafc7b54ce2a3a990f1c552a5a"
 SRC_URI="https://github.com/expressif/pecl-event-libevent/archive/${EGIT_COMMIT}.zip -> ${PN}-${EGIT_COMMIT}.zip"
 
 KEYWORDS="~amd64 ~x86"
