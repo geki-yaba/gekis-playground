@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -11,9 +11,9 @@
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-EAPI="5"
+EAPI="6"
 
-inherit alternatives base multilib multilib-minimal versionator
+inherit alternatives multilib multilib-minimal versionator
 
 EXPORT_FUNCTIONS pkg_pretend src_unpack src_prepare src_configure src_compile src_install
 
@@ -97,11 +97,25 @@ boost-headers_src_unpack() {
 }
 
 boost-headers_src_prepare() {
-	[ "${BOOST_PATCHSET}" ] \
-		&& EPATCH_OPTS="--ignore-whitespace" EPATCH_SUFFIX="diff" base_src_prepare
+	if [ -n "${BOOST_PATCHSET}" ]; then
+		local p
+		if [ ! -z ${BOOST_EXCLUDE+x} ]; then
+			for p in "${BOOST_EXCLUDE[@]}"; do
+				rm -fv "${p}"
+			done
+		fi
+
+		if [ ! -z ${BOOST_PATCHES+x} ]; then
+			for p in "${BOOST_PATCHES[@]}"; do
+				eapply -p0 --ignore-whitespace -- "${p}"
+			done
+		else
+			eapply -p0 --ignore-whitespace -- "${BOOST_PATCHDIR}"
+		fi
+	fi
 
 	# apply user patchsets
-	epatch_user
+	eapply_user
 }
 
 boost-headers_src_configure() { :; }

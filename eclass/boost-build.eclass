@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -11,22 +11,16 @@
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-EAPI="4"
+EAPI="6"
 
-PYTHON_DEPEND="python? *"
-
-inherit base flag-o-matic python toolchain-funcs versionator
+inherit flag-o-matic toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_compile src_install src_test
 
 BOOST_SP="${BOOST_SP:="_"}"
 BOOST_P="boost${BOOST_SP}$(replace_all_version_separators _)"
 BOOST_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))"
-PATCHES=( "${BOOST_PATCHDIR:="${WORKDIR}/patches"}" )
-
-if [ "${BOOST_BETA}" ]; then
-	BOOST_P="${BOOST_P/_beta/${BOOST_BETA}}"
-fi
+BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
 
 BOOST_TOOLSRC="${BOOST_TOOLSRC:="tools/build/v2"}"
 BOOST_B="${BOOST_P}/${BOOST_TOOLSRC}"
@@ -41,7 +35,7 @@ LICENSE="Boost-1.0"
 SLOT="$(get_version_component_range 1-2)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x86-solaris ~x86-winnt"
 
-IUSE="examples python"
+IUSE="examples"
 
 DEPEND="app-arch/bzip2"
 RDEPEND=""
@@ -56,11 +50,6 @@ boost-build_pkg_pretend() {
 boost-build_pkg_setup() {
 	BOOST_JAM_SRC="${S}/engine"
 	BOOST_JAM_TEST="${S}/test/engine"
-
-	if use python; then
-		python_set_active_version 2
-		python_pkg_setup
-	fi
 }
 
 boost-build_src_unpack() {
@@ -75,11 +64,25 @@ boost-build_src_unpack() {
 }
 
 boost-build_src_prepare() {
-	[ "${BOOST_PATCHSET}" ] \
-		&& EPATCH_OPTS="--ignore-whitespace" EPATCH_SUFFIX="diff" base_src_prepare
+	if [ -n "${BOOST_PATCHSET}" ]; then
+		local p
+		if [ ! -z ${BOOST_EXCLUDE+x} ]; then
+			for p in "${BOOST_EXCLUDE[@]}"; do
+				rm -fv "${p}"
+			done
+		fi
+
+		if [ ! -z ${BOOST_PATCHES+x} ]; then
+			for p in "${BOOST_PATCHES[@]}"; do
+				eapply -p0 --ignore-whitespace -- "${p}"
+			done
+		else
+			eapply -p0 --ignore-whitespace -- "${BOOST_PATCHDIR}"
+		fi
+	fi
 
 	# apply user patchsets
-	epatch_user
+	eapply_user
 
 	cd "${BOOST_JAM_SRC}" || die
 
@@ -121,7 +124,7 @@ boost-build_src_compile() {
 	# b) a simple dirty workaround by injecting the LDFLAGS in the LIBS env var
 	#    (which should not be set by us).
 	LIBS=${LDFLAGS:=-O} CC=$(tc-getCC) \
-	./build.sh ${toolset} $(use_with python) \
+	./build.sh ${toolset} \
 		|| die "building bjam failed"
 }
 

@@ -1,4 +1,4 @@
-# Copyright 1999-2012 Gentoo Foundation
+# Copyright 1999-2016 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
@@ -26,11 +26,11 @@
 # https://bugs.gentoo.org/show_bug.cgi?id=307921
 #
 
-EAPI="5"
+EAPI="6"
 
 PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4,3_5} )
 
-inherit base check-reqs flag-o-matic multilib multilib-minimal python-r1 toolchain-funcs versionator
+inherit check-reqs flag-o-matic multilib multilib-minimal python-r1 toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test
 
@@ -41,7 +41,7 @@ BOOST_JAM="bjam-${BOOST_SLOT}"
 BOOST_SP="${BOOST_SP:="_"}"
 BOOST_PV="$(replace_all_version_separators _)"
 BOOST_P="${PN}${BOOST_SP}${BOOST_PV}"
-PATCHES=( "${BOOST_PATCHDIR:="${WORKDIR}/patches"}" )
+BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
 
 if [ "${BOOST_BETA}" ]; then
 	BOOST_P="${BOOST_P/_beta/${BOOST_BETA}}"
@@ -112,11 +112,25 @@ boost_pkg_setup() {
 }
 
 boost_src_prepare() {
-	[ "${BOOST_PATCHSET}" ] \
-		&& EPATCH_OPTS="--ignore-whitespace" EPATCH_SUFFIX="diff" base_src_prepare
+	if [ -n "${BOOST_PATCHSET}" ]; then
+		local p
+		if [ ! -z ${BOOST_EXCLUDE+x} ]; then
+			for p in "${BOOST_EXCLUDE[@]}"; do
+				rm -fv "${p}"
+			done
+		fi
+
+		if [ ! -z ${BOOST_PATCHES+x} ]; then
+			for p in "${BOOST_PATCHES[@]}"; do
+				eapply -p0 --ignore-whitespace -- "${p}"
+			done
+		else
+			eapply -p0 --ignore-whitespace -- "${BOOST_PATCHDIR}"
+		fi
+	fi
 
 	# apply user patchsets
-	epatch_user
+	eapply_user
 
 	# boost.random library: /dev/urandom support
 	if [[ ${SLOT} < 1.48 ]] && use random && [[ -e /dev/urandom ]]; then
