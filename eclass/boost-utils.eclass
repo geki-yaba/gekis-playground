@@ -11,7 +11,9 @@
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-inherit flag-o-matic multilib
+EAPI="6"
+
+inherit flag-o-matic
 
 boost-utils_get_include_path() {
 	[ ${#} -ne 1 ] && die "${FUNCNAME}: need boost slot as parameter"

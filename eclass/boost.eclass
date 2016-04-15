@@ -30,7 +30,7 @@ EAPI="6"
 
 PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4,3_5} )
 
-inherit check-reqs flag-o-matic multilib multilib-minimal python-r1 toolchain-funcs versionator
+inherit check-reqs flag-o-matic multilib-minimal python-r1 toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test
 

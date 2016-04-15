@@ -13,7 +13,7 @@
 
 EAPI="6"
 
-inherit alternatives multilib multilib-minimal versionator
+inherit alternatives multilib-minimal versionator
 
 EXPORT_FUNCTIONS pkg_pretend src_unpack src_prepare src_configure src_compile src_install
 
