@@ -122,7 +122,6 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	media-gfx/graphite2
 	media-libs/fontconfig
 	media-libs/freetype:2
-	>=media-libs/glew-1.10:=
 	>=media-libs/harfbuzz-0.9.18:=[icu(+)]
 	media-libs/lcms:2
 	>=media-libs/libcdr-0.1.0
@@ -457,6 +456,7 @@ src_configure() {
 		--with-x \
 		--without-fonts \
 		--without-myspell-dicts \
+		--without-system-glew \
 		--without-help \
 		--with-helppack-integration \
 		--without-sun-templates \
