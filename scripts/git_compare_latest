@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# basic version comparision git cannot handle (subversion could do ;-)
+
+function execute
+{
+	local n a b
+
+	for d in $(ls -d -1 */*)
+	do
+		if [ -d $d ]
+		then
+			n=9;
+
+			a="z";
+			b="z";
+
+			while (( n >= 0 ))
+			do
+				if [ -f $d/*-1.14.$n.ebuild ]
+				then
+					if [ $b != z ]
+					then
+						a="$(ls -1 $d/*-1.14.$n.ebuild)"
+					else
+						b="$(ls -1 $d/*-1.14.$n.ebuild)"
+					fi;
+				fi
+
+				if [ $a != z ]
+				then
+					diff -u $a $b
+
+					break
+				fi
+
+				(( n -= 1 ))
+			done
+		fi
+	done
+}
+
+execute
+
+exit 0

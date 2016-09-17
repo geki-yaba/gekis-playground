@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# some helper commands, just in case
+#
+# reset commits made to your fork
+#
+#	git reset --hard origin/master
+#
+# clean up unversioned files
+#
+#	git clean -d -f .
+#
+# add files, do modifications, finally versionize files
+#
+#	git add .
+#
+# create clean patchset as backup (case: need to recreate fork, etc)
+# therefore, you need to do a dirty commit to record changes once
+# you better do a hard reset afterwards; otherwise you got a big fat ugly commit noone wants
+#
+#	git commit -a
+#	git diff > /tmp/mate.diff
+#
+# reapply changes later
+#
+#	patch -p1 -i /tmp/mate.diff
+#
+# execute this script to commit package-wise
+
+function execute
+{
+	local pkg ver
+
+	for f in $(git status -s)
+	do
+		if [[ ${f} =~ ebuild ]]
+		then
+			pkg="${f%/*}"
+			ver="${f##*-1}"
+			ver="${ver/ebuild}"
+			
+			git commit ${pkg} -m "${pkg}: bump to version 1${ver}"
+		fi
+	done
+}
+
+execute
+
+exit 0
