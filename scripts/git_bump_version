@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# bump version to major.minor
+
+PKG_FROM="${1}"
+PKG_TO="${2}"
+
+function execute
+{
+	local cat pkg es ed d
+
+	for d in $(ls -d -1 */*/)
+	do
+		d="${d%/}"
+
+		cat="${d%%/*}"
+		pkg="${d##*/}"
+
+		es="$(ls -1 ${cat}/${pkg}/${pkg}-${PKG_FROM}.*.ebuild | sort -r | head -n1)"
+		ed="${cat}/${pkg}/${pkg}-${PKG_TO}.0.ebuild"
+
+		if [ "${es}" != "" ]
+		then
+			cp -v "${es}" "${ed}"
+
+			ebuild "${ed}" digest
+		else
+			echo " * ${cat}/${pkg}/${pkg}-${PKG_FROM} not found!"
+		fi
+	done
+}
+
+if [ "${PKG_FROM}" != "" -a "${PKG_TO}" != "" ]
+then
+	execute
+fi
+
+unset PKG_FROM PKG_TO
+
+exit 0

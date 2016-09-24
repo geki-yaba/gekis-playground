@@ -4,7 +4,7 @@
 
 function execute
 {
-	local n a b
+	local n a b d
 
 	for d in $(ls -d -1 */*)
 	do

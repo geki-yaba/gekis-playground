@@ -29,7 +29,7 @@
 
 function execute
 {
-	local pkg ver
+	local pkg ver f
 
 	for f in $(git status -s)
 	do
