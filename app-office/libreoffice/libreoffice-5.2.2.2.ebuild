@@ -242,6 +242,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 PATCHES=(
 	# not upstreamable stuff
 	"${FILESDIR}/${PN}-5.2-system-pyuno.patch"
+	"${FILESDIR}/${PN}-5.2.2.2-gtk3-theme-menubar.patch"
 )
 
 CHECKREQS_MEMORY="512M"
