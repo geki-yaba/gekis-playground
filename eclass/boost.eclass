@@ -58,7 +58,7 @@ KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~spa
 IUSE="debug doc examples icu static test +threads tools ${IUSE_BOOST_LIBS// / boost_libs_}"
 
 RDEPEND="sys-libs/zlib[${MULTILIB_USEDEP}]
-	boost_libs_mpi? ( virtual/mpi[cxx,threads] )
+	boost_libs_mpi? ( >=virtual/mpi-2.0-r4[${MULTILIB_USEDEP},cxx,threads] )
 	boost_libs_python? ( ${PYTHON_DEPS} )
 	icu? ( dev-libs/icu:=[${MULTILIB_USEDEP}] )
 	!icu? ( virtual/libiconv[${MULTILIB_USEDEP}] )"
@@ -311,7 +311,7 @@ multilib_src_install() {
 	# some packages seem to have a problem with it. Creating symlinks ...
 	# The same goes for the mpi libs
 	local libraries="thread" libs
-	use boost_libs_mpi && multilib_is_native_abi && libraries+=" mpi"
+	use boost_libs_mpi && libraries+=" mpi"
 
 	for library in ${libraries}; do
 		if use boost_libs_${library}; then
@@ -480,12 +480,6 @@ using ${compiler} : ${compilerVersion} : ${compilerExecutable} : <cxxflags>"${CX
 $(sed -e "s:;:;\n:g" <<< ${jam_options})
 __EOF__
 
-	if use boost_libs_mpi; then
-		einfo "[WORKAROUND] mpi is not multilib aware"
-		einfo "Writing new Jamfile: ${config}-no-mpi-config.jam"
-		grep -v "using mpi" "${S}/${config}-config.jam" > "${S}/${config}-no-mpi-config.jam"
-	fi
-
 	# Maintainer information:
 	# The debug-symbols=none and optimization=none are not official upstream
 	# flags but a Gentoo specific patch to make sure that all our CXXFLAGS
@@ -598,11 +592,6 @@ _boost_basic_options() {
 	[[ "${#}" -gt "1" ]] && die "${FUNCNAME}: too many parameters"
 
 	local config="${1:-"user"}"
-
-	if use boost_libs_mpi && ! multilib_is_native_abi; then
-		einfo "[WORKAROUND] mpi multilib ${MULTILIB_ABI_FLAG} not available"
-		config+="-no-mpi"
-	fi
 
 	local options=""
 	options+=" pch=off --user-config=${BOOST_ROOT}/${config}-config.jam --prefix=${ED}/usr"
