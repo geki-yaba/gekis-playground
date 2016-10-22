@@ -45,10 +45,7 @@ DEPEND="${RDEPEND}
 
 S=${WORKDIR}/${MY_P}
 
-PATCHES=(
-	"${FILESDIR}/${PN}-1.0.9-CVE-2016-5301.patch"
-	"${FILESDIR}/${PN}-1.0.9-test_torrent_parse.patch"
-)
+PATCHES=( "${FILESDIR}/${PN}-1.0.9-test_torrent_parse.patch" )
 
 src_prepare() {
 	default
