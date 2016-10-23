@@ -32,7 +32,6 @@ pkg_postinst()
 
 	if [ -d "${ROOT}"boot/EFI/BOOT ]
 	then
-		echo "efi i am"
 		[ -e "${ROOT}"boot/EFI/BOOT/bootx64.efi ] \
 			&& rm -v "${ROOT}"boot/EFI/BOOT/bootx64.efi
 
