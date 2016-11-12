@@ -110,7 +110,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	>=dev-libs/boost-1.55[boost_libs_date_time,boost_libs_iostreams]
 	dev-libs/expat
 	dev-libs/hyphen
-	dev-libs/icu:=
+	>=dev-libs/icu-58:=
 	>=dev-libs/liborcus-0.11.2
 	dev-libs/librevenge
 	>=dev-libs/nspr-4.13
@@ -243,6 +243,7 @@ PATCHES=(
 	# not upstreamable stuff
 	"${FILESDIR}/${PN}-5.2-system-pyuno.patch"
 	"${FILESDIR}/${PN}-5.2.2.2-gtk3-theme-menubar.patch"
+	"${FILESDIR}/${PN}-5.2.3.3-icu-58.patch"
 )
 
 CHECKREQS_MEMORY="512M"
