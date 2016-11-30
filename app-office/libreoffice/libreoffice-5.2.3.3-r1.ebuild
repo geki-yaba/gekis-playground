@@ -25,7 +25,7 @@ BRANDING="${PN}-branding-gentoo-0.8.tar.xz"
 # PATCHSET="${P}-patchset-01.tar.xz"
 
 [[ ${PV} == *9999* ]] && SCM_ECLASS="git-r3"
-inherit multiprocessing autotools bash-completion-r1 boost-utils check-reqs eutils java-pkg-opt-2 kde4-base pax-utils python-single-r1 multilib toolchain-funcs flag-o-matic versionator xdg-utils ${SCM_ECLASS}
+inherit multiprocessing autotools bash-completion-r1 boost-utils check-reqs eutils java-pkg-opt-2 kde4-base pax-utils python-single-r1 multilib toolchain-funcs flag-o-matic versionator xdg-utils qmake-utils ${SCM_ECLASS}
 unset SCM_ECLASS
 
 DESCRIPTION="A full office productivity suite"
@@ -243,22 +243,21 @@ PATCHES=(
 	# not upstreamable stuff
 	"${FILESDIR}/${PN}-5.2-system-pyuno.patch"
 	"${FILESDIR}/${PN}-5.2.2.2-gtk3-theme-menubar.patch"
-	"${FILESDIR}/${PN}-5.2.3.3-icu-58.patch"
+	"${FILESDIR}/${PN}-5.2-icu58.patch"
 )
-
-CHECKREQS_MEMORY="512M"
-
-if [[ ${MERGE_TYPE} != binary ]] && is-flagq "-g*" && ! is-flagq "-g*0" ; then
-	CHECKREQS_DISK_BUILD="22G"
-elif [[ ${MERGE_TYPE} != binary ]] ; then
-	CHECKREQS_DISK_BUILD="6G"
-fi
 
 pkg_pretend() {
 	use java || \
 		ewarn "If you plan to use lbase application you should enable java or you will get various crashes."
 
 	if [[ ${MERGE_TYPE} != binary ]]; then
+
+		CHECKREQS_MEMORY="512M"
+		if is-flagq "-g*" && ! is-flagq "-g*0" ; then
+			CHECKREQS_DISK_BUILD="22G"
+		else
+			CHECKREQS_DISK_BUILD="6G"
+		fi
 		check-reqs_pkg_pretend
 
 		if ! $(tc-is-clang) && [[ $(gcc-major-version) -lt 4 ]] || {
@@ -286,7 +285,15 @@ pkg_setup() {
 	python-single-r1_pkg_setup
 	xdg_environment_reset
 
-	[[ ${MERGE_TYPE} != binary ]] && check-reqs_pkg_setup
+	if [[ ${MERGE_TYPE} != binary ]]; then
+		CHECKREQS_MEMORY="512M"
+		if is-flagq "-g*" && ! is-flagq "-g*0" ; then
+			CHECKREQS_DISK_BUILD="22G"
+		else
+			CHECKREQS_DISK_BUILD="6G"
+		fi
+		check-reqs_pkg_setup
+	fi
 }
 
 src_unpack() {
@@ -340,6 +347,11 @@ src_prepare() {
 		-e "s#Makefile.gbuild all slowcheck#Makefile.gbuild all#g" \
 		Makefile.in || die
 
+	sed -i \
+		-e "s,/usr/share/bash-completion/completions,$(get_bashcompdir)," \
+		-e "s,\$INSTALLDIRNAME.sh,${PN}," \
+		bin/distro-install-desktop-integration || die
+
 	if use branding; then
 		# hack...
 		mv -v "${WORKDIR}/branding-intro.png" "${S}/icon-themes/galaxy/brand/intro.png" || die
@@ -391,6 +403,12 @@ src_configure() {
 
 		use libreoffice_extensions_scripting-javascript && \
 			java_opts+=" --with-rhino-jar=$(java-pkg_getjar rhino-1.6 js.jar)"
+	fi
+
+	if use kde; then
+		# bug 544108, bug 599076
+		export QMAKEQT4="$(qt4_get_bindir)/qmake"
+		export MOCQT4="$(qt4_get_bindir)/moc"
 	fi
 
 	# system headers/libs/...: enforce using system packages
@@ -522,8 +540,13 @@ src_install() {
 	# This is not Makefile so no buildserver
 	make DESTDIR="${D}" distro-pack-install -o build -o check || die
 
-	# Fix bash completion placement
-	newbashcomp "${ED}"usr/share/bash-completion/completions/libreoffice.sh ${PN}
+	# bug 593514
+	if use gtk3; then
+		dosym /usr/$(get_libdir)/libreoffice/program/liblibreofficekitgtk.so \
+			/usr/$(get_libdir)/liblibreofficekitgtk.so
+	fi
+
+	# bash completion aliases
 	bashcomp_alias \
 		libreoffice \
 		unopkg loimpress lobase localc lodraw lomath lowriter lofromtemplate loweb loffice
