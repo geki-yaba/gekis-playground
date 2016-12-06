@@ -9,7 +9,7 @@ PHP_EXT_INI="yes"
 PHP_EXT_ZENDEXT="no"
 DOCS=( README.md )
 
-USE_PHP="php5-5 php5-6 php7-0"
+USE_PHP="php5-5 php5-6 php7-0 php7-1"
 
 # https://bitbucket.org/osmanov/pecl-event/get/9a48c131ae7a.zip
 inherit php-ext-pecl-r3
@@ -25,7 +25,8 @@ DEPEND="
 	>=dev-libs/libevent-2.0.2
 	php_targets_php5-5? ( dev-lang/php:5.5[sockets?] )
 	php_targets_php5-6? ( dev-lang/php:5.6[sockets?] )
-	php_targets_php7-0? ( dev-lang/php:7.0[sockets?] )"
+	php_targets_php7-0? ( dev-lang/php:7.0[sockets?] )
+	php_targets_php7-1? ( dev-lang/php:7.1[sockets?] )"
 
 RDEPEND="${DEPEND} !dev-php/pecl-libevent"
 
