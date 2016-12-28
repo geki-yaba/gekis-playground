@@ -17,8 +17,8 @@ print_libdep()
 {
 	[ ${#} -ne 1 ] && echo "${FUNCNAME}: bad parameters given (${@})" && exit 1
 
-	sed -re "s:libs/([a-z_]+)/build/.*:\t${BOOST_PREFIX}\1? (:" <<< "${file}"
-	sed -nre "s:.*build//[a-z]+_([a-z_]+).*:\t\t${BOOST_PREFIX}\1:p" "${file}"
+	sed -re "s:libs/([a-z0-9_]+)/build/.*:\t${BOOST_PREFIX}\1? (:" <<< "${file}"
+	sed -nre "s:.*build//[a-z0-9]+_([a-z0-9_]+).*:\t\t${BOOST_PREFIX}\1:p" "${file}"
 	echo -e "\t)"
 }
 
@@ -30,7 +30,7 @@ print_libdeps()
 	local file
 	for file in $(find libs/*/build/ -type f -name "${BOOST_MAKEFILE}")
 	do
-		if grep -q -E "build//[a-z_]+" "${file}"
+		if grep -q -E "build//[a-z0-9_]+" "${file}"
 		then
 			print_libdep "${file}"
 		fi

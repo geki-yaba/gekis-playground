@@ -9,7 +9,7 @@
 
 EAPI="6"
 
-inherit boost-utils
+inherit boost-utils multiprocessing
 
 EXPORT_FUNCTIONS pkg_setup src_prepare src_configure src_compile src_install
 
@@ -23,9 +23,7 @@ DEPEND="${RDEPEND}
 	dev-util/boost-build"
 
 boost-ext_pkg_setup() {
-	# use regular expression to read last job count or default to 1 :D
-	jobs="$(sed -r -e "s:.*[-]{1,2}j(obs)?[ =]?([0-9]*).*:\2:" <<< "${MAKEOPTS}")"
-	jobs="-j${jobs:=1}"
+	jobs="-j$(makeopts_jobs)"
 }
 
 boost-ext_src_prepare() {

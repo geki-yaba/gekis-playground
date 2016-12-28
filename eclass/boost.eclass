@@ -30,7 +30,7 @@ EAPI="6"
 
 PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3,3_4,3_5} )
 
-inherit check-reqs flag-o-matic multilib-minimal python-r1 toolchain-funcs versionator
+inherit check-reqs flag-o-matic multilib-minimal multiprocessing python-r1 toolchain-funcs versionator
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test
 
@@ -50,8 +50,10 @@ fi
 DESCRIPTION="boost.org c++ libraries"
 HOMEPAGE="http://www.boost.org/"
 SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
-[ "${BOOST_PATCHSET}" ] && \
+
+if [ "${BOOST_PATCHSET}" ]; then
 	SRC_URI+=" http://geki.selfhost.eu/files/${BOOST_PATCHSET}"
+fi
 
 LICENSE="Boost-1.0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x86-solaris ~x86-winnt"
@@ -67,10 +69,33 @@ DEPEND="${RDEPEND}
 	~dev-libs/boost-headers-${PV}
 	~dev-util/boost-build-${PV}"
 
-REQUIRED_USE="boost_libs_mpi? ( threads )
-	boost_libs_graph_parallel? ( boost_libs_mpi )
-	boost_libs_python? ( ${PYTHON_REQUIRED_USE} )
+REQUIRED_USE="
+	boost_libs_filesystem? (
+		boost_libs_system
+	)
+	boost_libs_graph? (
+		boost_libs_regex
+	)
+	boost_libs_graph_parallel? (
+		boost_libs_mpi
+	)
+	boost_libs_mpi? (
+		boost_libs_serialization
+		threads
+	)
+	boost_libs_python? (
+		${PYTHON_REQUIRED_USE}
+	)
+	boost_libs_wave? (
+		boost_libs_filesystem
+		boost_libs_thread
+		boost_libs_date_time
+	)
 	tools? ( icu )"
+
+if [ "${REQD_BOOST_LIBS}" ]; then
+	REQUIRED_USE+="${REQD_BOOST_LIBS}"
+fi
 
 S="${WORKDIR}/${BOOST_P}"
 
@@ -88,9 +113,7 @@ boost_pkg_pretend() {
 }
 
 boost_pkg_setup() {
-	# use regular expression to read last job count or default to 1 :D
-	jobs="$(sed -r -e "s:.*[-]{1,2}j(obs)?[ =]?([0-9]*).*:\2:" <<< "${MAKEOPTS}")"
-	jobs="-j${jobs:=1}"
+	jobs="-j$(makeopts_jobs)"
 
 	if use test; then
 		ewarn "The tests may take several hours on a recent machine"
