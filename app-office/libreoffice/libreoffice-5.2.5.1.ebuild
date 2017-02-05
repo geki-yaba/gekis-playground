@@ -1,4 +1,4 @@
-# Copyright 1999-2016 Gentoo Foundation
+# Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
@@ -240,10 +240,12 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 "
 
 PATCHES=(
+	# from master branch
+	"${FILESDIR}/${PN}-5.2-icu58.patch"
+
 	# not upstreamable stuff
 	"${FILESDIR}/${PN}-5.2-system-pyuno.patch"
 	"${FILESDIR}/${PN}-5.2.2.2-gtk3-theme-menubar.patch"
-	"${FILESDIR}/${PN}-5.2-icu58.patch"
 )
 
 pkg_pretend() {
@@ -260,7 +262,7 @@ pkg_pretend() {
 		fi
 		check-reqs_pkg_pretend
 
-		if ! $(tc-is-clang) && [[ $(gcc-major-version) -lt 4 ]] || {
+		if ! $(tc-is-clang) && { [[ $(gcc-major-version) -lt 4 ]] ||
 				[[ $(gcc-major-version) -eq 4 && $(gcc-minor-version) -lt 7 ]]; } then
 			eerror "Compilation with gcc older than 4.7 is not supported"
 			die "Too old gcc found."
@@ -355,6 +357,14 @@ src_prepare() {
 	if use branding; then
 		# hack...
 		mv -v "${WORKDIR}/branding-intro.png" "${S}/icon-themes/galaxy/brand/intro.png" || die
+	fi
+
+	# Don't list pdfimport support in desktop when built with none, bug # 605464
+	if ! use pdfimport; then
+		sed -i \
+			-e ":MimeType: s:application/pdf;::" \
+			-e ":Keywords: s:pdf;::" \
+			sysui/desktop/menus/draw.desktop || die
 	fi
 }
 
