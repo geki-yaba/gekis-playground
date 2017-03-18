@@ -19,9 +19,9 @@ HOMEPAGE="http://libtorrent.org"
 SRC_URI="https://github.com/arvidn/libtorrent/releases/download/libtorrent-${MY_PV}/${MY_P}.tar.gz"
 
 LICENSE="BSD"
-SLOT="0/8"
+SLOT="0/9"
 KEYWORDS="~amd64 ~arm ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
-IUSE="debug +dht doc examples +geoip libressl python +ssl static-libs test"
+IUSE="debug +dht doc examples libressl python +ssl static-libs test"
 
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
 
@@ -29,7 +29,6 @@ RDEPEND="
 	dev-libs/boost:=[threads]
 	virtual/libiconv
 	examples? ( !net-p2p/mldonkey )
-	geoip? ( dev-libs/geoip )
 	python? (
 		${PYTHON_DEPS}
 		dev-libs/boost:=[boost_libs_system,boost_libs_python,${PYTHON_USEDEP}]
@@ -45,8 +44,6 @@ DEPEND="${RDEPEND}
 
 S=${WORKDIR}/${MY_P}
 
-PATCHES=( "${FILESDIR}/${PN}-1.0.9-test_torrent_parse.patch" )
-
 src_prepare() {
 	default
 
@@ -61,12 +58,9 @@ src_configure() {
 	local myeconfargs=(
 		$(use_enable debug)
 		$(use_enable debug logging)
-		$(use_enable debug statistics)
 		$(use_enable debug disk-stats)
 		$(use_enable dht dht $(usex debug logging yes))
 		$(use_enable examples)
-		$(use_enable geoip)
-		$(use_with   geoip libgeoip)
 		$(use_enable ssl encryption)
 		$(use_enable static-libs static)
 		$(use_enable test tests)
