@@ -39,8 +39,8 @@ src_install(){
 }
 
 pkg_postinst(){
-	elog "After install this package, please, add the following"
+	elog "After this package is installed, please add the following"
 	elog "line into the ~/.xprofile (user) or /etc/environment (system):"
-	elog "export QT_QPA_PLATFORMTHEME=qt5ct"
-	elog "and it will work."
+	elog
+	elog "	export QT_QPA_PLATFORMTHEME=qt5ct"
 }
