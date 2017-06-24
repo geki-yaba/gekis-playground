@@ -8,14 +8,14 @@ DESCRIPTION="Linux system headers (LFS)"
 IUSE=""
 SLOT="0"
 
-SRC_URI="mirror://gentoo/gentoo-headers-base-${PV}.tar.xz"
+SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-${PV}.tar.xz"
 
-KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~m68k ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~amd64-linux ~arm-linux ~x86-linux"
+KEYWORDS="~amd64"
 
 DEPEND="app-arch/xz-utils"
 RDEPEND="!!media-sound/alsa-headers"
 
-S=${WORKDIR}/gentoo-headers-base-${PV}
+S="${WORKDIR}/linux-${PV}"
 
 src_unpack() {
 	unpack ${A}
@@ -31,18 +31,23 @@ kernel_header_destdir() {
 		|| die
 }
 
+src_compile() {
+	make ARCH=x86_64 mrproper || die
+	make ARCH=x86_64 INSTALL_HDR_PATH=dest headers_install || die
+}
+
 src_install() {
-	local ddir=$(kernel_header_destdir)
-	mkdir -p "${ED}"${ddir}/ || die
-
-	cp -pPR "${S}"/include/* "${ED}"${ddir}/
-
 	# let other packages install some of these headers
-	rm -rf "${ED}"${ddir}/scsi || die #glibc/uclibc/etc...
+	rm -rf "${S}"/dest/scsi || die #glibc/uclibc/etc...
 
 	# hrm, build system sucks
-	find "${ED}" '(' -name '.install' -o -name '*.cmd' ')' -delete
-	find "${ED}" -depth -type d -delete 2>/dev/null
+	find "${S}"/dest '(' -name '.install' -o -name '*.cmd' ')' -delete
+	find "${S}"/dest -depth -type d -delete 2>/dev/null
+
+	local ddir="$(kernel_header_destdir)"
+	mkdir -p "${ED}"${ddir}/ || die
+
+	cp -pPR "${S}"/dest/include/* "${ED}"${ddir}/
 }
 
 src_test() {
