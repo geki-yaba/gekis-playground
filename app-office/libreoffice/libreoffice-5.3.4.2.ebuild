@@ -1,6 +1,5 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Id$
 
 EAPI=6
 
@@ -8,7 +7,7 @@ KDE_REQUIRED="optional"
 KDE_SCM="git"
 CMAKE_REQUIRED="never"
 
-PYTHON_COMPAT=( python{2_7,3_4,3_5} )
+PYTHON_COMPAT=( python2_7 python3_{4,5,6} )
 PYTHON_REQ_USE="threads,xml"
 
 # experimental ; release ; old
@@ -58,7 +57,7 @@ unset DEV_URI
 # If you want them gone, patches are welcome.
 ADDONS_SRC=(
 	"${ADDONS_URI}/3941e9cab2f4f9d8faee3e8d57ae7664-glew-1.12.0.zip"
-	"${ADDONS_URI}/ce12af00283eb90d9281956524250d6e-xmlsec1-1.2.20.tar.gz" # modifies source code
+	"${ADDONS_URI}/86b1daaa438f5a7bea9a52d7b9799ac0-xmlsec1-1.2.23.tar.gz" # modifies source code
 	"collada? ( ${ADDONS_URI}/4b87018f7fff1d054939d19920b751a0-collada2gltf-master-cb1d97788a.tar.bz2 )"
 	"java? ( ${ADDONS_URI}/17410483b5b5f267aa18b7e00b65e6e0-hsqldb_1_8_0.zip )"
 	# no release for 8 years, should we package it?
@@ -79,18 +78,17 @@ unset ADDONS_SRC
 LO_EXTS="nlpsolver scripting-beanshell scripting-javascript wiki-publisher"
 
 IUSE="bluetooth +branding coinmp collada +cups dbus debug eds firebird gltf gnome googledrive
-gstreamer +gtk gtk3 jemalloc kde libressl mysql odk pdfimport postgres quickstarter telepathy test vlc
+gstreamer +gtk gtk3 jemalloc kde libressl mysql odk pdfimport postgres test vlc
 $(printf 'libreoffice_extensions_%s ' ${LO_EXTS})"
 
 LICENSE="|| ( LGPL-3 MPL-1.1 )"
 SLOT="0"
-[[ ${PV} == *9999* ]] || \
 KEYWORDS="~amd64 ~arm ~x86 ~amd64-linux ~x86-linux"
 
 COMMON_DEPEND="${PYTHON_DEPS}
 	app-arch/unzip
 	app-arch/zip
-	app-text/hunspell
+	app-text/hunspell:=
 	>=app-text/libabw-0.1.0
 	>=app-text/libebook-0.1
 	>=app-text/libetonyek-0.1
@@ -99,6 +97,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	>=app-text/libmspub-0.1.0
 	>=app-text/libmwaw-0.3.1
 	>=app-text/libodfgen-0.1.0
+	app-text/libstaroffice
 	app-text/libwpd:0.10[tools]
 	app-text/libwpg:0.3
 	>=app-text/libwps-0.4
@@ -110,45 +109,46 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	>=dev-libs/boost-1.55[boost_libs_date_time,boost_libs_iostreams]
 	dev-libs/expat
 	dev-libs/hyphen
-	>=dev-libs/icu-58:=
-	>=dev-libs/liborcus-0.11.2
+	dev-libs/icu:=
+	=dev-libs/liborcus-0.12*
 	dev-libs/librevenge
-	>=dev-libs/nspr-4.13
-	>=dev-libs/nss-3.27
+	dev-libs/nspr
+	dev-libs/nss
 	!libressl? ( >=dev-libs/openssl-1.0.0d:0 )
 	libressl? ( dev-libs/libressl )
 	>=dev-libs/redland-1.0.16
 	media-gfx/graphite2
 	media-libs/fontconfig
 	media-libs/freetype:2
-	>=media-libs/harfbuzz-0.9.18:=[icu(+)]
+	media-libs/harfbuzz:=[graphite,icu]
 	media-libs/lcms:2
 	>=media-libs/libcdr-0.1.0
 	>=media-libs/libfreehand-0.1.0
 	media-libs/libpagemaker
 	>=media-libs/libpng-1.4:0=
 	>=media-libs/libvisio-0.1.0
+	media-libs/libzmf
 	net-libs/neon
 	net-misc/curl
 	net-nds/openldap
 	sci-mathematics/lpsolve
-	virtual/jpeg:0
-	x11-libs/cairo[X,-xlib-xcb]
+	x11-libs/cairo[X,-xlib-xcb(-)]
 	x11-libs/libXinerama
 	x11-libs/libXrandr
 	x11-libs/libXrender
 	virtual/glu
+	virtual/jpeg:0
 	virtual/opengl
 	bluetooth? ( net-wireless/bluez )
 	coinmp? ( sci-libs/coinor-mp )
-	collada? ( >=media-libs/opencollada-1.2.2_p20150207 )
+	collada? ( media-libs/opencollada )
 	cups? ( net-print/cups )
 	dbus? ( dev-libs/dbus-glib )
 	eds? (
 		dev-libs/glib:2
 		gnome-extra/evolution-data-server
 	)
-	firebird? ( >=dev-db/firebird-2.5 )
+	firebird? ( >=dev-db/firebird-3.0.2.32703.0-r1 )
 	gltf? ( media-libs/libgltf )
 	gnome? ( gnome-base/dconf )
 	gstreamer? (
@@ -162,7 +162,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	gtk3? (
 		dev-libs/glib:2
 		dev-libs/gobject-introspection
-		>=x11-libs/gtk+-3.8:3
+		x11-libs/gtk+:3
 	)
 	jemalloc? ( dev-libs/jemalloc )
 	libreoffice_extensions_scripting-beanshell? ( dev-java/bsh )
@@ -170,7 +170,6 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	mysql? ( dev-db/mysql-connector-c++ )
 	pdfimport? ( app-text/poppler:=[cxx] )
 	postgres? ( >=dev-db/postgresql-9.0:*[kerberos] )
-	telepathy? ( net-libs/telepathy-glib )
 "
 
 RDEPEND="${COMMON_DEPEND}
@@ -179,9 +178,8 @@ RDEPEND="${COMMON_DEPEND}
 	!app-office/openoffice
 	media-fonts/liberation-fonts
 	media-fonts/libertine
-	media-fonts/urw-fonts
+	|| ( x11-misc/xdg-utils kde-plasma/kde-cli-tools $(add_kdeapps_dep kioclient) )
 	java? ( >=virtual/jre-1.6 )
-	kde? ( $(add_kdeapps_dep kioclient) )
 	vlc? ( media-video/vlc )
 "
 
@@ -232,7 +230,6 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 	collada? ( gltf )
 	eds? ( gnome )
 	gnome? ( gtk )
-	telepathy? ( gtk )
 	libreoffice_extensions_nlpsolver? ( java )
 	libreoffice_extensions_scripting-beanshell? ( java )
 	libreoffice_extensions_scripting-javascript? ( java )
@@ -240,11 +237,9 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 "
 
 PATCHES=(
-	# from master branch
-	"${FILESDIR}/${PN}-5.2-icu58.patch"
-
 	# not upstreamable stuff
-	"${FILESDIR}/${PN}-5.2-system-pyuno.patch"
+	"${FILESDIR}/${PN}-5.3-system-pyuno.patch"
+	"${FILESDIR}/${PN}-5.3.4.2-kioclient5.patch"
 
 	# TODO: upstream
 	"${FILESDIR}/${PN}-5.2.5.1-glibc-2.24.patch"
@@ -254,7 +249,13 @@ PATCHES=(
 
 pkg_pretend() {
 	use java || \
-		ewarn "If you plan to use lbase application you should enable java or you will get various crashes."
+		ewarn "If you plan to use Base application you should enable java or you will get various crashes."
+
+	if has_version "<app-office/libreoffice-5.3.0[firebird]"; then
+		ewarn "Firebird has been upgraded to version 3.0.0. It is unable to read back Firebird 2.5 data,"
+		ewarn "so embedded firebird odb files created in LibreOffice pre-5.3 cannot be opened with LibreOffice 5.3."
+		ewarn "See also: https://wiki.documentfoundation.org/ReleaseNotes/5.3#Base"
+	fi
 
 	if [[ ${MERGE_TYPE} != binary ]]; then
 
@@ -426,6 +427,7 @@ src_configure() {
 	fi
 
 	# system headers/libs/...: enforce using system packages
+	# --disable-breakpad: requires not-yet-in-tree dev-utils/breakpad
 	# --enable-cairo: ensure that cairo is always required
 	# --enable-graphite: disabling causes build breakages
 	# --enable-*-link: link to the library rather than just dlopen on runtime
@@ -438,6 +440,7 @@ src_configure() {
 	#   not linked or anything else, worthless to depend on
 	econf \
 		--docdir="${EPREFIX}/usr/share/doc/${PF}/" \
+		--with-boost-libdir=$(boost-utils_get_library_path) \
 		--with-system-dicts \
 		--with-system-headers \
 		--with-system-jars \
@@ -450,13 +453,12 @@ src_configure() {
 		--enable-python=system \
 		--enable-randr \
 		--enable-release-build \
+		--disable-breakpad \
 		--disable-ccache \
-		--disable-crashdump \
 		--disable-dependency-tracking \
 		--disable-epm \
 		--disable-fetch-external \
 		--disable-gstreamer-0-10 \
-		--disable-hardlink-deliver \
 		--disable-online-update \
 		--disable-report-builder \
 		--with-alloc=$(use jemalloc && echo "jemalloc" || echo "system") \
@@ -466,7 +468,6 @@ src_configure() {
 		--with-external-hyph-dir="${EPREFIX}/usr/share/myspell" \
 		--with-external-thes-dir="${EPREFIX}/usr/share/myspell" \
 		--with-external-tar="${DISTDIR}" \
-		--with-boost-libdir=$(boost-utils_get_library_path) \
 		--with-lang="" \
 		--with-parallelism=$(makeopts_jobs) \
 		--with-system-ucpp \
@@ -474,10 +475,9 @@ src_configure() {
 		--with-x \
 		--without-fonts \
 		--without-myspell-dicts \
-		--without-system-glew \
 		--without-help \
 		--with-helppack-integration \
-		--without-sun-templates \
+		--without-system-glew \
 		--without-system-sane \
 		$(use_enable bluetooth sdremote-bluetooth) \
 		$(use_enable coinmp) \
@@ -498,8 +498,6 @@ src_configure() {
 		$(use_enable odk) \
 		$(use_enable pdfimport) \
 		$(use_enable postgres postgresql-sdbc) \
-		$(use_enable quickstarter systray) \
-		$(use_enable telepathy) \
 		$(use_enable vlc) \
 		$(use_with coinmp system-coinmp) \
 		$(use_with collada system-opencollada) \

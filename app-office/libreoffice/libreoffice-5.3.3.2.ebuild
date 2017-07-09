@@ -77,7 +77,7 @@ unset ADDONS_SRC
 # Extensions that need extra work:
 LO_EXTS="nlpsolver scripting-beanshell scripting-javascript wiki-publisher"
 
-IUSE="bluetooth +branding coinmp collada +cups dbus debug eds gltf gnome googledrive
+IUSE="bluetooth +branding coinmp collada +cups dbus debug eds firebird gltf gnome googledrive
 gstreamer +gtk gtk3 jemalloc kde libressl mysql odk pdfimport postgres quickstarter telepathy test vlc
 $(printf 'libreoffice_extensions_%s ' ${LO_EXTS})"
 
@@ -85,7 +85,6 @@ LICENSE="|| ( LGPL-3 MPL-1.1 )"
 SLOT="0"
 KEYWORDS="~amd64 ~arm ~x86 ~amd64-linux ~x86-linux"
 
-# TODO: not packaged: firebird? ( >=dev-db/firebird-3.0 )
 COMMON_DEPEND="${PYTHON_DEPS}
 	app-arch/unzip
 	app-arch/zip
@@ -149,6 +148,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 		dev-libs/glib:2
 		gnome-extra/evolution-data-server
 	)
+	firebird? ( >=dev-db/firebird-3.0.2.32703.0-r1 )
 	gltf? ( media-libs/libgltf )
 	gnome? ( gnome-base/dconf )
 	gstreamer? (
@@ -251,7 +251,13 @@ PATCHES=(
 
 pkg_pretend() {
 	use java || \
-		ewarn "If you plan to use lbase application you should enable java or you will get various crashes."
+		ewarn "If you plan to use Base application you should enable java or you will get various crashes."
+
+	if has_version "<app-office/libreoffice-5.3.0[firebird]"; then
+		ewarn "Firebird has been upgraded to version 3.0.0. It is unable to read back Firebird 2.5 data,"
+		ewarn "so embedded firebird odb files created in LibreOffice pre-5.3 cannot be opened with LibreOffice 5.3."
+		ewarn "See also: https://wiki.documentfoundation.org/ReleaseNotes/5.3#Base"
+	fi
 
 	if [[ ${MERGE_TYPE} != binary ]]; then
 
@@ -434,7 +440,6 @@ src_configure() {
 	# --disable-report-builder: too much java packages pulled in without pkgs
 	# --without-system-sane: just sane.h header that is used for scan in writer,
 	#   not linked or anything else, worthless to depend on
-	# TODO: $(use_enable firebird firebird-sdbc)
 	econf \
 		--docdir="${EPREFIX}/usr/share/doc/${PF}/" \
 		--with-boost-libdir=$(boost-utils_get_library_path) \
@@ -455,7 +460,6 @@ src_configure() {
 		--disable-dependency-tracking \
 		--disable-epm \
 		--disable-fetch-external \
-		--disable-firebird-sdbc \
 		--disable-gstreamer-0-10 \
 		--disable-online-update \
 		--disable-report-builder \
@@ -484,6 +488,7 @@ src_configure() {
 		$(use_enable debug) \
 		$(use_enable dbus) \
 		$(use_enable eds evolution2) \
+		$(use_enable firebird firebird-sdbc) \
 		$(use_enable gltf) \
 		$(use_enable gnome gio) \
 		$(use_enable gnome dconf) \
