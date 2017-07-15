@@ -45,6 +45,7 @@ src_prepare() {
 
 src_configure() {
 	econf --enable-kill-on-sigterm \
+		--enable-at-spi-command="${EPREFIX}/usr/libexec/at-spi-bus-launcher --launch-immediately" \
 		$(use_enable ayatana libindicator)
 }
 
