@@ -23,7 +23,22 @@ src_unpack() {
 
 # no cross-compile support
 #==============================================================
-export CTARGET=${CTARGET:-${CHOST}}
+export CTARGET="${CTARGET:-${CHOST}}"
+
+tc-arch-kernel()
+{
+	case ${CHOST} in
+		i?86*)
+			echo X86
+			;;
+		x86_64*)
+			echo X86_64
+			;;
+		*)
+			die
+			;;
+	esac
+}
 
 kernel_header_destdir() {
 	[[ ${CTARGET} == ${CHOST} ]] \
@@ -31,9 +46,20 @@ kernel_header_destdir() {
 		|| die
 }
 
+pkg_pretend()
+{
+	local tmp
+	
+	# test for arch
+	tmp="$(tc-arch-kernel)"
+
+	# test for host
+	tmp="$(kernel_header_destdir)"
+}
+
 src_compile() {
-	make ARCH=x86_64 mrproper || die
-	make ARCH=x86_64 INSTALL_HDR_PATH=dest headers_install || die
+	emake ARCH=$(tc-arch-kernel) mrproper || die
+	emake ARCH=$(tc-arch-kernel) INSTALL_HDR_PATH=dest headers_install || die
 }
 
 src_install() {
