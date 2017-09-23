@@ -46,11 +46,11 @@ RDEPEND="${COMMON_DEPEND}
 PATCHES=(
 	"${FILESDIR}/${PN}-1.0.9-test_torrent_parse.patch"
 	# RC_1_0 branch
-	"${FILESDIR}/${P}-boost_config.patch"
 	"${FILESDIR}/${P}-fix-abicompat.patch"
 	"${FILESDIR}/${P}-move-header.patch"
 	# master branch
 	"${FILESDIR}/${P}-fix-test_ssl.patch"
+	"${FILESDIR}/${P}-boost-config-header.patch"
 )
 
 src_prepare() {
