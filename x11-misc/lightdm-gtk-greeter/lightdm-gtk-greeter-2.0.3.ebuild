@@ -21,6 +21,7 @@ COMMON_DEPEND="ayatana? ( dev-libs/libindicator:3 )
 	>=x11-misc/lightdm-1.2.2"
 
 DEPEND="${COMMON_DEPEND}
+	dev-util/intltool
 	sys-devel/gettext"
 
 RDEPEND="${COMMON_DEPEND}
@@ -44,9 +45,12 @@ src_prepare() {
 }
 
 src_configure() {
-	econf --enable-kill-on-sigterm \
-		--enable-at-spi-command="${EPREFIX}/usr/libexec/at-spi-bus-launcher --launch-immediately" \
+	local myeconfargs=(
+		--enable-kill-on-sigterm
+		--enable-at-spi-command="${EPREFIX}/usr/libexec/at-spi-bus-launcher --launch-immediately"
 		$(use_enable ayatana libindicator)
+	)
+	econf "${myeconfargs[@]}"
 }
 
 src_install() {
