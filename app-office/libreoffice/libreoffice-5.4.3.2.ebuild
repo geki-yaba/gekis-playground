@@ -3,10 +3,6 @@
 
 EAPI=6
 
-KDE_REQUIRED="optional"
-KDE_SCM="git"
-CMAKE_REQUIRED="never"
-
 PYTHON_COMPAT=( python2_7 python3_{4,5,6} )
 PYTHON_REQ_USE="threads,xml"
 
@@ -14,39 +10,32 @@ PYTHON_REQ_USE="threads,xml"
 # Usually the tarballs are moved a lot so this should make
 # everyone happy.
 DEV_URI="
-	http://dev-builds.libreoffice.org/pre-releases/src
-	http://download.documentfoundation.org/libreoffice/src/${PV:0:5}/
-	http://download.documentfoundation.org/libreoffice/old/${PV}/
+	https://dev-builds.libreoffice.org/pre-releases/src
+	https://download.documentfoundation.org/libreoffice/src/${PV:0:5}/
+	https://download.documentfoundation.org/libreoffice/old/${PV}/
 "
-ADDONS_URI="http://dev-www.libreoffice.org/src/"
+ADDONS_URI="https://dev-www.libreoffice.org/src/"
 
 BRANDING="${PN}-branding-gentoo-0.8.tar.xz"
 # PATCHSET="${P}-patchset-01.tar.xz"
 
 [[ ${PV} == *9999* ]] && SCM_ECLASS="git-r3"
-inherit multiprocessing autotools bash-completion-r1 boost-utils check-reqs eutils java-pkg-opt-2 kde4-base pax-utils python-single-r1 multilib toolchain-funcs flag-o-matic versionator xdg-utils qmake-utils ${SCM_ECLASS}
+inherit multiprocessing autotools bash-completion-r1 boost-utils check-reqs gnome2-utils java-pkg-opt-2 pax-utils python-single-r1 toolchain-funcs flag-o-matic versionator xdg-utils qmake-utils ${SCM_ECLASS}
 unset SCM_ECLASS
 
 DESCRIPTION="A full office productivity suite"
-HOMEPAGE="http://www.libreoffice.org"
-SRC_URI="branding? ( http://dev.gentoo.org/~dilfridge/distfiles/${BRANDING} )"
+HOMEPAGE="https://www.libreoffice.org"
+SRC_URI="branding? ( https://dev.gentoo.org/~dilfridge/distfiles/${BRANDING} )"
 [[ -n ${PATCHSET} ]] && SRC_URI+=" http://dev.gentooexperimental.org/~scarabeus/${PATCHSET}"
 
 # Split modules following git/tarballs
 # Core MUST be first!
 # Help is used for the image generator
-MODULES="core help"
 # Only release has the tarballs
 if [[ ${PV} != *9999* ]]; then
 	for i in ${DEV_URI}; do
-		for mod in ${MODULES}; do
-			if [[ ${mod} == core ]]; then
-				SRC_URI+=" ${i}/${P}.tar.xz"
-			else
-				SRC_URI+=" ${i}/${PN}-${mod}-${PV}.tar.xz"
-			fi
-		done
-		unset mod
+		SRC_URI+=" ${i}/${P}.tar.xz"
+		SRC_URI+=" ${i}/${PN}-help-${PV}.tar.xz"
 	done
 	unset i
 fi
@@ -56,8 +45,6 @@ unset DEV_URI
 # These are bundles that can't be removed for now due to huge patchsets.
 # If you want them gone, patches are welcome.
 ADDONS_SRC=(
-	"${ADDONS_URI}/3941e9cab2f4f9d8faee3e8d57ae7664-glew-1.12.0.zip"
-	"${ADDONS_URI}/86b1daaa438f5a7bea9a52d7b9799ac0-xmlsec1-1.2.23.tar.gz" # modifies source code
 	"collada? ( ${ADDONS_URI}/4b87018f7fff1d054939d19920b751a0-collada2gltf-master-cb1d97788a.tar.bz2 )"
 	"java? ( ${ADDONS_URI}/17410483b5b5f267aa18b7e00b65e6e0-hsqldb_1_8_0.zip )"
 	# no release for 8 years, should we package it?
@@ -78,16 +65,18 @@ unset ADDONS_SRC
 LO_EXTS="nlpsolver scripting-beanshell scripting-javascript wiki-publisher"
 
 IUSE="bluetooth +branding coinmp collada +cups dbus debug eds firebird gltf gnome googledrive
-gstreamer +gtk gtk3 jemalloc kde libressl mysql odk pdfimport postgres test vlc
+gstreamer +gtk gtk3 jemalloc kde libressl mysql odk pdfimport postgres quickstarter test vlc
 $(printf 'libreoffice_extensions_%s ' ${LO_EXTS})"
 
 LICENSE="|| ( LGPL-3 MPL-1.1 )"
 SLOT="0"
-KEYWORDS="~amd64 ~arm ~x86 ~amd64-linux ~x86-linux"
+[[ ${PV} == *9999* ]] || \
+KEYWORDS="~amd64 ~arm ~arm64 ~x86 ~amd64-linux ~x86-linux"
 
 COMMON_DEPEND="${PYTHON_DEPS}
 	app-arch/unzip
 	app-arch/zip
+	app-crypt/gpgme[cxx]
 	app-text/hunspell:=
 	>=app-text/libabw-0.1.0
 	>=app-text/libebook-0.1
@@ -110,6 +99,8 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	dev-libs/expat
 	dev-libs/hyphen
 	dev-libs/icu:=
+	dev-libs/libassuan
+	dev-libs/libgpg-error
 	=dev-libs/liborcus-0.12*
 	dev-libs/librevenge
 	dev-libs/nspr
@@ -117,12 +108,14 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	!libressl? ( >=dev-libs/openssl-1.0.0d:0 )
 	libressl? ( dev-libs/libressl )
 	>=dev-libs/redland-1.0.16
+	>=dev-libs/xmlsec-1.2.24[nss]
 	media-gfx/graphite2
 	media-libs/fontconfig
 	media-libs/freetype:2
-	media-libs/harfbuzz:=[graphite,icu]
+	>=media-libs/harfbuzz-0.9.42:=[graphite,icu]
 	media-libs/lcms:2
 	>=media-libs/libcdr-0.1.0
+	>=media-libs/libepoxy-1.3.1
 	>=media-libs/libfreehand-0.1.0
 	media-libs/libpagemaker
 	>=media-libs/libpng-1.4:0=
@@ -132,7 +125,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	net-misc/curl
 	net-nds/openldap
 	sci-mathematics/lpsolve
-	x11-libs/cairo[X,-xlib-xcb(-)]
+	x11-libs/cairo[X]
 	x11-libs/libXinerama
 	x11-libs/libXrandr
 	x11-libs/libXrender
@@ -149,7 +142,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 		gnome-extra/evolution-data-server
 	)
 	firebird? ( >=dev-db/firebird-3.0.2.32703.0-r1 )
-	gltf? ( =media-libs/libgltf-0.0* )
+	gltf? ( >=media-libs/libgltf-0.1.0 )
 	gnome? ( gnome-base/dconf )
 	gstreamer? (
 		media-libs/gstreamer:1.0
@@ -165,6 +158,11 @@ COMMON_DEPEND="${PYTHON_DEPS}
 		x11-libs/gtk+:3
 	)
 	jemalloc? ( dev-libs/jemalloc )
+	kde? (
+		dev-qt/qtcore:4
+		dev-qt/qtgui:4
+		kde-frameworks/kdelibs
+	)
 	libreoffice_extensions_scripting-beanshell? ( dev-java/bsh )
 	libreoffice_extensions_scripting-javascript? ( dev-java/rhino:1.6 )
 	mysql? ( dev-db/mysql-connector-c++ )
@@ -176,10 +174,12 @@ RDEPEND="${COMMON_DEPEND}
 	!app-office/libreoffice-bin
 	!app-office/libreoffice-bin-debug
 	!app-office/openoffice
+	media-fonts/dejavu
 	media-fonts/liberation-fonts
 	media-fonts/libertine
-	|| ( x11-misc/xdg-utils kde-plasma/kde-cli-tools $(add_kdeapps_dep kioclient) )
+	|| ( x11-misc/xdg-utils kde-plasma/kde-cli-tools )
 	java? ( >=virtual/jre-1.6 )
+	kde? ( kde-frameworks/oxygen-icons:* )
 	vlc? ( media-video/vlc )
 "
 
@@ -200,7 +200,7 @@ DEPEND="${COMMON_DEPEND}
 	>=dev-libs/libxml2-2.7.8
 	dev-libs/libxslt
 	dev-perl/Archive-Zip
-	dev-util/cppunit
+	>=dev-util/cppunit-1.14.0
 	>=dev-util/gperf-3
 	dev-util/intltool
 	>=dev-util/mdds-1.2.2:1=
@@ -222,7 +222,10 @@ DEPEND="${COMMON_DEPEND}
 		>=virtual/jdk-1.6
 	)
 	odk? ( >=app-doc/doxygen-1.8.4 )
-	test? ( dev-util/cppunit )
+	test? (
+		dev-util/cppunit
+		media-fonts/dejavu
+	)
 "
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
@@ -238,7 +241,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 
 PATCHES=(
 	# not upstreamable stuff
-	"${FILESDIR}/${PN}-5.3-system-pyuno.patch"
+	"${FILESDIR}/${PN}-5.4-system-pyuno.patch"
 	"${FILESDIR}/${PN}-5.3.4.2-kioclient5.patch"
 
 	# TODO: upstream
@@ -266,29 +269,11 @@ pkg_pretend() {
 			CHECKREQS_DISK_BUILD="6G"
 		fi
 		check-reqs_pkg_pretend
-
-		if ! $(tc-is-clang) && { [[ $(gcc-major-version) -lt 4 ]] ||
-				[[ $(gcc-major-version) -eq 4 && $(gcc-minor-version) -lt 7 ]]; } then
-			eerror "Compilation with gcc older than 4.7 is not supported"
-			die "Too old gcc found."
-		fi
-	fi
-
-	# Ensure pg version but we have to be sure the pg is installed (first
-	# install on clean system)
-	if use postgres && has_version dev-db/postgresql; then
-		 local pgslot=$(postgresql-config show)
-		 if [[ ${pgslot//.} -lt 90 ]] ; then
-			eerror "PostgreSQL slot must be set to 9.0 or higher."
-			eerror "    postgresql-config set 9.0"
-			die "PostgreSQL slot is not set to 9.0 or higher."
-		 fi
 	fi
 }
 
 pkg_setup() {
 	java-pkg-opt-2_pkg_setup
-	kde4-base_pkg_setup
 	python-single-r1_pkg_setup
 	xdg_environment_reset
 
@@ -304,36 +289,29 @@ pkg_setup() {
 }
 
 src_unpack() {
-	local mod
-
 	[[ -n ${PATCHSET} ]] && unpack ${PATCHSET}
 	use branding && unpack "${BRANDING}"
 
 	if [[ ${PV} != *9999* ]]; then
 		unpack "${P}.tar.xz"
-		for mod in ${MODULES}; do
-			[[ ${mod} == core ]] && continue
-			unpack "${PN}-${mod}-${PV}.tar.xz"
-		done
+		unpack "${PN}-help-${PV}.tar.xz"
 	else
-		local base_uri branch checkout mypv
-		base_uri="git://anongit.freedesktop.org"
-		for mod in ${MODULES}; do
-			branch="master"
-			mypv=${PV/.9999}
-			[[ ${mypv} != ${PV} ]] && branch="${PN}-${mypv/./-}"
-			git-r3_fetch "${base_uri}/${PN}/${mod}" "refs/heads/${branch}"
-			[[ ${mod} != core ]] && checkout="${S}/${mod}"
-			[[ ${mod} == help ]] && checkout="helpcontent2" # doesn't match on help
-			git-r3_checkout "${base_uri}/${PN}/${mod}" ${checkout}
-		done
+		local base_uri branch mypv
+		base_uri="https://anongit.freedesktop.org/git"
+		branch="master"
+		mypv=${PV/.9999}
+		[[ ${mypv} != ${PV} ]] && branch="${PN}-${mypv/./-}"
+		git-r3_fetch "${base_uri}/${PN}/core" "refs/heads/${branch}"
+		git-r3_checkout "${base_uri}/${PN}/core"
+
+		git-r3_fetch "${base_uri}/${PN}/help" "refs/heads/master"
+		git-r3_checkout "${base_uri}/${PN}/help" "helpcontent2" # doesn't match on help
 	fi
 }
 
 src_prepare() {
 	[[ -n ${PATCHSET} ]] && eapply "${WORKDIR}/${PATCHSET/.tar.xz/}"
-	eapply "${PATCHES[@]}"
-	eapply_user
+	default
 
 	AT_M4DIR="m4" eautoreconf
 	# hack in the autogen.sh
@@ -377,7 +355,7 @@ src_configure() {
 	local java_opts
 	local ext_opts
 
-	# Set up Google API keys, see http://www.chromium.org/developers/how-tos/api-keys
+	# Set up Google API keys, see https://www.chromium.org/developers/how-tos/api-keys
 	# Note: these are for Gentoo use ONLY. For your own distribution, please get
 	# your own set of keys. Feel free to contact chromium@gentoo.org for more info.
 	local google_default_client_id="329227923882.apps.googleusercontent.com"
@@ -429,7 +407,6 @@ src_configure() {
 	# system headers/libs/...: enforce using system packages
 	# --disable-breakpad: requires not-yet-in-tree dev-utils/breakpad
 	# --enable-cairo: ensure that cairo is always required
-	# --enable-graphite: disabling causes build breakages
 	# --enable-*-link: link to the library rather than just dlopen on runtime
 	# --enable-release-build: build the libreoffice as release
 	# --disable-fetch-external: prevent dowloading during compile phase
@@ -438,15 +415,15 @@ src_configure() {
 	# --disable-report-builder: too much java packages pulled in without pkgs
 	# --without-system-sane: just sane.h header that is used for scan in writer,
 	#   not linked or anything else, worthless to depend on
+	# --disable-pdfium: not yet packaged
 	econf \
-		--docdir="${EPREFIX}/usr/share/doc/${PF}/" \
 		--with-boost-libdir=$(boost-utils_get_library_path) \
 		--with-system-dicts \
+		--with-system-epoxy \
 		--with-system-headers \
 		--with-system-jars \
 		--with-system-libs \
 		--enable-cairo-canvas \
-		--enable-graphite \
 		--enable-largefile \
 		--enable-mergelibs \
 		--enable-neon \
@@ -460,6 +437,7 @@ src_configure() {
 		--disable-fetch-external \
 		--disable-gstreamer-0-10 \
 		--disable-online-update \
+		--disable-pdfium \
 		--disable-report-builder \
 		--with-alloc=$(use jemalloc && echo "jemalloc" || echo "system") \
 		--with-build-version="Gentoo official package" \
@@ -477,7 +455,7 @@ src_configure() {
 		--without-myspell-dicts \
 		--without-help \
 		--with-helppack-integration \
-		--without-system-glew \
+		--with-system-gpgmepp \
 		--without-system-sane \
 		$(use_enable bluetooth sdremote-bluetooth) \
 		$(use_enable coinmp) \
@@ -498,6 +476,7 @@ src_configure() {
 		$(use_enable odk) \
 		$(use_enable pdfimport) \
 		$(use_enable postgres postgresql-sdbc) \
+		$(use_enable quickstarter systray) \
 		$(use_enable vlc) \
 		$(use_with coinmp system-coinmp) \
 		$(use_with collada system-opencollada) \
@@ -528,9 +507,9 @@ src_compile() {
 		local path="${WORKDIR}/helpcontent2/source/auxiliary/"
 		mkdir -p "${path}" || die
 
-		echo "perl \"${S}/helpcontent2/helpers/create_ilst.pl\" -dir=icon-themes/galaxy/res/helpimg > \"${path}/helpimg.ilst\""
+		echo "perl \"${S}/helpcontent2/helpers/create_ilst.pl\" -dir=helpcontent2/source/media/helpimg > \"${path}/helpimg.ilst\""
 		perl "${S}/helpcontent2/helpers/create_ilst.pl" \
-			-dir=icon-themes/galaxy/res/helpimg \
+			-dir=helpcontent2/source/media/helpimg \
 			> "${path}/helpimg.ilst"
 		[[ -s "${path}/helpimg.ilst" ]] || \
 			ewarn "The help images list is empty, something is fishy, report a bug."
@@ -554,7 +533,7 @@ src_install() {
 
 	# bug 593514
 	if use gtk3; then
-		dosym /usr/$(get_libdir)/libreoffice/program/liblibreofficekitgtk.so \
+		dosym libreoffice/program/liblibreofficekitgtk.so \
 			/usr/$(get_libdir)/liblibreofficekitgtk.so
 	fi
 
@@ -584,14 +563,17 @@ src_install() {
 }
 
 pkg_preinst() {
-	# Cache updates - all handled by kde eclass for all environments
-	kde4-base_pkg_preinst
+	gnome2_icon_savelist
 }
 
 pkg_postinst() {
-	kde4-base_pkg_postinst
+	gnome2_icon_cache_update
+	xdg_desktop_database_update
+	xdg_mimeinfo_database_update
 }
 
 pkg_postrm() {
-	kde4-base_pkg_postrm
+	gnome2_icon_cache_update
+	xdg_desktop_database_update
+	xdg_mimeinfo_database_update
 }
