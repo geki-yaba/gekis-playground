@@ -17,8 +17,8 @@ print_libdep()
 {
 	[ ${#} -ne 1 ] && echo "${FUNCNAME}: bad parameters given (${@})" && exit 1
 
-	sed -re "s:libs/([a-z0-9_]+)/build/.*:\t${BOOST_PREFIX}\1? (:" <<< "${file}"
-	sed -nre "s:.*build//[a-z0-9]+_([a-z0-9_]+).*:\t\t${BOOST_PREFIX}\1:p" "${file}"
+	sed -re "s:libs/([a-z0-9_]+)/build/.*:\t${BOOST_PREFIX}\1? (:" <<< "${1}"
+	sed -nre "s:.*build//[a-z0-9]+_([a-z0-9_]+).*:\t\t${BOOST_PREFIX}\1:p" "${1}"
 	echo -e "\t)"
 }
 
@@ -61,7 +61,6 @@ then
 else
 	echo "b2 already built"
 	echo
-
 fi
 
 if [ ! -x b2 ]
