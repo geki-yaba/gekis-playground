@@ -36,12 +36,14 @@ EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src
 
 SLOT="$(get_version_component_range 1-2)"
 BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
-BOOST_JAM="bjam-${BOOST_SLOT}"
+
+BOOST_VERSION=( $(get_version_components) )
 
 BOOST_SP="${BOOST_SP:="_"}"
 BOOST_PV="$(replace_all_version_separators _)"
 BOOST_P="${PN}${BOOST_SP}${BOOST_PV}"
 BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
+BOOST_JAM="bjam-${BOOST_SLOT}"
 
 if [ "${BOOST_BETA}" ]; then
 	BOOST_P="${BOOST_P/_beta/${BOOST_BETA}}"
@@ -57,7 +59,7 @@ fi
 
 LICENSE="Boost-1.0"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x86-solaris ~x86-winnt"
-IUSE="debug doc examples icu static test +threads tools ${IUSE_BOOST_LIBS// / boost_libs_}"
+IUSE="debug doc examples icu static-libs test +threads tools ${IUSE_BOOST_LIBS// / boost_libs_}"
 
 RDEPEND="sys-libs/zlib[${MULTILIB_USEDEP}]
 	boost_libs_mpi? ( >=virtual/mpi-2.0-r4[${MULTILIB_USEDEP},cxx,threads] )
@@ -68,6 +70,10 @@ DEPEND="${RDEPEND}
 	app-arch/bzip2[${MULTILIB_USEDEP}]
 	~dev-libs/boost-headers-${PV}
 	~dev-util/boost-build-${PV}"
+
+if [ "${BOOST_VERSION[0]}" -eq 1 -a "${BOOST_VERSION[1]}" -ge 63 ]; then
+RDEPEND+=" boost_libs_python_numpy? ( dev-python/numpy[${PYTHON_USEDEP}] )"
+fi
 
 REQUIRED_USE="
 	boost_libs_filesystem? (
@@ -99,7 +105,8 @@ fi
 
 S="${WORKDIR}/${BOOST_P}"
 
-boost_pkg_pretend() {
+boost_pkg_pretend()
+{
 	if has_version 'dev-libs/boost:0'; then
 		eerror "Found installed package dev-libs/boost:0."
 		eerror
@@ -112,7 +119,8 @@ boost_pkg_pretend() {
 	use test && CHECKREQS_DISK_BUILD="15G" check-reqs_pkg_pretend
 }
 
-boost_pkg_setup() {
+boost_pkg_setup()
+{
 	jobs="-j$(makeopts_jobs)"
 
 	if use test; then
@@ -134,7 +142,8 @@ boost_pkg_setup() {
 	fi
 }
 
-boost_src_prepare() {
+boost_src_prepare()
+{
 	if [ -n "${BOOST_PATCHSET}" ]; then
 		local p
 		if [ ! -z ${BOOST_EXCLUDE+x} ]; then
@@ -156,7 +165,7 @@ boost_src_prepare() {
 	eapply_user
 
 	# boost.random library: /dev/urandom support
-	if [[ ${SLOT} < 1.48 ]] && use random && [[ -e /dev/urandom ]]; then
+	if [ "${BOOST_VERSION[0]}" -eq 1 -a "${BOOST_VERSION[1]}" -lt 48 ] && use random && [ -e /dev/urandom ]; then
 		local lib_random="libs/random"
 
 		mkdir -p "${lib_random}"/build
@@ -168,13 +177,14 @@ boost_src_prepare() {
 	fi
 
 	# fix glibc conflict
-	[[ ${SLOT} < 1.50 ]] && _boost_fix_glibc
+	[ "${BOOST_VERSION[0]}" -eq 1 -a "${BOOST_VERSION[1]}" -lt 50 ] && _boost_fix_glibc
 
 	# fix tests
 	use test && _boost_fix_jamtest
 }
 
-boost_src_configure() {
+boost_src_configure()
+{
 	# -fno-strict-aliasing: prevent invalid code
 	append-flags -fno-strict-aliasing
 
@@ -184,7 +194,7 @@ boost_src_configure() {
 
 	# bug 298489
 	if use ppc || use ppc64; then
-		[[ $(gcc-version) > 4.3 ]] && append-flags -mno-altivec
+		append-flags -mno-altivec
 	fi
 
 	local cmd="_boost_config"
@@ -195,12 +205,14 @@ boost_src_configure() {
 	multilib_copy_sources
 }
 
-boost_src_compile() {
+boost_src_compile()
+{
 	# call back ...
 	multilib-minimal_src_compile
 }
 
-multilib_src_compile() {
+multilib_src_compile()
+{
 	# ... and forth :)
 	local -x BOOST_ROOT="${BUILD_DIR}"
 
@@ -231,12 +243,14 @@ multilib_src_compile() {
 	fi
 }
 
-boost_src_install() {
+boost_src_install()
+{
 	# call back ...
 	multilib-minimal_src_install
 }
 
-multilib_src_install_all() {
+multilib_src_install_all()
+{
 	# ... and finalize :)
 	cd "${S}/status" || die
 
@@ -281,7 +295,8 @@ multilib_src_install_all() {
 	fi
 }
 
-multilib_src_install() {
+multilib_src_install()
+{
 	# ... and forth ...
 	local -x BOOST_ROOT="${BUILD_DIR}"
 
@@ -339,11 +354,11 @@ multilib_src_install() {
 	for library in ${libraries}; do
 		if use boost_libs_${library}; then
 			libs="lib${PN}_${library}-mt-${libver}$(get_libname)"
-			use static && libs+=" lib${PN}_${library}-mt-${libver}.a"
+			use static-libs && libs+=" lib${PN}_${library}-mt-${libver}.a"
 
 			if use debug; then
 				libs+=" lib${PN}_${library}-mt-${dbgver}$(get_libname)"
-				use static && libs+=" lib${PN}_${library}-mt-${dbgver}.a"
+				use static-libs && libs+=" lib${PN}_${library}-mt-${dbgver}.a"
 			fi
 
 			for lib in ${libs}; do
@@ -380,7 +395,7 @@ multilib_src_install() {
 	if [[ ${CHOST} == *-darwin* ]]; then
 		einfo "Working around completely broken build-system(tm)"
 		for d in "${ED}"usr/lib/*.dylib; do
-			if [[ -f ${d} ]]; then
+			if [ -f ${d} ]; then
 				# fix the "soname"
 				ebegin "  correcting install_name of ${d#${ED}}"
 					install_name_tool -id "/${d#${ED}}" "${d}"
@@ -403,7 +418,8 @@ multilib_src_install() {
 	fi
 }
 
-boost_src_test() {
+boost_src_test()
+{
 	# FIXME: python tests disabled by design
 	# FIXME: multilib testing?!
 	if use test; then
@@ -426,7 +442,7 @@ boost_src_test() {
 		# postprocessing
 		"${S}/tools/regression/build/bin/gcc-$(gcc-version)/gentoorelease/pch-off/process_jam_log" --v2 <regress.log
 
-		[[ -n $? ]] && ewarn "Postprocessing the build log failed"
+		[ -n $? ] && ewarn "Postprocessing the build log failed"
 
 		cat > comment.html <<- __EOF__
 <p>Tests are run on a <a href="http://www.gentoo.org/">Gentoo</a> system.</p>
@@ -436,15 +452,16 @@ __EOF__
 		"${S}/tools/regression/build/bin/gcc-$(gcc-version)/gentoorelease/pch-off/compiler_status" \
 			--v2 --comment comment.html "${S}" cs-$(uname).html cs-$(uname)-links.html
 
-		[[ -n $? ]] && ewarn "Generating the build log html summary page failed"
+		[ -n $? ] && ewarn "Generating the build log html summary page failed"
 
 		# do some cosmetic fixes :)
 		sed -e 's#http://www.boost.org/boost.png#boost.png#' -i *.html || die
 	fi
 }
 
-_boost_config() {
-	[[ "${#}" -gt "1" ]] && die "${FUNCNAME}: wrong parameter"
+_boost_config()
+{
+	[ "${#}" -gt 1 ] && die "${FUNCNAME}: wrong parameter"
 
 	local python_abi="${1}"
 
@@ -460,19 +477,21 @@ _boost_config() {
 
 		compiler="parity"
 
-		if [[ ${version} == *trunk* ]]; then
+		if [[ $(${version}) == *trunk* ]]; then
 			compilerVersion="trunk"
 		else
 			compilerVersion="$(${version}
 				| sed '1q' \
 				| sed -e 's#\([a-z]*\) \([0-9]\.[0-9]\.[0-9][^ \t]*\) .*#\2#')"
 		fi
+	elif [ "${compilerExecutable}" = "icpc" ]; then
+		compiler="intel-linux"
 	fi
 
 	local jam_options=""
 	use boost_libs_mpi && jam_options+="using mpi ;"
 
-	if [[ "${python_abi}" != "default" ]]; then
+	if [ "${python_abi}" != "default" ]; then
 		# boost expects libpython$(pyver) and doesn't allow overrides
 		# and the build system is so creepy that it's easier just to
 		# provide a symlink (linker's going to use SONAME anyway)
@@ -490,7 +509,7 @@ _boost_config() {
 	fi
 
 	local config="user"
-	[[ "${python_abi}" != "default" ]] && config="${EPYTHON}"
+	[ "${python_abi}" != "default" ] && config="${EPYTHON}"
 
 	einfo "Writing new Jamfile: ${config}-config.jam"
 	cat > "${S}/${config}-config.jam" << __EOF__
@@ -510,7 +529,8 @@ __EOF__
 	# add "-O0" and override "-O2" set by the user.
 }
 
-_boost_python_compile() {
+_boost_python_compile()
+{
 	local options="$(_boost_basic_options ${EPYTHON})"
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
@@ -539,16 +559,18 @@ _boost_python_compile() {
 		local mpi_library="$(find bin.v2/libs/mpi/build/*/gentoo* -type f -name mpi.so)"
 		local count="$(echo "${mpi_library}" | wc -l)"
 
-		[[ "${count}" -ne 1 ]] && die "multiple mpi.so files found"
+		[ "${count}" -ne 1 ] && die "multiple mpi.so files found"
 
 		_boost_execute "mv stage/lib/mpi.so stage/lib/mpi.so-${EPYTHON}" \
 			|| die "move 'stage/lib/mpi.so' -> 'stage/lib/mpi.so-${EPYTHON}' failed"
 	fi
 }
 
-_boost_python_install() {
+_boost_python_install()
+{
 	local python_dir="$(find bin.v2/libs -type d -name python-${EPYTHON})"
 
+	local directory
 	for directory in ${python_dir}; do
 		rm -rf ${directory/-${EPYTHON}}
 		_boost_execute "mv ${directory} ${directory/-${EPYTHON}}" \
@@ -559,7 +581,7 @@ _boost_python_install() {
 		local mpi_library="$(find bin.v2/libs/mpi/build/*/gentoo* -type f -name mpi.so)"
 		local count="$(echo "${mpi_library}" | wc -l)"
 
-		[[ "${count}" -ne 1 ]] && die "multiple mpi.so files found"
+		[ "${count}" -ne 1 ] && die "multiple mpi.so files found"
 
 		_boost_execute "cp stage/lib/mpi.so-${EPYTHON} stage/lib/mpi.so" \
 			|| die "move 'stage/lib/mpi.so-${EPYTHON}' -> 'stage/lib/mpi.so' failed"
@@ -596,10 +618,16 @@ _boost_python_install() {
 		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die "mpi cleanup failed"
 	fi
 
+	# anyone to fix boost build wrt numpy, please?
+	if ! use boost_libs_python_numpy; then
+		rm -f "${ED}/usr/$(get_libdir)/libboost_numpy-"* || die "numpy automagic build cleanup failed"
+	fi
+
 	python_optimize
 }
 
-_boost_execute() {
+_boost_execute()
+{
 	if [ -n "${@}" ]; then
 		# pretty print
 		einfo "${@//--/\n\t--}"
@@ -611,8 +639,9 @@ _boost_execute() {
 	fi
 }
 
-_boost_basic_options() {
-	[[ "${#}" -gt "1" ]] && die "${FUNCNAME}: too many parameters"
+_boost_basic_options()
+{
+	[ "${#}" -gt 1 ] && die "${FUNCNAME}: too many parameters"
 
 	local config="${1:-"user"}"
 
@@ -621,14 +650,20 @@ _boost_basic_options() {
 	options+=" --boost-build=/usr/share/boost-build-${BOOST_SLOT} --layout=versioned"
 
 	# https://svn.boost.org/trac/boost/attachment/ticket/2597/add-disable-long-double.patch
-	if use sparc || { use mips && [[ ${ABI} == o32 ]]; } || use hppa || use arm || use x86-fbsd || use sh; then
+	if use sparc || { use mips && [ "${ABI}" == "o32" ]; } || use hppa || use arm || use x86-fbsd || use sh; then
 		options+=" --disable-long-double"
 	fi
+
+	# anyone to fix boost build wrt numpy, please?
+	#if [ "${BOOST_VERSION[0]}" -eq 1 -a "${BOOST_VERSION[1]}" -ge 63 ]; then
+	#	options+=" boost.python.numpy=$(usex boost_libs_python_numpy on off)"
+	#fi
 
 	echo -n ${options}
 }
 
-_boost_options() {
+_boost_options()
+{
 	local options="$(_boost_basic_options)"
 
 	# feature: python abi
@@ -643,36 +678,41 @@ _boost_options() {
 	echo -n ${options}
 }
 
-_boost_link_options() {
+_boost_link_options()
+{
 	local link_opts="link=shared"
-	use static && link_opts+=",static"
+	use static-libs && link_opts+=",static"
 
 	echo -n ${link_opts}
 }
 
-_boost_library_targets() {
+_boost_library_targets()
+{
 	local library_targets="*$(get_libname)"
-	use static && library_targets+=" *.a"
+	use static-libs && library_targets+=" *.a"
 	# there is no dynamically linked version of libboost_test_exec_monitor
 	use test && library_targets+=" libboost_test_exec_monitor*.a"
 
 	echo -n ${library_targets}
 }
 
-_boost_threading() {
+_boost_threading()
+{
 	local threading="single"
 	use threads && threading+=",multi"
 
 	echo -n ${threading}
 }
 
-_boost_fix_glibc() {
+_boost_fix_glibc()
+{
 	for f in $(grep -rl "TIME_UTC" * 2>/dev/null); do
 		sed -e "s:TIME_UTC:TIME_UTC_:" -i ${f}
 	done
 }
 
-_boost_fix_jamtest() {
+_boost_fix_jamtest()
+{
 	local jam libraries="$(find libs/ -type d -name test)"
 
 	for library in ${libraries}; do
