@@ -4,9 +4,11 @@
 
 EAPI="6"
 
-BOOST_PATCHSET="gentoo-boost-build-1.48.0.tar.xz"
+BOOST_PATCHSET="gentoo-boost-build-1.66.0-r1.tar.xz"
 
 BOOST_TOOLSRC="tools/build/src"
 
 inherit boost-build
+
+BOOST_EXCLUDE=( "${BOOST_PATCHDIR}/00_reenable-none.diff" )
 

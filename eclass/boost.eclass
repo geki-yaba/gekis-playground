@@ -220,7 +220,7 @@ multilib_src_compile()
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
-	local cmd="${BOOST_JAM} ${jobs} -q -d+1 gentoorelease"
+	local cmd="${BOOST_JAM} ${jobs} -q -d 1 --debug-configuration gentoorelease"
 	cmd+=" threading=${threading} ${link_opts} runtime-link=shared ${options}"
 	_boost_execute "${cmd}" || die "build failed for options: ${options}"
 
@@ -238,7 +238,7 @@ multilib_src_compile()
 	if use tools && multilib_is_native_abi; then
 		cd "${BOOST_ROOT}/tools"
 
-		cmd="${BOOST_JAM} ${jobs} -q -d+1 gentoorelease ${options}"
+		cmd="${BOOST_JAM} ${jobs} -q -d 1 --debug-configuration gentoorelease ${options}"
 		_boost_execute "${cmd}" || die "build of tools failed"
 	fi
 }
@@ -305,7 +305,7 @@ multilib_src_install()
 	local library_targets="$(_boost_library_targets)"
 	local threading="$(_boost_threading)"
 
-	local cmd="${BOOST_JAM} -q -d+1 gentoorelease threading=${threading}"
+	local cmd="${BOOST_JAM} -q -d 1 --debug-configuration gentoorelease threading=${threading}"
 	cmd+=" ${link_opts} runtime-link=shared --includedir=${ED}/usr/include"
 	cmd+=" --libdir=${ED}/usr/$(get_libdir) ${options} install"
 	_boost_execute "${cmd}" || die "install failed for options: ${options}"
@@ -426,7 +426,7 @@ boost_src_test()
 		local options="$(_boost_options)"
 
 		cd "${S}/tools/regression/build" || die
-		local cmd="${BOOST_JAM} -q -d+1 gentoorelease ${options} process_jam_log compiler_status"
+		local cmd="${BOOST_JAM} -q -d 1 --debug-configuration gentoorelease ${options} process_jam_log compiler_status"
 		_boost_execute "${cmd}" || die "build of regression test helpers failed"
 
 		cd "${S}/status" || die
@@ -498,13 +498,18 @@ _boost_config()
 		# TODO: replace it with proper override one day
 		ln -sf "$(python_get_library_path)" "${T}/lib${EPYTHON}$(get_libname)" || die
 
+		local condition="";
+		if [ "${BOOST_VERSION[0]}" -eq 1 -a "${BOOST_VERSION[1]}" -ge 63 ]; then
+			condition="<boost.python.numpy>$(usex boost_libs_python_numpy on off)"
+		fi
+
 		if tc-is-cross-compiler; then
-			jam_options+="using python : ${EPYTHON#python} : : ${SYSROOT:-${EROOT}}/usr/include/${EPYTHON} : ${SYSROOT:-${EROOT}}/usr/$(get_libdir) ;"
+			jam_options+="using python : ${EPYTHON#python} : : ${SYSROOT:-${EROOT}}/usr/include/${EPYTHON} : ${SYSROOT:-${EROOT}}/usr/$(get_libdir) : ${condition} ;"
 		else
 			# note: we need to provide version explicitly because of
 			# a bug in the build system:
 			# https://github.com/boostorg/build/pull/104
-			jam_options+="using python : ${EPYTHON#python} : ${PYTHON} : $(python_get_includedir) : ${T} ;"
+			jam_options+="using python : ${EPYTHON#python} : ${PYTHON} : $(python_get_includedir) : ${T} : ${condition} ;"
 		fi
 	fi
 
@@ -531,15 +536,11 @@ __EOF__
 
 _boost_python_compile()
 {
-	local options="$(_boost_basic_options ${EPYTHON})"
+	local options="$(_boost_python_options ${EPYTHON})"
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
-	# feature: python abi
-	options+=" --with-python --python-buildid=${EPYTHON#python}"
-	use boost_libs_mpi && options+=" --with-mpi"
-
-	local cmd="${BOOST_JAM} ${jobs} -q -d+1 gentoorelease"
+	local cmd="${BOOST_JAM} ${jobs} -q -d 1 --debug-configuration gentoorelease"
 	cmd+=" threading=${threading} ${link_opts} runtime-link=shared ${options}"
 	_boost_execute "${cmd}" || die "build failed for options: ${options}"
 
@@ -589,15 +590,11 @@ _boost_python_install()
 			|| die "move 'stage/lib/mpi.so-${EPYTHON}' -> '${mpi_library}' failed"
 	fi
 
-	local options="$(_boost_basic_options ${EPYTHON})"
+	local options="$(_boost_python_options ${EPYTHON})"
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
-	# feature: python abi
-	options+=" --with-python --python-buildid=${EPYTHON#python}"
-	use boost_libs_mpi && options+=" --with-mpi"
-
-	local cmd="${BOOST_JAM} -q -d+1 gentoorelease threading=${threading}"
+	local cmd="${BOOST_JAM} -q -d 1 --debug-configuration gentoorelease threading=${threading}"
 	cmd+=" ${link_opts} runtime-link=shared --includedir=${ED}/usr/include"
 	cmd+=" --libdir=${ED}/usr/$(get_libdir) ${options} install"
 	_boost_execute "${cmd}" || die "install failed for options: ${options}"
@@ -616,11 +613,6 @@ _boost_python_install()
 		doexe "${BOOST_ROOT}"/libs/mpi/build/__init__.py
 
 		rm -f "${ED}/usr/$(get_libdir)/mpi.so" || die "mpi cleanup failed"
-	fi
-
-	# anyone to fix boost build wrt numpy, please?
-	if ! use boost_libs_python_numpy; then
-		rm -f "${ED}/usr/$(get_libdir)/libboost_numpy-"* || die "numpy automagic build cleanup failed"
 	fi
 
 	python_optimize
@@ -654,11 +646,6 @@ _boost_basic_options()
 		options+=" --disable-long-double"
 	fi
 
-	# anyone to fix boost build wrt numpy, please?
-	#if [ "${BOOST_VERSION[0]}" -eq 1 -a "${BOOST_VERSION[1]}" -ge 63 ]; then
-	#	options+=" boost.python.numpy=$(usex boost_libs_python_numpy on off)"
-	#fi
-
 	echo -n ${options}
 }
 
@@ -667,13 +654,28 @@ _boost_options()
 	local options="$(_boost_basic_options)"
 
 	# feature: python abi
-	for library in ${IUSE_BOOST_LIBS/ python}; do
-		use boost_libs_${library} && options+=" --with-${library}"
+	local library
+	for library in ${IUSE_BOOST_LIBS}; do
+		[[ ${library} != *python* ]] && use boost_libs_${library} && options+=" --with-${library}"
 	done
 
 	options+=" $(use_enable icu) boost.locale.icu=off"
 
 	[[ ${CHOST} == *-winnt* ]] && options+=" -sNO_BZIP2=1"
+
+	echo -n ${options}
+}
+
+_boost_python_options()
+{
+	[ "${#}" -ne 1 ] && die "${FUNCNAME}: bad parameters"
+
+	local options="$(_boost_basic_options ${1})"
+
+	# feature: python abi
+	options+=" --with-python --python-buildid=${EPYTHON#python}"
+
+	use boost_libs_mpi && options+=" --with-mpi"
 
 	echo -n ${options}
 }
