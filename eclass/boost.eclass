@@ -220,7 +220,7 @@ multilib_src_compile()
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
-	local cmd="${BOOST_JAM} ${jobs} -q -d 1 --debug-configuration gentoorelease"
+	local cmd="${BOOST_JAM} ${jobs} -q -d 1 gentoorelease"
 	cmd+=" threading=${threading} ${link_opts} runtime-link=shared ${options}"
 	_boost_execute "${cmd}" || die "build failed for options: ${options}"
 
@@ -238,7 +238,7 @@ multilib_src_compile()
 	if use tools && multilib_is_native_abi; then
 		cd "${BOOST_ROOT}/tools"
 
-		cmd="${BOOST_JAM} ${jobs} -q -d 1 --debug-configuration gentoorelease ${options}"
+		cmd="${BOOST_JAM} ${jobs} -q -d 1 gentoorelease ${options}"
 		_boost_execute "${cmd}" || die "build of tools failed"
 	fi
 }
@@ -305,7 +305,7 @@ multilib_src_install()
 	local library_targets="$(_boost_library_targets)"
 	local threading="$(_boost_threading)"
 
-	local cmd="${BOOST_JAM} -q -d 1 --debug-configuration gentoorelease threading=${threading}"
+	local cmd="${BOOST_JAM} -q -d 1 gentoorelease threading=${threading}"
 	cmd+=" ${link_opts} runtime-link=shared --includedir=${ED}/usr/include"
 	cmd+=" --libdir=${ED}/usr/$(get_libdir) ${options} install"
 	_boost_execute "${cmd}" || die "install failed for options: ${options}"
@@ -426,7 +426,7 @@ boost_src_test()
 		local options="$(_boost_options)"
 
 		cd "${S}/tools/regression/build" || die
-		local cmd="${BOOST_JAM} -q -d 1 --debug-configuration gentoorelease ${options} process_jam_log compiler_status"
+		local cmd="${BOOST_JAM} -q -d 1 gentoorelease ${options} process_jam_log compiler_status"
 		_boost_execute "${cmd}" || die "build of regression test helpers failed"
 
 		cd "${S}/status" || die
@@ -540,7 +540,7 @@ _boost_python_compile()
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
-	local cmd="${BOOST_JAM} ${jobs} -q -d 1 --debug-configuration gentoorelease"
+	local cmd="${BOOST_JAM} ${jobs} -q -d 1 gentoorelease"
 	cmd+=" threading=${threading} ${link_opts} runtime-link=shared ${options}"
 	_boost_execute "${cmd}" || die "build failed for options: ${options}"
 
@@ -594,7 +594,7 @@ _boost_python_install()
 	local link_opts="$(_boost_link_options)"
 	local threading="$(_boost_threading)"
 
-	local cmd="${BOOST_JAM} -q -d 1 --debug-configuration gentoorelease threading=${threading}"
+	local cmd="${BOOST_JAM} -q -d 1 gentoorelease threading=${threading}"
 	cmd+=" ${link_opts} runtime-link=shared --includedir=${ED}/usr/include"
 	cmd+=" --libdir=${ED}/usr/$(get_libdir) ${options} install"
 	_boost_execute "${cmd}" || die "install failed for options: ${options}"
