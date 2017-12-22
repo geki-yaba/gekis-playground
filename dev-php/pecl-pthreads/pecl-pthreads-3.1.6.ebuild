@@ -2,11 +2,13 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
+
 PHP_EXT_NAME="pthreads"
-PHP_EXT_INI="yes"
-PHP_EXT_ZENDEXT="no"
+# add extension only to cli - upstream
+PHP_EXT_SAPIS="cli"
 
 USE_PHP="php7-0 php7-1"
+
 inherit php-ext-pecl-r3
 
 DESCRIPTION="Threading API for PHP"
