@@ -3,12 +3,12 @@
 
 EAPI=6
 
-PYTHON_COMPAT=( python2_7 python3_{4,5} )
+PYTHON_COMPAT=( python2_7 python3_{4,5,6} )
 PYTHON_REQ_USE="threads"
 DISTUTILS_OPTIONAL=true
 DISTUTILS_IN_SOURCE_BUILD=true
 
-inherit boost-utils distutils-r1 versionator
+inherit boost-utils distutils-r1 flag-o-matic versionator
 
 MY_PV=$(replace_all_version_separators _)
 
@@ -17,62 +17,55 @@ HOMEPAGE="http://libtorrent.org"
 SRC_URI="https://github.com/arvidn/libtorrent/releases/download/libtorrent-${MY_PV}/${P}.tar.gz"
 
 LICENSE="BSD"
-SLOT="0/8"
-KEYWORDS="~amd64 ~arm ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
-IUSE="debug +dht doc examples +geoip libressl python +ssl static-libs test"
+SLOT="0/9"
+KEYWORDS="amd64 ~arm ppc ppc64 ~sparc x86 ~x86-fbsd"
+IUSE="debug +dht doc examples libressl python +ssl static-libs test"
 
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
 
-COMMON_DEPEND="
+RDEPEND="
 	dev-libs/boost:=[threads]
 	virtual/libiconv
-	geoip? ( dev-libs/geoip )
+	examples? ( !net-p2p/mldonkey )
 	python? (
 		${PYTHON_DEPS}
-		dev-libs/boost:=[boost_libs_system,boost_libs_python,${PYTHON_USEDEP}]
+		dev-libs/boost:=[boost_libs_chrono,boost_libs_random,boost_libs_system,boost_libs_python,${PYTHON_USEDEP}]
 	)
 	ssl? (
 		!libressl? ( dev-libs/openssl:0= )
 		libressl? ( dev-libs/libressl:= )
 	)
 "
-DEPEND="${COMMON_DEPEND}
+DEPEND="${RDEPEND}
 	sys-devel/libtool
 "
-RDEPEND="${COMMON_DEPEND}
-	examples? ( !net-p2p/mldonkey )
-"
-
 PATCHES=(
-	"${FILESDIR}/${PN}-1.0.9-test_torrent_parse.patch"
-	# RC_1_0 branch
-	"${FILESDIR}/${P}-fix-abicompat.patch"
-	"${FILESDIR}/${P}-move-header.patch"
-	# master branch
-	"${FILESDIR}/${P}-fix-test_ssl.patch"
-	"${FILESDIR}/${P}-boost-config-header.patch"
-)
+	"${FILESDIR}/d1a63cd781e79e1e3792a258c0bc7f9455f2272f.patch"
+	"${FILESDIR}/f42b63c7ea82173837920d8712d2891cc3ecb6c2.patch"
+	)
 
 src_prepare() {
 	default
 
 	# bug 578026
 	# prepend -L${S}/... to ensure bindings link against the lib we just built
-	sed -i -e "s|^|-L${S}/src/.libs |" bindings/python/compile_flags.in || die
+	sed -i -e "s|^|-L${S}/src/.libs |" bindings/python/link_flags.in || die
+
+	# prepend -I${S}/... to ensure bindings use the right headers
+	sed -i -e "s|^|-I${S}/src/include |" bindings/python/compile_flags.in || die
 
 	use python && distutils-r1_src_prepare
 }
 
 src_configure() {
+	append-cxxflags -std=c++11 # bug 634506
+
 	local myeconfargs=(
 		$(use_enable debug)
 		$(use_enable debug logging)
-		$(use_enable debug statistics)
 		$(use_enable debug disk-stats)
 		$(use_enable dht dht $(usex debug logging yes))
 		$(use_enable examples)
-		$(use_enable geoip)
-		$(use_with   geoip libgeoip)
 		$(use_enable ssl encryption)
 		$(use_enable static-libs static)
 		$(use_enable test tests)
@@ -83,12 +76,10 @@ src_configure() {
 	econf "${myeconfargs[@]}"
 
 	if use python; then
-		myeconfargs+=(
-			--enable-python-binding
-			--with-boost-python
-		)
 		python_configure() {
-			econf "${myeconfargs[@]}"
+			econf "${myeconfargs[@]}" \
+				--enable-python-binding \
+				--with-boost-python="${EPYTHON#python}"
 		}
 		distutils-r1_src_configure
 	fi

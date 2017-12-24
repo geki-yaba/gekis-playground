@@ -1,6 +1,5 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
 
 #
 # Author: Hanno Meyer-Thurow <h.mth@web.de>
@@ -87,7 +86,9 @@ boost-build_src_prepare() {
 	cd "${BOOST_JAM_SRC}" || die
 
 	# remove stripping option
+	# fix python components build on multilib systems, bug #496446
 	sed -e 's|-s\b||' \
+		-e "/libpython/s/lib ]/$(get_libdir) ]/" \
 		-i build.jam || die "sed failed"
 
 	# force regeneration
