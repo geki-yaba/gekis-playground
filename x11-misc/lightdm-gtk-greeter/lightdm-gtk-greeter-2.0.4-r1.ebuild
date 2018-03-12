@@ -51,6 +51,7 @@ src_prepare() {
 
 src_configure() {
 	local myeconfargs=(
+		--disable-maintainer-mode
 		--enable-kill-on-sigterm
 		--enable-at-spi-command="${EPREFIX}/usr/libexec/at-spi-bus-launcher --launch-immediately"
 		$(use_enable ayatana libindicator)
