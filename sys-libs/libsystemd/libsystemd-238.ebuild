@@ -23,7 +23,7 @@ HOMEPAGE="https://www.freedesktop.org/wiki/Software/systemd"
 
 LICENSE="GPL-2 LGPL-2.1 MIT public-domain"
 SLOT="0/2"
-IUSE="audit gcrypt usrmerge"
+IUSE="audit binmerge +gcrypt usrmerge"
 
 REQUIRED_USE=""
 RESTRICT="test"
@@ -151,6 +151,7 @@ multilib_src_configure() {
 	local myconf=(
 		--localstatedir="${EPREFIX}/var"
 		# make sure we get /bin:/sbin in PATH
+		-Dsplit-bin=$(usex binmerge false true)
 		-Dsplit-usr=$(usex usrmerge false true)
 		-Drootprefix="$(usex usrmerge "${EPREFIX}/usr" "${EPREFIX:-/}")"
 		-Daudit=$(meson_multilib_native_use audit)
