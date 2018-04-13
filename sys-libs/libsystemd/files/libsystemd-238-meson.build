@@ -734,6 +734,7 @@ conf.set10('HAVE_LIBCRYPTSETUP', false)
 conf.set10('HAVE_SELINUX', false)
 conf.set10('ENABLE_IDN', false)
 conf.set10('ENABLE_SMACK', false)
+conf.set10('ENABLE_POLKIT', false)
 conf.set10('HAVE_PAM', false)
 conf.set10('HAVE_APPARMOR', false)
 conf.set10('ENABLE_IMA', false)
@@ -793,15 +794,19 @@ libsystemd = shared_library(
 public_programs = []
 
 # TODO clean busctl from evil :>
-#exe = executable('busctl',
-#                 'src/busctl/busctl.c',
-#                 'src/busctl/busctl-introspect.c',
-#                 'src/busctl/busctl-introspect.h',
-#                 include_directories : includes,
-#                 install_rpath : rootlibexecdir,
-#                 link_with : [libsystemd],
-#                 install : true)
-#public_programs += [exe]
+exe = executable('busctl',
+                 'src/shared/bus-util.c',
+                 'src/shared/pager.c',
+                 'src/busctl/busctl.c',
+                 'src/busctl/busctl-introspect.c',
+                 'src/busctl/busctl-introspect.h',
+                 include_directories : includes,
+                 install_rpath : rootlibexecdir,
+                 link_with : [libbasic,
+                             libsystemd_static],
+                 dependencies : [threads],
+                 install : true)
+public_programs += [exe]
 
 ############################################################
 
