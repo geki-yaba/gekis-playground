@@ -6,9 +6,9 @@ do_diff()
 
 	for file in meson.build src/systemd/meson.build src/libsystemd/meson.build src/libsystemd/libsystemd.sym
 	do
-		dest="${www}/libsystemd_${1}_${2}-${file}.patch"
+		dest="${www}/libsystemd_${1}_${2}_${file//\//\-}.patch"
 
-		git diff ${1}..${2} ${file} >> ${dest}
+		git diff ${1}..${2} ${file} > ${dest}
 
 		chmod 640 ${dest}
 		chown root:apache ${dest}
