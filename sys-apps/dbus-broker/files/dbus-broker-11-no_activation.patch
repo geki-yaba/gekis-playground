@@ -1,0 +1,41 @@
+--- a/src/launch/main.c	2018-04-14 22:40:18.492891951 +0200
++++ b/src/launch/main.c	2018-04-14 22:41:43.756894515 +0200
+@@ -210,7 +210,6 @@
+                 service_free(service);
+         assert(c_rbtree_is_empty(&manager->services_by_name));
+ 
+-        c_close(manager->fd_listen);
+         bus_close_unref(manager->bus_regular);
+         bus_close_unref(manager->bus_controller);
+         sd_event_unref(manager->event);
+@@ -1356,8 +1355,6 @@
+         if (r)
+                 return error_trace(r);
+ 
+-        assert(manager->fd_listen >= 0);
+-
+         r = socketpair(PF_UNIX, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0, controller);
+         if (r < 0)
+                 return error_origin(-errno);
+@@ -1393,10 +1390,6 @@
+         if (r)
+                 return error_trace(r);
+ 
+-        r = manager_add_listener(manager, &policy, system_console_users, n_system_console_users);
+-        if (r)
+-                return error_trace(r);
+-
+         r = manager_connect(manager);
+         if (r)
+                 return error_trace(r);
+@@ -1529,10 +1522,6 @@
+         if (r)
+                 return error_trace(r);
+ 
+-        r = manager_listen_inherit(manager);
+-        if (r)
+-                return error_trace(r);
+-
+         r = manager_run(manager);
+         r = error_trace(r);
+ 

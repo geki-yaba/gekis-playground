@@ -1,0 +1,51 @@
+--- a/src/launch/main.c	2018-04-14 22:25:16.108864812 +0200
++++ b/src/launch/main.c	2018-04-14 22:27:02.656868016 +0200
+@@ -320,8 +320,6 @@
+         const char * const argv[] = {
+                 "dbus-broker",
+                 "-v",
+-                "--log",
+-                str_log,
+                 "--controller",
+                 str_controller,
+                 main_arg_audit ? "--audit" : NULL, /* note that this needs to be the last argument to work */
+@@ -335,18 +333,6 @@
+                 goto exit;
+         }
+ 
+-        r = fcntl(fd_log, F_GETFD);
+-        if (r < 0) {
+-                r = error_origin(-errno);
+-                goto exit;
+-        }
+-
+-        r = fcntl(fd_log, F_SETFD, r & ~FD_CLOEXEC);
+-        if (r < 0) {
+-                r = error_origin(-errno);
+-                goto exit;
+-        }
+-
+         r = fcntl(fd_controller, F_GETFD);
+         if (r < 0) {
+                 r = error_origin(-errno);
+@@ -359,9 +345,6 @@
+                 goto exit;
+         }
+ 
+-        r = snprintf(str_log, sizeof(str_log), "%d", fd_log);
+-        assert(r < (ssize_t)sizeof(str_log));
+-
+         r = snprintf(str_controller, sizeof(str_controller), "%d", fd_controller);
+         assert(r < (ssize_t)sizeof(str_controller));
+ 
+@@ -1561,10 +1544,6 @@
+         sigset_t mask_new, mask_old;
+         int r;
+ 
+-        r = open_log();
+-        if (r)
+-                goto exit;
+-
+         r = parse_argv(argc, argv);
+         if (r)
+                 goto exit;
