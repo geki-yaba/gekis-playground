@@ -40,8 +40,8 @@ DEPEND="${RDEPEND}
 	sys-devel/libtool
 "
 PATCHES=(
-	"${FILESDIR}/d1a63cd781e79e1e3792a258c0bc7f9455f2272f.patch"
-	"${FILESDIR}/f42b63c7ea82173837920d8712d2891cc3ecb6c2.patch"
+	"${FILESDIR}/64d6b4900448097b0157abb328621dd211e2947d.diff"
+	"${FILESDIR}/9cd0ae67e74a507c1b9ff9c057ee97dda38ccb81.diff"
 	)
 
 src_prepare() {
