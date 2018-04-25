@@ -44,7 +44,7 @@ REQUIRED_USE="jdbc? ( extraengine server !static )
 	static? ( yassl !pam )"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="~amd64 ~arm ~hppa ~ia64 ~ppc64 ~sparc ~x86"
+KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc64 ~sparc ~x86"
 
 # Shorten the path because the socket path length must be shorter than 107 chars
 # and we will run a mysql server during test phase
@@ -116,7 +116,6 @@ DEPEND="virtual/yacc
 	server? ( extraengine? ( jdbc? ( >=virtual/jdk-1.6 ) ) )
 	${COMMON_DEPEND}"
 RDEPEND="selinux? ( sec-policy/selinux-mysql )
-	abi_x86_32? ( !app-emulation/emul-linux-x86-db[-abi_x86_32(-)] )
 	client-libs? ( !dev-db/mariadb-connector-c[mysqlcompat] !dev-db/mysql-connector-c )
 	!dev-db/mysql !dev-db/mariadb-galera !dev-db/percona-server !dev-db/mysql-cluster
 	server? ( !prefix? ( dev-db/mysql-init-scripts ) )
@@ -549,8 +548,8 @@ multilib_src_install() {
 	mysql_init_vars
 
 	# Remove an unnecessary, private config header which will never match between ABIs and is not meant to be used
-	if [[ -f "${D}/usr/include/mysql/server/private/config.h" ]] ; then
-		rm "${D}/usr/include/mysql/server/private/config.h" || die
+	if [[ -f "${ED}/usr/include/mysql/server/private/config.h" ]] ; then
+		rm "${ED}/usr/include/mysql/server/private/config.h" || die
 	fi
 
 	if ! multilib_is_native_abi && use server ; then
@@ -560,13 +559,13 @@ multilib_src_install() {
 
 	if use client-libs ; then
 	# Install compatible symlinks to libmysqlclient
-#	use static-libs && dosym libmariadbclient.a "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.a"
-#	dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so"
-	dosym libmariadb.so.3 "${EPREFIX}/usr/$(get_libdir)/libmysqlclient.so.${SUBSLOT}"
+#	use static-libs && dosym libmariadbclient.a "/usr/$(get_libdir)/libmysqlclient.a"
+#	dosym libmariadb.so.3 "/usr/$(get_libdir)/libmysqlclient.so"
+	dosym libmariadb.so.3 "/usr/$(get_libdir)/libmysqlclient.so.${SUBSLOT}"
 	fi
 
 	# Kill old libmysqclient_r symlinks if they exist.  Time to fix what depends on them.
-	find "${D}" -name 'libmysqlclient_r.*' -type l -delete || die
+	find "${ED}" -name 'libmysqlclient_r.*' -type l -delete || die
 }
 
 multilib_src_install_all() {
@@ -588,7 +587,7 @@ multilib_src_install_all() {
 	# testsuite. It DOES have a use to be installed, esp. when you want to do a
 	# validation of your database configuration after tuning it.
 	if ! use test ; then
-		rm -rf "${D}/${MY_SHAREDSTATEDIR}/mysql-test"
+		rm -rf "${ED}/${MY_SHAREDSTATEDIR}/mysql-test"
 	fi
 
 	# Configuration stuff
