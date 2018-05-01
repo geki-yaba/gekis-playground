@@ -44,7 +44,7 @@ REQUIRED_USE="jdbc? ( extraengine server !static )
 	static? ( yassl !pam )"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc64 ~sparc ~x86"
+KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # Shorten the path because the socket path length must be shorter than 107 chars
 # and we will run a mysql server during test phase
@@ -81,13 +81,24 @@ COMMON_DEPEND="
 	tcmalloc? ( dev-util/google-perftools:0= )
 	systemtap? ( >=dev-util/systemtap-1.3:0= )
 	!yassl? (
-		!libressl? ( >=dev-libs/openssl-1.0.0:0=[${MULTILIB_USEDEP},static-libs?] )
-		libressl? ( dev-libs/libressl:0=[${MULTILIB_USEDEP},static-libs?] )
+		client-libs? (
+			!libressl? ( >=dev-libs/openssl-1.0.0:0=[${MULTILIB_USEDEP},static-libs?] )
+			libressl? ( dev-libs/libressl:0=[${MULTILIB_USEDEP},static-libs?] )
+		)
+		!client-libs? (
+			!libressl? ( >=dev-libs/openssl-1.0.0:0= )
+			libressl? ( dev-libs/libressl:0= )
+		)
 	)
-	>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
+	client-libs? (
+		>=sys-libs/zlib-1.2.3:0=[${MULTILIB_USEDEP},static-libs?]
+		kerberos? ( virtual/krb5[${MULTILIB_USEDEP}] )
+	)
+	!client-libs? (
+		>=sys-libs/zlib-1.2.3:0=
+		kerberos? ( virtual/krb5 )
+	)
 	sys-libs/ncurses:0=
-	mroonga? ( app-text/groonga-normalizer-mysql )
-	kerberos? ( virtual/krb5[${MULTILIB_USEDEP}] )
 	!bindist? (
 		sys-libs/binutils-libs:0=
 		>=sys-libs/readline-4.1:0=
@@ -102,6 +113,7 @@ COMMON_DEPEND="
 		innodb-lz4? ( app-arch/lz4 )
 		innodb-lzo? ( dev-libs/lzo )
 		innodb-snappy? ( app-arch/snappy )
+		mroonga? ( app-text/groonga-normalizer-mysql )
 		numa? ( sys-process/numactl )
 		oqgraph? ( >=dev-libs/boost-1.40.0:0= dev-libs/judy:0= )
 		pam? ( virtual/pam:0= )
@@ -565,7 +577,7 @@ multilib_src_install() {
 	fi
 
 	# Kill old libmysqclient_r symlinks if they exist.  Time to fix what depends on them.
-	find "${ED}" -name 'libmysqlclient_r.*' -type l -delete || die
+	find "${D}" -name 'libmysqlclient_r.*' -type l -delete || die
 }
 
 multilib_src_install_all() {
@@ -587,7 +599,7 @@ multilib_src_install_all() {
 	# testsuite. It DOES have a use to be installed, esp. when you want to do a
 	# validation of your database configuration after tuning it.
 	if ! use test ; then
-		rm -rf "${ED}/${MY_SHAREDSTATEDIR}/mysql-test"
+		rm -rf "${D}/${MY_SHAREDSTATEDIR}/mysql-test"
 	fi
 
 	# Configuration stuff
@@ -711,8 +723,6 @@ src_test() {
 	if ! use client-libs ; then
 		_disable_test main.plugin_auth "Needs client libraries built"
 	fi
-
-	_disable_test main.mysql "Bogus error text mismatch failure"
 
 	# run mysql-test tests
 	perl mysql-test-run.pl --force --vardir="${T}/var-tests" --reorder --skip-test=tokudb --skip-test-list="${T}/disabled.def"
