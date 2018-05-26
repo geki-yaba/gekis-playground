@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
-MY_EXTRAS_VER="20180308-1938Z"
+MY_EXTRAS_VER="20180515-1334Z"
 SUBSLOT="18"
 
 JAVA_PKG_OPT_USE="jdbc"
@@ -44,7 +44,7 @@ REQUIRED_USE="jdbc? ( extraengine server !static )
 	static? ( yassl !pam )"
 
 # REMEMBER: also update eclass/mysql*.eclass before committing!
-KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc64 ~sparc ~x86 ~amd64-linux ~x86-linux ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
+KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc64 ~s390 ~sparc ~x86 ~amd64-linux ~x86-linux ~x64-macos ~x86-macos ~x64-solaris ~x86-solaris"
 
 # Shorten the path because the socket path length must be shorter than 107 chars
 # and we will run a mysql server during test phase
@@ -53,11 +53,11 @@ S="${WORKDIR}/mysql"
 if [[ "${MY_EXTRAS_VER}" == "live" ]] ; then
 	inherit git-r3
 	EGIT_REPO_URI="https://anongit.gentoo.org/git/proj/mysql-extras.git"
-	EGIT_CHECKOUT_DIR="${WORKDIR}/mysql-extras"
+	EGIT_CHECKOUT_DIR="${WORKDIR%/}/mysql-extras"
 	EGIT_CLONE_TYPE=shallow
-	MY_PATCH_DIR="${WORKDIR}/mysql-extras"
+	MY_PATCH_DIR="${WORKDIR%/}/mysql-extras"
 else
-	MY_PATCH_DIR="${WORKDIR}/mysql-extras-${MY_EXTRAS_VER}"
+	MY_PATCH_DIR="${WORKDIR%/}/mysql-extras-${MY_EXTRAS_VER}"
 fi
 
 PATCHES=(
@@ -65,6 +65,7 @@ PATCHES=(
 	"${MY_PATCH_DIR}"/20018_all_mariadb-10.2.9-without-clientlibs-tools.patch
 	"${MY_PATCH_DIR}"/20024_all_mariadb-10.2.6-mysql_st-regression.patch
 	"${MY_PATCH_DIR}"/20025_all_mariadb-10.2.6-gssapi-detect.patch
+	"${MY_PATCH_DIR}"/20035_all_mariadb-10.3-atomic-detection.patch
 )
 
 # Be warned, *DEPEND are version-dependant
@@ -149,11 +150,11 @@ RDEPEND="selinux? ( sec-policy/selinux-mysql )
 "
 # For other stuff to bring us in
 # dev-perl/DBD-mysql is needed by some scripts installed by MySQL
-# xtrabackup-bin causes a circular dependency if DBD-mysql is not already installed
+# percona-xtrabackup-bin causes a circular dependency if DBD-mysql is not already installed
 PDEPEND="perl? ( >=dev-perl/DBD-mysql-2.9004 )
 	!client-libs? ( dev-db/mariadb-connector-c[mysqlcompat,${MULTILIB_USEDEP}] )
 	 server? ( ~virtual/mysql-5.6[embedded=,static=]
-		 galera? ( sst-xtrabackup? ( || ( >=dev-db/xtrabackup-bin-2.2.4 dev-db/percona-xtrabackup ) ) ) )"
+		 galera? ( sst-xtrabackup? ( || ( >=dev-db/percona-xtrabackup-bin-2.2.4 dev-db/percona-xtrabackup ) ) ) )"
 
 pkg_setup() {
 	if [[ ${MERGE_TYPE} != binary ]] ; then
