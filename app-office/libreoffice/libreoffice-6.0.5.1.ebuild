@@ -79,7 +79,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 LICENSE="|| ( LGPL-3 MPL-1.1 )"
 SLOT="0"
 [[ ${MY_PV} == *9999* ]] || \
-KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux"
+KEYWORDS="~amd64 ~arm ~x86 ~amd64-linux ~x86-linux"
 
 COMMON_DEPEND="${PYTHON_DEPS}
 	app-arch/unzip
@@ -236,6 +236,7 @@ DEPEND="${COMMON_DEPEND}
 	)
 	odk? ( >=app-doc/doxygen-1.8.4 )
 	test? (
+		app-crypt/gnupg
 		dev-util/cppunit
 		media-fonts/dejavu
 	)
@@ -251,6 +252,12 @@ PATCHES=(
 
 	# gtk3-kde5 vcl plugin backported from master
 	"${WORKDIR}"/${PATCHSET/.tar.xz/}
+
+	# disable flaky tests
+	"${FILESDIR}/${PN}-6.0.3.2-disable-flaky-tests-1.patch"
+	"${FILESDIR}/${PN}-6.0.3.2-disable-flaky-tests-2.patch"
+	"${FILESDIR}/${PN}-6.0.3.2-disable-flaky-tests-3.patch"
+	"${FILESDIR}/${PN}-6.0.3.2-testTdf108947.patch"
 
 	"${FILESDIR}/${PN}-5.4.5.1-gtk3-native-force-gio.patch"
 )
