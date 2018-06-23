@@ -60,6 +60,8 @@ SRC_URI+=" ${ADDONS_SRC[*]}"
 unset ADDONS_URI
 unset ADDONS_SRC
 
+RESTRICT="mirror"
+
 # Extensions that need extra work:
 LO_EXTS="nlpsolver scripting-beanshell scripting-javascript wiki-publisher"
 
