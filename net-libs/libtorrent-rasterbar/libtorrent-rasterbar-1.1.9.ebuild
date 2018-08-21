@@ -1,16 +1,16 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
 PYTHON_COMPAT=( python2_7 python3_{4,5,6} )
 PYTHON_REQ_USE="threads"
 DISTUTILS_OPTIONAL=true
 DISTUTILS_IN_SOURCE_BUILD=true
 
-inherit boost-utils distutils-r1 flag-o-matic versionator
+inherit boost-utils-7 distutils-r1 flag-o-matic
 
-MY_PV=$(replace_all_version_separators _)
+MY_PV=$(ver_rs 1-2 '_')
 
 DESCRIPTION="C++ BitTorrent implementation focusing on efficiency and scalability"
 HOMEPAGE="http://libtorrent.org"
@@ -18,7 +18,7 @@ SRC_URI="https://github.com/arvidn/libtorrent/releases/download/libtorrent-${MY_
 
 LICENSE="BSD"
 SLOT="0/9"
-KEYWORDS="amd64 ~arm ppc ppc64 ~sparc x86 ~x86-fbsd"
+KEYWORDS="~amd64 ~arm ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
 IUSE="debug +dht doc examples libressl python +ssl static-libs test"
 
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
@@ -39,10 +39,6 @@ RDEPEND="
 DEPEND="${RDEPEND}
 	sys-devel/libtool
 "
-PATCHES=(
-	"${FILESDIR}/64d6b4900448097b0157abb328621dd211e2947d.diff"
-	"${FILESDIR}/9cd0ae67e74a507c1b9ff9c057ee97dda38ccb81.diff"
-	)
 
 src_prepare() {
 	default
@@ -64,7 +60,7 @@ src_configure() {
 		$(use_enable debug)
 		$(use_enable debug logging)
 		$(use_enable debug disk-stats)
-		$(use_enable dht dht $(usex debug logging yes))
+		$(use_enable dht dht $(usex debug logging $(usex ('yes' 'no'))))
 		$(use_enable examples)
 		$(use_enable ssl encryption)
 		$(use_enable static-libs static)

@@ -18,7 +18,7 @@ DEV_URI="
 ADDONS_URI="https://dev-www.libreoffice.org/src/"
 
 BRANDING="${PN}-branding-gentoo-0.8.tar.xz"
-PATCHSET="${P}-patchset-02.tar.xz"
+PATCHSET="${PN}-6.0.5.2-patchset-01.tar.xz"
 
 [[ ${MY_PV} == *9999* ]] && SCM_ECLASS="git-r3"
 inherit autotools bash-completion-r1 boost-utils check-reqs eapi7-ver flag-o-matic gnome2-utils java-pkg-opt-2 multiprocessing pax-utils python-single-r1 qmake-utils toolchain-funcs xdg-utils ${SCM_ECLASS}
@@ -204,13 +204,13 @@ RDEPEND="${COMMON_DEPEND}
 	vlc? ( media-video/vlc )
 "
 
-if [[ ${MY_PV} != *9999* ]] && [[ ${PV} != *_* ]]; then
-	PDEPEND="=app-office/libreoffice-l10n-$(ver_cut 1-2)*"
-else
+#if [[ ${MY_PV} != *9999* ]] && [[ ${PV} != *_* ]]; then
+#	PDEPEND="=app-office/libreoffice-l10n-$(ver_cut 1-2)*"
+#else
 	# Translations are not reliable on live ebuilds
 	# rather force people to use english only.
 	PDEPEND="!app-office/libreoffice-l10n"
-fi
+#fi
 
 # FIXME: cppunit should be moved to test conditional
 #        after everything upstream is under gbuild
@@ -252,9 +252,6 @@ PATCHES=(
 	# TODO: upstream
 	"${FILESDIR}/${PN}-5.2.5.1-glibc-2.24.patch"
 	"${FILESDIR}/${PN}-6.0.3.2-testTdf108947.patch" #bug 656600
-
-	# 6.0 branch
-	"${FILESDIR}/${P}-enable-gio-w-gtk3.patch" #bug 661062
 
 	# gtk3-kde5 vcl plugin backported from master
 	"${WORKDIR}"/${PATCHSET/.tar.xz/}
