@@ -93,9 +93,9 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	>=app-text/libetonyek-0.1
 	app-text/libexttextcat
 	app-text/liblangtag
-	app-text/libnumbertext
 	>=app-text/libmspub-0.1.0
 	>=app-text/libmwaw-0.3.1
+	app-text/libnumbertext
 	>=app-text/libodfgen-0.1.0
 	app-text/libqxp
 	app-text/libstaroffice
@@ -121,6 +121,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	dev-libs/nss
 	>=dev-libs/redland-1.0.16
 	>=dev-libs/xmlsec-1.2.24[nss]
+	>=dev-python/lxml-4.1.1:0
 	media-gfx/graphite2
 	media-libs/fontconfig
 	media-libs/freetype:2
@@ -433,6 +434,7 @@ src_configure() {
 		$(use_enable gtk gtk3)
 		$(use_enable gtk2 gtk)
 		$(use_enable kde gtk3-kde5)
+		$(use_enable kde kde5)
 		$(use_enable kde qt5)
 		$(use_enable mysql ext-mariadb-connector)
 		$(use_enable odk)
