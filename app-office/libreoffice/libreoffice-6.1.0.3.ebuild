@@ -18,7 +18,6 @@ DEV_URI="
 ADDONS_URI="https://dev-www.libreoffice.org/src/"
 
 BRANDING="${PN}-branding-gentoo-0.8.tar.xz"
-PATCHSET="${PN}-6.0.5.2-patchset-01.tar.xz"
 
 [[ ${MY_PV} == *9999* ]] && SCM_ECLASS="git-r3"
 inherit autotools bash-completion-r1 boost-utils check-reqs eapi7-ver flag-o-matic gnome2-utils java-pkg-opt-2 multiprocessing pax-utils python-single-r1 qmake-utils toolchain-funcs xdg-utils ${SCM_ECLASS}
@@ -94,6 +93,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	>=app-text/libetonyek-0.1
 	app-text/libexttextcat
 	app-text/liblangtag
+	app-text/libnumbertext
 	>=app-text/libmspub-0.1.0
 	>=app-text/libmwaw-0.3.1
 	>=app-text/libodfgen-0.1.0
@@ -247,14 +247,9 @@ PATCHES=(
 	# not upstreamable stuff
 	"${FILESDIR}/${PN}-5.4-system-pyuno.patch"
 	"${FILESDIR}/${PN}-5.3.4.2-kioclient5.patch"
-	"${FILESDIR}/${PN}-6.0.3.2-disable-flaky-tests-1.patch" #bug 656676
 
 	# TODO: upstream
 	"${FILESDIR}/${PN}-5.2.5.1-glibc-2.24.patch"
-	"${FILESDIR}/${PN}-6.0.3.2-testTdf108947.patch" #bug 656600
-
-	# gtk3-kde5 vcl plugin backported from master
-	"${WORKDIR}"/${PATCHSET/.tar.xz/}
 )
 
 S="${WORKDIR}/${PN}-${MY_PV}"
@@ -341,7 +336,7 @@ src_prepare() {
 
 	if use branding; then
 		# hack...
-		mv -v "${WORKDIR}/branding-intro.png" "icon-themes/galaxy/brand/intro.png" || die
+		mv -v "${WORKDIR}/branding-intro.png" "icon-themes/colibre/brand/intro.png" || die
 	fi
 
 	# Don't list pdfimport support in desktop when built with none, bug # 605464
