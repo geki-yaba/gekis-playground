@@ -204,13 +204,13 @@ RDEPEND="${COMMON_DEPEND}
 	vlc? ( media-video/vlc )
 "
 
-#if [[ ${MY_PV} != *9999* ]] && [[ ${PV} != *_* ]]; then
-#	PDEPEND="=app-office/libreoffice-l10n-$(ver_cut 1-2)*"
-#else
+if [[ ${MY_PV} != *9999* ]] && [[ ${PV} != *_* ]]; then
+	PDEPEND="=app-office/libreoffice-l10n-$(ver_cut 1-2)*"
+else
 	# Translations are not reliable on live ebuilds
 	# rather force people to use english only.
 	PDEPEND="!app-office/libreoffice-l10n"
-#fi
+fi
 
 # FIXME: cppunit should be moved to test conditional
 #        after everything upstream is under gbuild
