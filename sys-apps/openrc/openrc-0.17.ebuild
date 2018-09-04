@@ -274,15 +274,6 @@ pkg_postinst() {
 		elog "# rc-update add consolefont boot"
 	fi
 
-	# Handle the conf.d/local.{start,stop} -> local.d transition
-	if path_exists -o "${EROOT}"etc/conf.d/local.{start,stop} ; then
-		elog "Moving your ${EROOT}etc/conf.d/local.{start,stop}"
-		elog "files to ${EROOT}etc/local.d"
-		mv "${EROOT}"etc/conf.d/local.start "${EROOT}"etc/local.d/baselayout1.start
-		mv "${EROOT}"etc/conf.d/local.stop "${EROOT}"etc/local.d/baselayout1.stop
-		chmod +x "${EROOT}"etc/local.d/*{start,stop}
-	fi
-
 	if use kernel_linux && [[ "${EROOT}" = "/" ]]; then
 		if ! /$(get_libdir)/rc/sh/migrate-to-run.sh; then
 			ewarn "The dependency data could not be migrated to /run/openrc."
