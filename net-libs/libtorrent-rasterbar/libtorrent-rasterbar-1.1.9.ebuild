@@ -8,7 +8,7 @@ PYTHON_REQ_USE="threads"
 DISTUTILS_OPTIONAL=true
 DISTUTILS_IN_SOURCE_BUILD=true
 
-inherit boost-utils-7 distutils-r1 flag-o-matic
+inherit boost-utils distutils-r1 flag-o-matic
 
 MY_PV=$(ver_rs 1-2 '_')
 
