@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI=6
+EAPI=7
 
-inherit qmake-utils eutils
+inherit qmake-utils
 
 DESCRIPTION="Qt5 configuration utility"
 HOMEPAGE="https://sourceforge.net/projects/qt5ct"

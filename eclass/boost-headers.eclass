@@ -11,17 +11,17 @@
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-EAPI="6"
+EAPI=7
 
-inherit alternatives multilib-minimal versionator
+inherit alternatives multilib-minimal
 
 EXPORT_FUNCTIONS pkg_pretend src_unpack src_prepare src_configure src_compile src_install
 
-SLOT="$(get_version_component_range 1-2)"
-BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
+SLOT="$(ver_cut 1-2)"
+BOOST_SLOT="$(ver_rs 1- _ ${SLOT})"
 
 BOOST_SP="${BOOST_SP:="_"}"
-BOOST_P="boost${BOOST_SP}$(replace_all_version_separators _)"
+BOOST_P="boost${BOOST_SP}$(ver_rs 1- _)"
 BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
 
 if [ "${BOOST_BETA}" ]; then

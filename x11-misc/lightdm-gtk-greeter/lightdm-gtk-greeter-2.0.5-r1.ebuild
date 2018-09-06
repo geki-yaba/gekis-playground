@@ -1,13 +1,13 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
-inherit autotools gnome2-utils versionator
+inherit autotools gnome2-utils
 
 DESCRIPTION="LightDM GTK+ Greeter"
 HOMEPAGE="https://launchpad.net/lightdm-gtk-greeter"
-SRC_URI="https://launchpad.net/lightdm-gtk-greeter/$(get_version_component_range 1-2)/${PV}/+download/${P}.tar.gz
+SRC_URI="https://launchpad.net/lightdm-gtk-greeter/$(ver_cut 1-2)/${PV}/+download/${P}.tar.gz
 	branding? ( https://dev.gentoo.org/~hwoarang/distfiles/lightdm-gentoo-patch-2.tar.gz )"
 
 LICENSE="GPL-3 LGPL-3

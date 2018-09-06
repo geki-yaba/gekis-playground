@@ -11,7 +11,7 @@
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-EAPI=6
+EAPI=7
 
 inherit flag-o-matic
 

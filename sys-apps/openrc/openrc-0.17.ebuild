@@ -1,9 +1,9 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 
-inherit eutils flag-o-matic multilib pam toolchain-funcs
+inherit flag-o-matic multilib pam toolchain-funcs
 
 DESCRIPTION="OpenRC manages the services, startup and shutdown of a host"
 HOMEPAGE="https://www.gentoo.org/proj/en/base/openrc/"
@@ -161,19 +161,19 @@ add_boot_init() {
 	local runlevel=${2:-boot}
 	# if the initscript is not going to be installed and is not
 	# currently installed, return
-	[[ -e "${ED}"/etc/init.d/${initd} || -e "${EROOT}"etc/init.d/${initd} ]] \
+	[[ -e "${ED}"/etc/init.d/${initd} || -e "${EROOT}"/etc/init.d/${initd} ]] \
 		|| return
-	[[ -e "${EROOT}"etc/runlevels/${runlevel}/${initd} ]] && return
+	[[ -e "${EROOT}"/etc/runlevels/${runlevel}/${initd} ]] && return
 
 	# if runlevels dont exist just yet, then create it but still flag
 	# to pkg_postinst that it needs real setup #277323
-	if [[ ! -d "${EROOT}"etc/runlevels/${runlevel} ]] ; then
-		mkdir -p "${EROOT}"etc/runlevels/${runlevel}
-		touch "${EROOT}"etc/runlevels/.add_boot_init.created
+	if [[ ! -d "${EROOT}"/etc/runlevels/${runlevel} ]] ; then
+		mkdir -p "${EROOT}"/etc/runlevels/${runlevel}
+		touch "${EROOT}"/etc/runlevels/.add_boot_init.created
 	fi
 
 	elog "Auto-adding '${initd}' service to your ${runlevel} runlevel"
-	ln -snf /etc/init.d/${initd} "${EROOT}"etc/runlevels/${runlevel}/${initd}
+	ln -snf /etc/init.d/${initd} "${EROOT}"/etc/runlevels/${runlevel}/${initd}
 }
 add_boot_init_mit_config() {
 	local config=$1 initd=$2
@@ -188,10 +188,10 @@ pkg_preinst() {
 	local f LIBDIR=$(get_libdir)
 
 	# avoid default thrashing in conf.d files when possible #295406
-	if [[ -e "${EROOT}"etc/conf.d/hostname ]] ; then
+	if [[ -e "${EROOT}"/etc/conf.d/hostname ]] ; then
 		(
 		unset hostname HOSTNAME
-		source "${EROOT}"etc/conf.d/hostname
+		source "${EROOT}"/etc/conf.d/hostname
 		: ${hostname:=${HOSTNAME}}
 		[[ -n ${hostname} ]] && set_config /etc/conf.d/hostname hostname "${hostname}"
 		)
@@ -224,9 +224,9 @@ pkg_preinst() {
 		# undoes the hack to get around CONFIG_PROTECT in openrc-0.11.8 and earlier
 		# this needs to stay in openrc ebuilds for a long time. :(
 		# Added in 0.12.
-		if [[ -f "${EROOT}"etc/conf.d/net ]]; then
+		if [[ -f "${EROOT}"/etc/conf.d/net ]]; then
 			einfo "Modifying conf.d/net to keep it from being removed"
-			cat <<-EOF >>"${EROOT}"etc/conf.d/net
+			cat <<-EOF >>"${EROOT}"/etc/conf.d/net
 
 # The network scripts are now part of net-misc/netifrc
 # In order to avoid sys-apps/${P} from removing this file, this comment was
@@ -240,8 +240,8 @@ EOF
 
 # >=OpenRC-0.11.3 requires udev-mount to be in the sysinit runlevel with udev.
 migrate_udev_mount_script() {
-	if [ -e "${EROOT}"etc/runlevels/sysinit/udev -a \
-		! -e "${EROOT}"etc/runlevels/sysinit/udev-mount ]; then
+	if [ -e "${EROOT}"/etc/runlevels/sysinit/udev -a \
+		! -e "${EROOT}"/etc/runlevels/sysinit/udev-mount ]; then
 		add_boot_init udev-mount sysinit
 	fi
 	return 0
@@ -251,20 +251,20 @@ pkg_postinst() {
 	local LIBDIR=$(get_libdir)
 
 	# Make our runlevels if they don't exist
-	if [[ ! -e "${EROOT}"etc/runlevels ]] || [[ -e "${EROOT}"etc/runlevels/.add_boot_init.created ]] ; then
+	if [[ ! -e "${EROOT}"/etc/runlevels ]] || [[ -e "${EROOT}"/etc/runlevels/.add_boot_init.created ]] ; then
 		einfo "Copying across default runlevels"
-		cp -RPp "${EROOT}"usr/share/${PN}/runlevels "${EROOT}"etc
-		rm -f "${EROOT}"etc/runlevels/.add_boot_init.created
+		cp -RPp "${EROOT}"/usr/share/${PN}/runlevels "${EROOT}"/etc
+		rm -f "${EROOT}"/etc/runlevels/.add_boot_init.created
 	else
-		if [[ ! -e "${EROOT}"etc/runlevels/sysinit/devfs ]] ; then
-			mkdir -p "${EROOT}"etc/runlevels/sysinit
-			cp -RPp "${EROOT}"usr/share/${PN}/runlevels/sysinit/* \
-				"${EROOT}"etc/runlevels/sysinit
+		if [[ ! -e "${EROOT}"/etc/runlevels/sysinit/devfs ]] ; then
+			mkdir -p "${EROOT}"/etc/runlevels/sysinit
+			cp -RPp "${EROOT}"/usr/share/${PN}/runlevels/sysinit/* \
+				"${EROOT}"/etc/runlevels/sysinit
 		fi
-		if [[ ! -e "${EROOT}"etc/runlevels/shutdown/mount-ro ]] ; then
-			mkdir -p "${EROOT}"etc/runlevels/shutdown
-			cp -RPp "${EROOT}"usr/share/${PN}/runlevels/shutdown/* \
-				"${EROOT}"etc/runlevels/shutdown
+		if [[ ! -e "${EROOT}"/etc/runlevels/shutdown/mount-ro ]] ; then
+			mkdir -p "${EROOT}"/etc/runlevels/shutdown
+			cp -RPp "${EROOT}"/usr/share/${PN}/runlevels/shutdown/* \
+				"${EROOT}"/etc/runlevels/shutdown
 		fi
 	fi
 
@@ -274,7 +274,7 @@ pkg_postinst() {
 		elog "# rc-update add consolefont boot"
 	fi
 
-	if use kernel_linux && [[ "${EROOT}" = "/" ]]; then
+	if use kernel_linux && [[ -z ${EROOT} ]]; then
 		if ! /$(get_libdir)/rc/sh/migrate-to-run.sh; then
 			ewarn "The dependency data could not be migrated to /run/openrc."
 			ewarn "This means you need to reboot your system."
@@ -282,7 +282,7 @@ pkg_postinst() {
 	fi
 
 	# update the dependency tree after touching all files #224171
-	[[ "${EROOT}" = "/" ]] && "${EROOT}/${LIBDIR}"/rc/bin/rc-depend -u
+	[[ -z ${EROOT} ]] && "${EROOT}/${LIBDIR}"/rc/bin/rc-depend -u
 
 	if ! use newnet && ! use netifrc; then
 		ewarn "You have emerged OpenRc without network support. This"
@@ -295,7 +295,7 @@ pkg_postinst() {
 		ewarn
 	fi
 
-	if use newnet && [ ! -e "${EROOT}"etc/runlevels/boot/network ]; then
+	if use newnet && [ ! -e "${EROOT}"/etc/runlevels/boot/network ]; then
 		ewarn "Please add the network service to your boot runlevel"
 		ewarn "as soon as possible. Not doing so could leave you with a system"
 		ewarn "without networking."
@@ -306,7 +306,7 @@ pkg_postinst() {
 	ewarn "satisfies the net virtual."
 	ewarn "If you have services now which do not start because of this,"
 	ewarn "They can be fixed by adding rc_need=\"!net\""
-	ewarn "to the ${EROOT}etc/conf.d/<servicename> file."
+	ewarn "to the ${EROOT}/etc/conf.d/<servicename> file."
 	ewarn "You should also file a bug against the service asking that"
 	ewarn "need net be dropped from the dependencies."
 	ewarn "The bug you file should block the following tracker:"

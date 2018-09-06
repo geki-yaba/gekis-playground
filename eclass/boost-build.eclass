@@ -10,15 +10,16 @@
 # TODO:	proper documentation of eclass like portage/eclass/xorg-2.eclass
 #
 
-EAPI="6"
+EAPI=7
 
-inherit flag-o-matic toolchain-funcs versionator
+inherit flag-o-matic toolchain-funcs
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_unpack src_prepare src_compile src_install src_test
 
+SLOT="$(ver_cut 1-2)"
 BOOST_SP="${BOOST_SP:="_"}"
-BOOST_P="boost${BOOST_SP}$(replace_all_version_separators _)"
-BOOST_PV="$(replace_all_version_separators _ $(get_version_component_range 1-2))"
+BOOST_P="boost${BOOST_SP}$(ver_rs 1- _)"
+BOOST_PV="$(ver_rs 1- _ ${SLOT})"
 BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
 
 BOOST_TOOLSRC="${BOOST_TOOLSRC:="tools/build/v2"}"
@@ -31,7 +32,6 @@ SRC_URI="mirror://sourceforge/boost/${BOOST_P}.tar.bz2"
 	SRC_URI+=" http://geki.selfhost.eu/files/${BOOST_PATCHSET}"
 
 LICENSE="Boost-1.0"
-SLOT="$(get_version_component_range 1-2)"
 KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~mips ~ppc ~ppc64 ~s390 ~sh ~sparc ~x86 ~ppc-aix ~amd64-fbsd ~x86-fbsd ~amd64-linux ~x86-linux ~ppc-macos ~x64-macos ~x86-macos ~sparc-solaris ~sparc64-solaris ~x86-solaris ~x86-winnt"
 
 IUSE="examples"

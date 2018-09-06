@@ -1,7 +1,7 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="6"
+EAPI=6
 MY_EXTRAS_VER="20180529-0042Z"
 SUBSLOT="18"
 
@@ -181,8 +181,8 @@ pkg_preinst() {
 	# Here we need to see if the implementation switched client libraries
 	# We check if this is a new instance of the package and a client library already exists
 	local SHOW_ABI_MESSAGE libpath
-	if [[ -z ${REPLACING_VERSIONS} && -e "${EROOT}usr/$(get_libdir)/libmysqlclient.so" ]] ; then
-		libpath=$(readlink "${EROOT}usr/$(get_libdir)/libmysqlclient.so")
+	if [[ -z ${REPLACING_VERSIONS} && -e "${EROOT}/usr/$(get_libdir)/libmysqlclient.so" ]] ; then
+		libpath=$(readlink "${EROOT}/usr/$(get_libdir)/libmysqlclient.so")
 		elog "Due to ABI changes when switching between different client libraries,"
 		elog "revdep-rebuild must find and rebuild all packages linking to libmysqlclient."
 		elog "Please run: revdep-rebuild --library ${libpath}"
@@ -899,8 +899,8 @@ pkg_config() {
 	# https://dev.mysql.com/doc/mysql/en/time-zone-support.html
 	"${EROOT}/usr/bin/mysql_tzinfo_to_sql" "${EROOT}/usr/share/zoneinfo" > "${sqltmp}" 2>/dev/null
 
-	local cmd=( "${EROOT}usr/share/mariadb/scripts/mysql_install_db" )
-	[[ -f "${cmd}" ]] || cmd=( "${EROOT}usr/bin/mysql_install_db" )
+	local cmd=( "${EROOT}/usr/share/mariadb/scripts/mysql_install_db" )
+	[[ -f "${cmd}" ]] || cmd=( "${EROOT}/usr/bin/mysql_install_db" )
 	cmd+=( "--basedir=${EPREFIX}/usr" ${options} "--datadir=${ROOT}/${MY_DATADIR}" "--tmpdir=${ROOT}/${MYSQL_TMPDIR}" )
 	einfo "Command: ${cmd[*]}"
 	su -s /bin/sh -c "${cmd[*]}" mysql \

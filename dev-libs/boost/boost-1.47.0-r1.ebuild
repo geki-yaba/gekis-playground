@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="6"
+EAPI=7
 
 IUSE_BOOST_LIBS=" date_time filesystem graph graph_parallel iostreams math mpi program_options python random regex serialization signals system test thread wave"
 

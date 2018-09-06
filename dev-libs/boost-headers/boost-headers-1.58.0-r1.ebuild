@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="6"
+EAPI=7
 
 BOOST_PATCHSET="gentoo-boost-1.58.0.tar.xz"
 

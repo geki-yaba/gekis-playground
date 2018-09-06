@@ -26,21 +26,21 @@
 # https://bugs.gentoo.org/show_bug.cgi?id=307921
 #
 
-EAPI="6"
+EAPI=7
 
 PYTHON_COMPAT=( python{2_7,3_{4,5,6}} )
 
-inherit check-reqs flag-o-matic multilib-minimal multiprocessing python-r1 toolchain-funcs versionator
+inherit check-reqs flag-o-matic multilib-minimal multiprocessing python-r1 toolchain-funcs
 
 EXPORT_FUNCTIONS pkg_pretend pkg_setup src_prepare src_configure src_compile src_install src_test
 
-SLOT="$(get_version_component_range 1-2)"
-BOOST_SLOT="$(replace_all_version_separators _ ${SLOT})"
+SLOT="$(ver_cut 1-2)"
+BOOST_SLOT="$(ver_rs 1- _ ${SLOT})"
 
-BOOST_VERSION=( $(get_version_components) )
+BOOST_VERSION=( $(ver_rs 1- ' ') )
 
 BOOST_SP="${BOOST_SP:="_"}"
-BOOST_PV="$(replace_all_version_separators _)"
+BOOST_PV="$(ver_rs 1- _)"
 BOOST_P="${PN}${BOOST_SP}${BOOST_PV}"
 BOOST_PATCHDIR="${BOOST_PATCHDIR:="${WORKDIR}/patches"}"
 BOOST_JAM="bjam-${BOOST_SLOT}"
@@ -130,7 +130,7 @@ boost_pkg_setup()
 		ewarn "and the platform and upstream says that this is normal."
 		ewarn "If you are interested in the results, please take a look at the"
 		ewarn "generated results page:"
-		ewarn "  ${ROOT}usr/share/doc/${PF}/status/cs-$(uname).html"
+		ewarn "  ${ROOT}/usr/share/doc/${PF}/status/cs-$(uname).html"
 	fi
 
 	if use debug; then
@@ -256,8 +256,10 @@ multilib_src_install_all()
 
 	# install tests
 	if [ -f regress.log ]; then
+		docinto html
+		dodoc *.html "${S}"/boost.png
+
 		docinto status
-		dohtml *.html "${S}"/boost.png
 		dodoc regress.log
 	fi
 
@@ -394,11 +396,11 @@ multilib_src_install()
 
 	if [[ ${CHOST} == *-darwin* ]]; then
 		einfo "Working around completely broken build-system(tm)"
-		for d in "${ED}"usr/lib/*.dylib; do
+		for d in "${ED}"/usr/lib/*.dylib; do
 			if [ -f ${d} ]; then
 				# fix the "soname"
 				ebegin "  correcting install_name of ${d#${ED}}"
-					install_name_tool -id "/${d#${ED}}" "${d}"
+					install_name_tool -id "${d#${ED}}" "${d}"
 				eend $?
 
 				# fix references to other libs

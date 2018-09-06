@@ -1,7 +1,7 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
+EAPI=7
 
 DESCRIPTION="Linux system headers (LFS)"
 
@@ -49,7 +49,7 @@ kernel_header_destdir() {
 pkg_pretend()
 {
 	local tmp
-	
+
 	# test for arch
 	tmp="$(tc-arch-kernel)"
 

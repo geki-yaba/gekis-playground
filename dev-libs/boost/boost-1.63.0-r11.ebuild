@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="6"
+EAPI=7
 
 IUSE_BOOST_LIBS=" atomic chrono container context coroutine coroutine2 date_time exception fiber filesystem graph graph_parallel iostreams locale log math metaparse mpi program_options python python_numpy random regex serialization signals system test thread timer type_erasure wave"
 

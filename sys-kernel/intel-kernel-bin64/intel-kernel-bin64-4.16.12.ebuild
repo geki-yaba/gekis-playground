@@ -1,9 +1,9 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=7
 
-inherit base mount-boot
+inherit mount-boot
 
 DESCRIPTION="gentoo-sources based pre-compiled kernel for intel systems"
 HOMEPAGE="/dev/null"
@@ -29,12 +29,12 @@ pkg_postinst()
 {
 	mount-boot_pkg_preinst
 
-	if [ -d "${ROOT}"boot/EFI/BOOT ]
+	if [ -d "${ROOT}"/boot/EFI/BOOT ]
 	then
-		[ -e "${ROOT}"boot/EFI/BOOT/bootx64.efi ] \
-			&& rm -v "${ROOT}"boot/EFI/BOOT/bootx64.efi
+		[ -e "${ROOT}"/boot/EFI/BOOT/bootx64.efi ] \
+			&& rm -v "${ROOT}"/boot/EFI/BOOT/bootx64.efi
 
-		cp -v "${ROOT}"boot/kernel-${PV}-intel "${ROOT}"boot/EFI/BOOT/bootx64.efi
+		cp -v "${ROOT}"/boot/kernel-${PV}-intel "${ROOT}"/boot/EFI/BOOT/bootx64.efi
 	fi
 
 	mount-boot_pkg_postinst

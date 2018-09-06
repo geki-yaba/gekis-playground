@@ -1,7 +1,7 @@
 # Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
 PYTHON_COMPAT=( python2_7 python3_{4,5,6} )
 PYTHON_REQ_USE="threads,xml"
@@ -20,7 +20,7 @@ ADDONS_URI="https://dev-www.libreoffice.org/src/"
 BRANDING="${PN}-branding-gentoo-0.8.tar.xz"
 
 [[ ${MY_PV} == *9999* ]] && SCM_ECLASS="git-r3"
-inherit autotools bash-completion-r1 boost-utils check-reqs eapi7-ver flag-o-matic gnome2-utils java-pkg-opt-2 multiprocessing pax-utils python-single-r1 qmake-utils toolchain-funcs xdg-utils ${SCM_ECLASS}
+inherit autotools bash-completion-r1 boost-utils check-reqs flag-o-matic gnome2-utils java-pkg-opt-2 multiprocessing pax-utils python-single-r1 qmake-utils toolchain-funcs xdg-utils ${SCM_ECLASS}
 unset SCM_ECLASS
 
 DESCRIPTION="A full office productivity suite"
@@ -542,7 +542,7 @@ src_install() {
 		insinto /usr/$(get_libdir)/${PN}/program
 		newins "${WORKDIR}/branding-sofficerc" sofficerc
 		dodir /etc/env.d
-		echo "CONFIG_PROTECT=/usr/$(get_libdir)/${PN}/program/sofficerc" > "${ED}"etc/env.d/99${PN} || die
+		echo "CONFIG_PROTECT=/usr/$(get_libdir)/${PN}/program/sofficerc" > "${ED}"/etc/env.d/99${PN} || die
 	fi
 
 	# Hack for offlinehelp, this needs fixing upstream at some point.
@@ -551,8 +551,8 @@ src_install() {
 	insinto /usr/$(get_libdir)/libreoffice/help
 	doins xmlhelp/util/*.xsl
 
-	pax-mark -m "${ED}"usr/$(get_libdir)/libreoffice/program/soffice.bin
-	pax-mark -m "${ED}"usr/$(get_libdir)/libreoffice/program/unopkg.bin
+	pax-mark -m "${ED}"/usr/$(get_libdir)/libreoffice/program/soffice.bin
+	pax-mark -m "${ED}"/usr/$(get_libdir)/libreoffice/program/unopkg.bin
 }
 
 pkg_postinst() {

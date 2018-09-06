@@ -7,7 +7,7 @@
 # Purpose: Build external boost libraries
 #
 
-EAPI="6"
+EAPI=7
 
 inherit boost-utils multiprocessing
 
