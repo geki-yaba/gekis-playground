@@ -64,8 +64,8 @@ RESTRICT="mirror"
 # Extensions that need extra work:
 LO_EXTS="nlpsolver scripting-beanshell scripting-javascript wiki-publisher"
 
-IUSE="bluetooth +branding coinmp +cups dbus debug eds firebird googledrive
-gstreamer +gtk gtk2 jemalloc kde mysql odk pdfimport postgres test vlc
+IUSE="accessibility bluetooth +branding coinmp +cups dbus debug eds firebird
+googledrive gstreamer +gtk gtk2 jemalloc kde mysql odk pdfimport postgres test vlc
 $(printf 'libreoffice_extensions_%s ' ${LO_EXTS})"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
@@ -80,7 +80,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}
 LICENSE="|| ( LGPL-3 MPL-1.1 )"
 SLOT="0"
 [[ ${MY_PV} == *9999* ]] || \
-KEYWORDS="~amd64 ~arm ~arm64 ~x86 ~amd64-linux ~x86-linux"
+KEYWORDS="~amd64 ~arm ~arm64 ~ppc64 ~x86 ~amd64-linux ~x86-linux"
 
 COMMON_DEPEND="${PYTHON_DEPS}
 	app-arch/unzip
@@ -113,7 +113,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	dev-libs/icu:=
 	dev-libs/libassuan
 	dev-libs/libgpg-error
-	>=dev-libs/liborcus-0.13.3
+	=dev-libs/liborcus-0.13*
 	dev-libs/librevenge
 	dev-libs/libxml2
 	dev-libs/libxslt
@@ -121,7 +121,6 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	dev-libs/nss
 	>=dev-libs/redland-1.0.16
 	>=dev-libs/xmlsec-1.2.24[nss]
-	>=dev-python/lxml-4.1.1:0
 	media-gfx/graphite2
 	media-libs/fontconfig
 	media-libs/freetype:2
@@ -146,6 +145,7 @@ COMMON_DEPEND="${PYTHON_DEPS}
 	x11-libs/libXinerama
 	x11-libs/libXrandr
 	x11-libs/libXrender
+	accessibility? ( dev-python/lxml[${PYTHON_USEDEP}] )
 	bluetooth? ( net-wireless/bluez )
 	coinmp? ( sci-libs/coinor-mp )
 	cups? ( net-print/cups )
@@ -222,7 +222,7 @@ DEPEND="${COMMON_DEPEND}
 	>=dev-util/cppunit-1.14.0
 	>=dev-util/gperf-3
 	dev-util/intltool
-	>=dev-util/mdds-1.2.3:1=
+	=dev-util/mdds-1.3*:1=
 	media-libs/glm
 	sys-devel/bison
 	sys-devel/flex
@@ -441,6 +441,7 @@ src_configure() {
 		$(use_enable pdfimport)
 		$(use_enable postgres postgresql-sdbc)
 		$(use_enable vlc)
+		$(use_with accessibility lxml)
 		$(use_with coinmp system-coinmp)
 		$(use_with googledrive gdrive-client-id ${google_default_client_id})
 		$(use_with googledrive gdrive-client-secret ${google_default_client_secret})
