@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
-MY_EXTRAS_VER="20180529-0042Z"
+MY_EXTRAS_VER="20180809-1700Z"
 SUBSLOT="18"
 
 JAVA_PKG_OPT_USE="jdbc"
@@ -240,7 +240,7 @@ pkg_postinst() {
 	elog "Please backup any changes you made to /etc/mysql/my.cnf"
 	elog "and add them as a new file under /etc/mysql/${PN}.d with a .cnf extension."
 	elog "You may have as many files as needed and they are read alphabetically."
-	elog "Be sure the options have the appropitate section headers, i.e. [mysqld]."
+	elog "Be sure the options have the appropriate section headers, i.e. [mysqld]."
 	einfo
 }
 
@@ -276,7 +276,6 @@ src_prepare() {
 		echo > "${S%/}/storage/${1}/CMakeLists.txt" || die
 	}
 
-	java-pkg-opt-2_src_prepare
 	if use tcmalloc; then
 		echo "TARGET_LINK_LIBRARIES(mysqld tcmalloc)" >> "${S}/sql/CMakeLists.txt"
 	fi
@@ -319,6 +318,7 @@ src_prepare() {
 	fi
 
 	cmake-utils_src_prepare
+	java-pkg-opt-2_src_prepare
 }
 
 src_configure(){
@@ -664,6 +664,8 @@ src_test() {
 	done
 
 	_disable_test main.plugin_auth "Needs client libraries built"
+
+	_disable_test main.func_time "Dependent on time test was written"
 
 	# run mysql-test tests
 	perl mysql-test-run.pl --force --vardir="${T}/var-tests" --reorder --skip-test=tokudb --skip-test-list="${T}/disabled.def"
