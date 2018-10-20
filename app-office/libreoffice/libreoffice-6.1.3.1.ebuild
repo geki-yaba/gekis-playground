@@ -11,10 +11,10 @@ MY_PV="${MY_PV/_beta/.beta}"
 # experimental ; release ; old
 # Usually the tarballs are moved a lot so this should make everyone happy.
 DEV_URI="
-	https://dev-builds.libreoffice.org/pre-releases/src
+	https://download.documentfoundation.org/libreoffice/src/${MY_PV:0:5}/
 "
-	#https://download.documentfoundation.org/libreoffice/src/${MY_PV:0:5}/
 	#https://downloadarchive.documentfoundation.org/libreoffice/old/${MY_PV}/src
+	#https://dev-builds.libreoffice.org/pre-releases/src
 ADDONS_URI="https://dev-www.libreoffice.org/src/"
 
 BRANDING="${PN}-branding-gentoo-0.8.tar.xz"
