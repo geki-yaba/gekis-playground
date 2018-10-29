@@ -10,7 +10,7 @@ PHP_EXT_SAPIS="cli"
 USE_PHP="php7-2"
 
 # overwrite pecl defaults for git
-EGIT_COMMIT="e25675dee989a2e15b81da6c0e215d22bacff86a"
+EGIT_COMMIT="df26d45b53f8e9e247f39bb5952e8c6ac88331a8"
 PHP_EXT_S="${WORKDIR}/${PHP_EXT_NAME}-${EGIT_COMMIT}"
 
 inherit php-ext-pecl-r3
