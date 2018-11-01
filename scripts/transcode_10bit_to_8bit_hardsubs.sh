@@ -16,6 +16,9 @@ transcode_videos()
 	p="$(realpath "${1}")"
 	d="${p//10bit/8bit}"
 
+	ls -1 "${p}"/*.mkv \
+		|| die "no mkv files found in directory: ${p}"
+
 	mkdir -p "${d}" \
 		|| die "failed to create destination path: ${o}"
 
@@ -34,6 +37,11 @@ transcode_videos()
 if [ ! -d "${1}" ]
 then
 	die "parameter not a directory: ${1}"
+fi
+
+if [ ! -x "$(which ls)" ]
+then
+	die "ls binary not found"
 fi
 
 if [ ! -x "$(which realpath)" ]
