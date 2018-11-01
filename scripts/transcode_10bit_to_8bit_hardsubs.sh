@@ -11,7 +11,7 @@ die()
 
 create_destination_paths()
 {
-	local p d
+	local p f d
 
 	p="$(realpath "${1}")"
 	d="${p//10bit/8bit}"
