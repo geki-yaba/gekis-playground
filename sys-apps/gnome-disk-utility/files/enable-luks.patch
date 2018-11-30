@@ -1,0 +1,140 @@
+--- a/meson.build	2018-11-30 10:09:14.345870282 +0100
++++ b/meson.build	2018-11-30 10:11:37.913877566 +0100
+@@ -85,7 +85,6 @@
+ gio_unix_dep = dependency('gio-unix-2.0', version: '>= 2.31.0')
+ udisk_dep = dependency('udisks2', version: '>= 2.1.1')
+ gtk_dep = dependency('gtk+-3.0', version: '>= 3.16.0')
+-libsecret_dep = dependency('libsecret-1', version: '>= 0.7')
+ pwquality_dep = dependency('pwquality', version: '>= 1.0.0')
+ libcanberra_dep = dependency('libcanberra-gtk3', version: '>= 0.1')
+ dvdread_dep = dependency('dvdread', version: '>= 4.2.0')
+@@ -110,6 +109,14 @@
+                description: 'Define to 1 if libsystemd is available')
+ endif
+ 
++# *** Check for libsecret (LUKS decryption) ***
++enable_luks = get_option('luks')
++if enable_luks
++  libsecret_dep = dependency('libsecret-1', version: '>= 0.7')
++  config_h.set('HAVE_LIBSECRET', libsecret_dep.found(),
++               description: 'Define to 1 if libsecret is available')
++endif
++
+ gnome = import('gnome')
+ i18n = import('i18n')
+ 
+@@ -151,8 +158,9 @@
+ output += '        mandir:                     ' + gdu_mandir + '\n'
+ output += '        sysconfdir:                 ' + gdu_sysconfdir + '\n\n'
+ output += '        Use libsystemd:             ' + enable_libsystemd.to_string() + '\n'
++output += '        Use libsecret:              ' + enable_luks.to_string() + '\n'
+ output += '        Build g-s-d plug-in:        ' + enable_gsd_plugin.to_string() + '\n\n'
+ output += '        compiler:                   ' + cc.get_id() + '\n'
+ output += '        cflags:                     ' + ' '.join(compiler_flags) + '\n\n'
+-output += '        (Change with: meson configure BUILDDIR -D libsystemd=true|false -D gsd_plugin=true|false)\n\n'
++output += '        (Change with: meson configure BUILDDIR -D libsystemd=true|false -D luks=true|false -D gsd_plugin=true|false)\n\n'
+ message(output)
+--- a/src/disks/meson.build	2018-11-30 10:12:16.181879507 +0100
++++ b/src/disks/meson.build	2018-11-30 10:14:50.973887360 +0100
+@@ -90,7 +90,6 @@
+   gio_unix_dep,
+   udisk_dep,
+   gtk_dep,
+-  libsecret_dep,
+   pwquality_dep,
+   libcanberra_dep,
+   dvdread_dep,
+@@ -99,6 +98,10 @@
+   m_dep
+ ]
+ 
++if enable_luks
++  deps += libsecret_dep
++endif
++
+ cflags = [
+   '-DPACKAGE_DATA_DIR="@0@"'.format(gdu_datadir),
+   '-DG_LOG_DOMAIN="@0@"'.format(name),
+--- a/src/libgdu/meson.build	2018-11-30 10:12:26.133880012 +0100
++++ b/src/libgdu/meson.build	2018-11-30 10:14:24.197886002 +0100
+@@ -16,11 +16,14 @@
+   gio_unix_dep,
+   udisk_dep,
+   gtk_dep,
+-  libsecret_dep,
+   pwquality_dep,
+   m_dep
+ ]
+ 
++if enable_luks
++  deps += libsecret_dep
++endif
++
+ if enable_libsystemd
+   deps += libsystemd_dep
+ endif
+--- a/meson_options.txt	2018-11-30 10:09:10.541870089 +0100
++++ b/meson_options.txt	2018-11-30 10:09:38.541871510 +0100
+@@ -1,2 +1,3 @@
+ option('libsystemd', type: 'boolean', value: true, description: 'build with libsystemd')
++option('luks', type: 'boolean', value: true, description: 'build with libsecret (LUKS decryption)')
+ option('gsd_plugin', type: 'boolean', value: true, description: 'build gnome-settings-daemon plug-in')
+--- a/src/disks/gduunlockdialog.c	2018-11-30 10:09:19.141870525 +0100
++++ b/src/disks/gduunlockdialog.c	2018-11-30 10:09:38.541871510 +0100
+@@ -10,7 +10,9 @@
+ #include "config.h"
+ 
+ #include <glib/gi18n.h>
++#if defined(HAVE_LIBSECRET)
+ #include <libsecret/secret.h>
++#endif
+ #include <stdlib.h>
+ #include <errno.h>
+ 
+@@ -20,6 +22,7 @@
+ #include "gduvolumegrid.h"
+ 
+ /* From GVfs's monitor/udisks2/gvfsudisks2volume.c */
++#if defined(HAVE_LIBSECRET)
+ static const SecretSchema luks_passphrase_schema =
+ {
+   "org.gnome.GVfs.Luks.Password",
+@@ -29,6 +32,7 @@
+     { NULL, 0 },
+   }
+ };
++#endif
+ 
+ /* ---------------------------------------------------------------------------------------------------- */
+ 
+@@ -241,6 +245,7 @@
+     }
+ }
+ 
++#if defined(HAVE_LIBSECRET)
+ static void
+ luks_find_passphrase_cb (GObject      *source,
+                          GAsyncResult *result,
+@@ -271,6 +276,7 @@
+   show_dialog (data);
+   g_free (passphrase);
+ }
++#endif
+ 
+ void
+ gdu_unlock_dialog_show (GduWindow    *window,
+@@ -354,6 +360,7 @@
+     }
+   else
+     {
++#if defined(HAVE_LIBSECRET)
+       /* see if there's a passphrase in the keyring */
+       secret_password_lookup (&luks_passphrase_schema,
+                               NULL, /* GCancellable */
+@@ -361,5 +368,6 @@
+                               data,
+                               "gvfs-luks-uuid", udisks_block_get_id_uuid (data->block),
+                               NULL); /* sentinel */
++#endif
+     }
+ }
