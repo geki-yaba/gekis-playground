@@ -131,10 +131,15 @@
        /* see if there's a passphrase in the keyring */
        secret_password_lookup (&luks_passphrase_schema,
                                NULL, /* GCancellable */
-@@ -361,5 +368,6 @@
+@@ -361,5 +368,11 @@
                                data,
                                "gvfs-luks-uuid", udisks_block_get_id_uuid (data->block),
                                NULL); /* sentinel */
++#else
++      /* keep in sync with luks_find_passphrase_cb */
++      gtk_widget_hide (data->infobar_vbox);
++      gtk_widget_set_no_show_all (data->infobar_vbox, TRUE);
++      show_dialog (data);
 +#endif
      }
  }
