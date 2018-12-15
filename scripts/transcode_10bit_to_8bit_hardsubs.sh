@@ -20,7 +20,7 @@ transcode_videos()
 		|| die "no mkv files found in directory: ${p}"
 
 	mkdir -p "${d}" \
-		|| die "failed to create destination path: ${o}"
+		|| die "failed to create destination path: ${d}"
 
 	for f in "${p}"/*.mkv
 	do
