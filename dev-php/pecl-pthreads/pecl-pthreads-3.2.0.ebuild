@@ -7,9 +7,12 @@ PHP_EXT_NAME="pthreads"
 # add extension only to cli - upstream
 PHP_EXT_SAPIS="cli"
 
-USE_PHP="php7-0 php7-1"
+USE_PHP="php7-2"
 
 inherit php-ext-pecl-r3
+
+# overwrite pecl defaults for git
+SRC_URI="https://github.com/krakjoe/${PHP_EXT_NAME}/archive/v${PV}.zip -> ${PHP_EXT_NAME}-${PV}.zip"
 
 DESCRIPTION="Threading API for PHP"
 
@@ -18,6 +21,5 @@ LICENSE="PHP-3.01"
 SLOT="0"
 IUSE=""
 
-DEPEND="php_targets_php7-0? ( dev-lang/php:7.0[threads] )
-	php_targets_php7-1? ( dev-lang/php:7.1[threads] )"
+DEPEND="php_targets_php7-2? ( dev-lang/php:7.2[threads] )"
 RDEPEND="${DEPEND}"
