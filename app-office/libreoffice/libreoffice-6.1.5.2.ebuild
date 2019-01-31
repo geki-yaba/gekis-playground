@@ -1,4 +1,4 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -252,7 +252,9 @@ PATCHES=(
 	"${FILESDIR}/${PN}-5.3.4.2-kioclient5.patch"
 	"${FILESDIR}/${PN}-6.1-nomancompress.patch"
 
-	"${FILESDIR}/${PN}-6.1-boost-169.patch"
+	# master branch
+	"${FILESDIR}/${P}-gtk3_kde5-non-native-fpicker-for-non-plasma.patch"
+	#"${FILESDIR}/${PN}-6.1-boost-169.patch"
 )
 
 S="${WORKDIR}/${PN}-${MY_PV}"
