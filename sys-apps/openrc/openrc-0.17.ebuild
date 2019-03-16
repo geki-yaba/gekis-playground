@@ -63,8 +63,7 @@ src_prepare() {
 		sed -i "/^GITVER[[:space:]]*=/s:=.*:=${ver}:" mk/gitver.mk || die
 	fi
 
-	# Allow user patches to be applied without modifying the ebuild
-	epatch_user
+	default
 }
 
 src_compile() {
