@@ -8,7 +8,7 @@ DESCRIPTION="Linux system headers (LFS)"
 IUSE=""
 SLOT="0"
 
-SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-${PV}.tar.xz"
+SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-${PV}.tar.xz"
 
 KEYWORDS="~amd64"
 
