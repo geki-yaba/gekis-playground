@@ -1,7 +1,7 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
 VCS_INHERIT=""
 if [[ "${PV}" == 9999 ]] ; then
@@ -44,10 +44,9 @@ DEPEND="sys-libs/zlib:=[${MULTILIB_USEDEP}]
 	)
 	"
 RDEPEND="${DEPEND}"
-
 PATCHES=(
 	"${FILESDIR}"/gentoo-layout-3.0.patch
-	"${FILESDIR}"/${PN}-3.0.8-fix-pkconfig-file.patch
+	"${FILESDIR}"/${PN}-3.1.3-fix-pkconfig-file.patch
 )
 
 src_configure() {
