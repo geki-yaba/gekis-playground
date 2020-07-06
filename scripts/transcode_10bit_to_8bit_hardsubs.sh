@@ -28,8 +28,8 @@ transcode_videos()
 		s="$(printf '%q' "${f}")"
 
 		ffmpeg -i "${f}" -map 0:v -map 0:a -vf subtitles="${s}" \
-			-c:v libx264 -preset veryfast -tune animation -crf 23 -r 23.976 \
-			-c:a copy -f matroska "${o}" \
+			-c:v libx264 -vf format=yuv420p -preset veryfast \
+			-tune animation -crf 23 -r 23.98 -c:a copy "${o}" \
 			|| die "failed to transcode video from file: ${f}"
 	done
 }
