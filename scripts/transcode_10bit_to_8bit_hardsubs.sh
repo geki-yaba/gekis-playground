@@ -9,7 +9,7 @@ die()
 	exit ${exit_code}
 }
 
-transcode_videos()
+transcode_10to8_hardsubs()
 {
 	local p d f o s t
 
@@ -30,6 +30,9 @@ transcode_videos()
 		o="${f//10bit/8bit}"
 		s="$(printf '%q' "${f}")"
 		t="$(printf '%q' "${d}")"
+
+		# shell window title
+		echo -ne "\033]0;Transcode "$(basename "${f}")"\007"
 
 		pushd "${d}/fonts" \
 			|| die "failed to push into destination fonts path"
@@ -67,6 +70,6 @@ then
 	die "ffmpeg binary not found"
 fi
 
-transcode_videos "${1}"
+transcode_10to8_hardsubs "${1}"
 
 exit ${?}
