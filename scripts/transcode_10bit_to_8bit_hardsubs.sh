@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 die()
 {
@@ -11,7 +11,7 @@ die()
 
 transcode_videos()
 {
-	local p d f o s
+	local p d f o s t
 
 	p="$(realpath "${1}")"
 	d="${p//10bit/8bit}"
@@ -22,14 +22,27 @@ transcode_videos()
 	mkdir -p "${d}" \
 		|| die "failed to create destination path: ${d}"
 
+	mkdir -p "${d}/fonts" \
+		|| die "failed to create destination fonts path: ${d}"
+
 	for f in "${p}"/*.mkv
 	do
 		o="${f//10bit/8bit}"
 		s="$(printf '%q' "${f}")"
+		t="$(printf '%q' "${d}")"
 
-		ffmpeg -i "${f}" -map 0:v -map 0:a -vf subtitles="${s}" \
-			-c:v libx264 -vf format=yuv420p -preset veryfast \
-			-tune animation -crf 23 -r 23.98 -c:a copy "${o}" \
+		pushd "${d}/fonts" \
+			|| die "failed to push into destination fonts path"
+		ffmpeg -y -dump_attachment:t "" -i "${f}"
+		popd \
+			|| die "failed to pop out of destination fonts path"
+
+		ffmpeg -i "${f}" \
+			-c:a copy \
+			-c:v libx264 -vf "subtitles=${s}:fontsdir=${t}/fonts,format=yuv420p" \
+			-preset veryfast -tune animation -crf 23 -r 23.98 \
+			-map 0:a -map 0:v \
+			"${o}" \
 			|| die "failed to transcode video from file: ${f}"
 	done
 }
