@@ -1,0 +1,13 @@
+--- a/src/rc/rc-logger.h	2020-08-21 23:06:42.098391485 +0200
++++ b/src/rc/rc-logger.h	2020-08-21 23:06:56.898392236 +0200
+@@ -26,8 +26,8 @@
+ #ifndef RC_LOGGER_H
+ #define RC_LOGGER_H
+ 
+-pid_t rc_logger_pid;
+-int rc_logger_tty;
++extern pid_t rc_logger_pid;
++extern int rc_logger_tty;
+ extern bool rc_in_logger;
+ 
+ void rc_logger_open(const char *runlevel);

@@ -55,6 +55,8 @@ RDEPEND="${COMMON_DEPEND}
 
 PDEPEND="netifrc? ( net-misc/netifrc )"
 
+PATCHES=( "${FILESDIR}/${P}-gcc-10.2.0.patch" )
+
 src_prepare() {
 	sed -i 's:0444:0644:' mk/sys.mk || die
 
