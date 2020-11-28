@@ -75,6 +75,13 @@ $ EXTRA_ECONF="--enable-threads=posix" emerge --oneshot cross-x86_64-w64-mingw32
 * See *patches* directory for my fixups.
 * See *package.env* and corresponding configuration files for easy tweaks.
 
+# Optional: Enable secure API
+```
+# CHOST make.conf
+CPPFLAGS="${CPPFLAGS} -DMINGW_HAS_SECURE_API"
+```
+See https://bugs.gentoo.org/665512#c15.
+
 # Remove crossdev target
 ```
 $ crossdev -C x86_64-w64-mingw32
