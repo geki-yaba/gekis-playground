@@ -1,0 +1,1 @@
+EXTRA_ECONF="--with-target=win32"

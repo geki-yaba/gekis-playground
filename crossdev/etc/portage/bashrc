@@ -1,0 +1,17 @@
+if [ -n "${DEBUG}" ]; then
+	FEATURES=splitdebug
+
+	if [ -n "${DEBUG_zero}" ]; then
+		CFLAGS="-O0 ${CFLAGS//-O? }"
+		CXXFLAGS="-O0 ${CXXFLAGS//-O? }"
+	fi
+
+	CFLAGS="-g ${CFLAGS//-g }"
+	CXXFLAGS="-g ${CXXFLAGS//-g }"
+fi
+
+#case "${CATEGORY}/${PN}"
+#in
+#*)
+#	;;
+#esac

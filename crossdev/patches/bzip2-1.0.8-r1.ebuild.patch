@@ -1,0 +1,69 @@
+diff --git a/app-arch/bzip2/bzip2-1.0.8-r1.ebuild b/app-arch/bzip2/bzip2-1.0.8-r1.ebuild
+index 34b92d2ea541..f0768e7addd2 100644
+--- a/app-arch/bzip2/bzip2-1.0.8-r1.ebuild
++++ b/app-arch/bzip2/bzip2-1.0.8-r1.ebuild
+@@ -6,7 +6,7 @@
+ 
+ EAPI=7
+ 
+-inherit toolchain-funcs multilib-minimal usr-ldscript
++inherit multilib multilib-minimal usr-ldscript
+ 
+ DESCRIPTION="A high-quality data compressor used extensively by Gentoo Linux"
+ HOMEPAGE="https://sourceware.org/bzip2/"
+@@ -33,6 +33,11 @@ HTML_DOCS=( manual.html )
+ src_prepare() {
+ 	default
+ 
++	# - Use right libname extension
++	sed -i \
++		-e "s:bz2.so:bz2$(get_libname):g" \
++		Makefile-libbz2_so || die
++
+ 	# - Use right man path
+ 	# - Generate symlinks instead of hardlinks
+ 	# - pass custom variables to control libdir
+@@ -55,7 +60,7 @@ bemake() {
+ multilib_src_compile() {
+ 	bemake -f "${S}"/Makefile-libbz2_so all
+ 	# Make sure we link against the shared lib #504648
+-	ln -s libbz2.so.${PV} libbz2.so || die
++	ln -s libbz2$(get_libname ${PV}) libbz2$(get_libname) || die
+ 	bemake -f "${S}"/Makefile all LDFLAGS="${LDFLAGS} $(usex static -static '')"
+ }
+ 
+@@ -66,10 +71,10 @@ multilib_src_install() {
+ 	#  .x.x.x - standard shared lib behavior
+ 	#  .x.x   - SONAME some distros use #338321
+ 	#  .x     - SONAME Gentoo uses
+-	dolib.so libbz2.so.${PV}
++	dolib.so libbz2$(get_libname ${PV})
+ 	local v
+-	for v in libbz2.so{,.{${PV%%.*},${PV%.*}}} ; do
+-		dosym libbz2.so.${PV} /usr/$(get_libdir)/${v}
++	for v in libbz2$(get_libname){,.{${PV%%.*},${PV%.*}}} ; do
++		dosym libbz2$(get_libname ${PV}) /usr/$(get_libdir)/${v}
+ 	done
+ 
+ 	# Install libbz2.so.1.0 due to accidental soname change in 1.0.7.
+@@ -84,9 +89,9 @@ multilib_src_install() {
+ 	if multilib_is_native_abi ; then
+ 		gen_usr_ldscript -a bz2
+ 
+-		dobin bzip2recover
++		dobin bzip2recover$(get_exeext)
+ 		into /
+-		dobin bzip2
++		dobin bzip2$(get_exeext)
+ 	fi
+ }
+ 
+@@ -117,6 +122,6 @@ multilib_src_install_all() {
+ 	einstalldocs
+ 
+ 	# move "important" bzip2 binaries to /bin and use the shared libbz2.so
+-	dosym bzip2 /bin/bzcat
+-	dosym bzip2 /bin/bunzip2
++	dosym bzip2$(get_exeext) /bin/bzcat$(get_exeext)
++	dosym bzip2$(get_exeext) /bin/bunzip2$(get_exeext)
+ }
