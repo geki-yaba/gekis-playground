@@ -74,3 +74,11 @@ $ EXTRA_ECONF="--enable-threads=posix" emerge --oneshot cross-x86_64-w64-mingw32
 # Heavy patching, happy matching
 * See *patches* directory for my fixups.
 * See *package.env* and corresponding configuration files for easy tweaks.
+
+# Remove crossdev target
+```
+$ crossdev -C x86_64-w64-mingw32
+
+# Check stray directories and files
+$ find / -type d -name '*w64*'
+```
