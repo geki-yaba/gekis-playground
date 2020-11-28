@@ -22,6 +22,7 @@ $ cp -a /etc/portage/package.use/cross-x86_64-w64-mingw32.bootstrap~ /etc/portag
 ```
 
 # Whenever you cross-compile, edit `CBUILD` make.conf
+Feel free to skip and you be "vogelfrei".
 ```
 # WHEN CROSS-COMPILING, DISABLE SPECIFIC CPU ARCH
 # OTHERWISE YOU SEE FUNNY ERRORS, ICE'S OR MISCOMPILED FOO
