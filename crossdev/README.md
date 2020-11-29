@@ -56,7 +56,7 @@ $ EXTRA_ECONF="--enable-threads=posix" emerge --oneshot cross-x86_64-w64-mingw32
 $ USE="libraries idl tools" emerge -v --oneshot cross-x86_64-w64-mingw32/mingw64-runtime
 
 # Recover package.use file again
-$ cp -a /etc/portage/package.use/cross-x86_64-w64-mingw32.crossdev~ /etc/portage/package.use/cross-x86_64-w64-mingw32
+$ cp -a /etc/portage/package.use/cross-x86_64-w64-mingw32.bootstrap~ /etc/portage/package.use/cross-x86_64-w64-mingw32
 
 # Verify that the compiler has the posix thread model
 $ x86_64-w64-mingw32-gcc -v
