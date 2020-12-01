@@ -1,0 +1,16 @@
+X-Git-Url: https://gcc.gnu.org/git/?p=gcc.git;a=blobdiff_plain;f=gcc%2Fgcc.c;h=d78b5f582b5fc934b6a2467280d7df70991320df;hp=766bfc1f8a2c45500afee8e5ec6b4b5080699346;hb=200c9e865f49255ea32d4891b746d394d156a16f;hpb=2d8b144a2a61b007f59286731275773f6e167be1
+
+diff --git a/gcc/gcc.c b/gcc/gcc.c
+index 766bfc1f8a2..d78b5f582b5 100644
+--- a/gcc/gcc.c
++++ b/gcc/gcc.c
+@@ -3527,7 +3527,8 @@
+ #if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
+   /* If there is no filetype, make it the executable suffix (which includes
+      the ".").  But don't get confused if we have just "-o".  */
+-  if (! do_exe || TARGET_EXECUTABLE_SUFFIX[0] == 0 || (len == 2 && name[0] == '-'))
++  if (! do_exe || TARGET_EXECUTABLE_SUFFIX[0] == 0
++    || strcmp (name, "-") == 0 || strcmp (name, HOST_BIT_BUCKET) == 0)
+     return name;
+ 
+   for (i = len - 1; i >= 0; i--)
