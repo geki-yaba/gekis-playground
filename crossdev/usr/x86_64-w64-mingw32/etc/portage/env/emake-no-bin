@@ -1,0 +1,1 @@
+EXTRA_EMAKE="bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS="
