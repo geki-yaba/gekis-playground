@@ -1,0 +1,15 @@
+diff --git a/eclass/xdg.eclass b/eclass/xdg.eclass
+index 219be712e84d..daae739743a9 100644
+--- a/eclass/xdg.eclass
++++ b/eclass/xdg.eclass
+@@ -24,8 +24,8 @@ esac
+ # Avoid dependency loop as both depend on glib-2
+ if [[ ${CATEGORY}/${P} != dev-libs/glib-2.* ]] ; then
+ DEPEND="
+-	dev-util/desktop-file-utils
+-	x11-misc/shared-mime-info
++	!elibc_mingw? ( dev-util/desktop-file-utils )
++	mime? ( x11-misc/shared-mime-info )
+ "
+ fi
+ 
