@@ -1,0 +1,13 @@
+diff --git a/dev-libs/libressl/libressl-3.3.0.ebuild b/dev-libs/libressl/libressl-3.3.0.ebuild
+index 2ffee4c0167e..54a782c2b61d 100644
+--- a/dev-libs/libressl/libressl-3.3.0.ebuild
++++ b/dev-libs/libressl/libressl-3.3.0.ebuild
+@@ -21,7 +21,7 @@ REQUIRED_USE="test? ( static-libs )"
+ 
+ RDEPEND="!dev-libs/openssl:0"
+ DEPEND="${RDEPEND}"
+-PDEPEND="app-misc/ca-certificates"
++PDEPEND="!elibc_mingw? ( app-misc/ca-certificates )"
+ 
+ src_prepare() {
+ 	touch crypto/Makefile.in
