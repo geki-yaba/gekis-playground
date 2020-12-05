@@ -1,8 +1,3 @@
-#! /bin/sh
-patch -p1 -f $* < $0
-exit $?
-
-diff -urN a/lib/Makefile.am b/lib/Makefile.am
 --- a/lib/Makefile.am	2020-10-10 01:59:11.543824202 -0700
 +++ b/lib/Makefile.am	2020-10-10 02:00:10.902416321 -0700
 @@ -3,6 +3,9 @@
