@@ -1,0 +1,11 @@
+--- a/Makefile.am	2020-10-11 01:50:41.419863002 -0700
++++ b/Makefile.am	2020-10-11 01:50:53.696069949 -0700
+@@ -39,7 +39,7 @@
+ 
+ DISTCLEANFILES = libetpan.pc
+ 
+-SUBDIRS = build-windows include src tests doc
++SUBDIRS = build-windows include src doc
+ 
+ BUILT_SOURCES += libetpan-config.h
+ 

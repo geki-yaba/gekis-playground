@@ -1,0 +1,104 @@
+--- a/src/low-level/imap/mailimap_socket.c	2020-10-12 01:42:30.198114704 -0700
++++ b/src/low-level/imap/mailimap_socket.c	2020-10-12 01:41:36.313791091 -0700
+@@ -53,6 +53,10 @@
+ 
+ #include "mailstream_cfstream.h"
+ 
++#ifdef HAVE_MINGW32_SYSTEM
++#	include <winsock2.h>
++#endif
++
+ #define DEFAULT_IMAP_PORT 143
+ #define SERVICE_NAME_IMAP "imap2"
+ #define SERVICE_TYPE_TCP "tcp"
+--- a/src/low-level/imap/mailimap_ssl.c	2019-11-01 10:58:50.000000000 -0700
++++ b/src/low-level/imap/mailimap_ssl.c	2020-10-12 01:44:00.826578125 -0700
+@@ -53,6 +53,10 @@
+ 
+ #include "mailstream_cfstream.h"
+ 
++#ifdef HAVE_MINGW32_SYSTEM
++#   include <winsock2.h>
++#endif
++
+ #define DEFAULT_IMAPS_PORT 993
+ #define SERVICE_NAME_IMAPS "imaps"
+ #define SERVICE_TYPE_TCP "tcp"
+--- a/src/low-level/nntp/newsnntp_socket.c	2019-11-01 10:58:50.000000000 -0700
++++ b/src/low-level/nntp/newsnntp_socket.c	2020-10-12 01:45:47.526539018 -0700
+@@ -51,6 +51,10 @@
+ #	include <unistd.h>
+ #endif
+ 
++#ifdef HAVE_MINGW32_SYSTEM
++#   include <winsock2.h>
++#endif
++
+ #define DEFAULT_NNTP_PORT 119
+ #define SERVICE_NAME_NNTP "nntp"
+ #define SERVICE_TYPE_TCP "tcp"
+--- a/src/low-level/nntp/newsnntp_ssl.c	2019-11-01 10:58:50.000000000 -0700
++++ b/src/low-level/nntp/newsnntp_ssl.c	2020-10-12 01:46:04.322089259 -0700
+@@ -50,6 +50,10 @@
+ #	include <unistd.h>
+ #endif
+ 
++#ifdef HAVE_MINGW32_SYSTEM
++#   include <winsock2.h>
++#endif
++
+ #define DEFAULT_NNTPS_PORT 563
+ #define SERVICE_NAME_NNTPS "nntps"
+ #define SERVICE_TYPE_TCP "tcp"
+--- a/src/low-level/pop3/mailpop3_socket.c	2019-11-01 10:58:50.000000000 -0700
++++ b/src/low-level/pop3/mailpop3_socket.c	2020-10-12 01:55:20.212375323 -0700
+@@ -51,6 +51,10 @@
+ #endif
+ #include <stdlib.h>
+ 
++#ifdef HAVE_MINGW32_SYSTEM
++#	include <winsock2.h>
++#endif
++
+ #define DEFAULT_POP3_PORT 110
+ #define SERVICE_NAME_POP3 "pop3"
+ #define SERVICE_TYPE_TCP "tcp"
+--- a/src/low-level/pop3/mailpop3_ssl.c	2019-11-01 10:58:50.000000000 -0700
++++ b/src/low-level/pop3/mailpop3_ssl.c	2020-10-12 01:55:36.400450829 -0700
+@@ -51,6 +51,10 @@
+ #endif
+ #include <stdlib.h>
+ 
++#ifdef HAVE_MINGW32_SYSTEM
++#	include <winsock2.h>
++#endif
++
+ #define DEFAULT_POP3S_PORT 995
+ #define SERVICE_NAME_POP3S "pop3s"
+ #define SERVICE_TYPE_TCP "tcp"
+--- a/src/low-level/smtp/mailsmtp_socket.c	2019-11-01 10:58:50.000000000 -0700
++++ b/src/low-level/smtp/mailsmtp_socket.c	2020-10-12 01:56:33.000676239 -0700
+@@ -52,6 +52,10 @@
+ #	include <unistd.h>
+ #endif
+ 
++#ifdef HAVE_MINGW32_SYSTEM
++#	include <winsock2.h>
++#endif
++
+ #define DEFAULT_SMTP_PORT 25
+ #define SERVICE_NAME_SMTP "smtp"
+ #define SERVICE_TYPE_TCP "tcp"
+--- a/src/low-level/smtp/mailsmtp_ssl.c	2019-11-01 10:58:50.000000000 -0700
++++ b/src/low-level/smtp/mailsmtp_ssl.c	2020-10-12 01:56:41.800706439 -0700
+@@ -52,6 +52,10 @@
+ #	include <unistd.h>
+ #endif
+ 
++#ifdef HAVE_MINGW32_SYSTEM
++#	include <winsock2.h>
++#endif
++
+ #define DEFAULT_SMTPS_PORT 465
+ #define SERVICE_NAME_SMTPS "smtps"
+ #define SERVICE_TYPE_TCP "tcp"
