@@ -1,0 +1,15 @@
+diff --git a/net-mail/ytnef/ytnef-1.9.3.ebuild b/net-mail/ytnef/ytnef-1.9.3.ebuild
+index f4756c9fa63d..621cf2244a22 100644
+--- a/net-mail/ytnef/ytnef-1.9.3.ebuild
++++ b/net-mail/ytnef/ytnef-1.9.3.ebuild
+@@ -13,8 +13,8 @@ SLOT="0"
+ KEYWORDS="~alpha amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~sparc x86"
+ IUSE="static-libs"
+ 
+-DEPEND="sys-devel/libtool"
+-RDEPEND="dev-perl/MIME-tools"
++BDEPEND="sys-devel/libtool"
++RDEPEND="!elibc_mingw? ( dev-perl/MIME-tools )"
+ 
+ src_prepare() {
+ 	default
