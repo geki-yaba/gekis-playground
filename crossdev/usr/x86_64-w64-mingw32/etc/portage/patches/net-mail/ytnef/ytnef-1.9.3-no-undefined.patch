@@ -1,0 +1,17 @@
+#! /bin/sh
+patch -p1 -f $* < $0
+exit $?
+
+diff -urN a/lib/Makefile.am b/lib/Makefile.am
+--- a/lib/Makefile.am	2020-10-10 01:59:11.543824202 -0700
++++ b/lib/Makefile.am	2020-10-10 02:00:10.902416321 -0700
+@@ -3,6 +3,9 @@
+ libytnef_la_SOURCES = \
+ 	ytnef.c
+ 
++libytnef_la_LDFLAGS = \
++	-no-undefined
++
+ nobase_include_HEADERS = \
+ 	ytnef.h \
+ 	mapi.h mapidefs.h mapitags.h \

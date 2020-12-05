@@ -1,0 +1,15 @@
+#! /bin/sh
+patch -p1 -f $* < $0
+exit $?
+
+diff -urN a/configure.ac b/configure.ac
+--- a/configure.ac	2020-10-10 01:58:48.980393455 -0700
++++ b/configure.ac	2020-10-10 01:58:59.280131052 -0700
+@@ -49,7 +49,6 @@
+ AC_C_BIGENDIAN
+ 
+ # Checks for library functions.
+-AC_FUNC_MALLOC
+ AC_CHECK_FUNCS([memset strstr])
+ 
+ AC_SYS_LARGEFILE
