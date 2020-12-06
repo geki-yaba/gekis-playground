@@ -1,0 +1,19 @@
+--- /usr/x86_64-w64-mingw32/usr/bin/glib-gettextize.orig	2020-12-06 21:41:57.273821186 +0100
++++ /usr/x86_64-w64-mingw32/usr/bin/glib-gettextize	2020-12-06 21:43:28.977825838 +0100
+@@ -47,9 +47,14 @@
+     prefix="`dirname $0`/.."
+     ;;
+ esac
++case "${CHOST}" in
++*-mingw*)
++    prefix="`dirname $0`/.."
++    ;;
++esac
+ 
+-datarootdir=/usr/share
+-datadir=/usr/share
++datarootdir=$prefix/share
++datadir=$prefix/share
+ 
+ gettext_dir=$datadir/glib-2.0/gettext
+ 

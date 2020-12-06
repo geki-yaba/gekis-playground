@@ -1,0 +1,21 @@
+diff --git a/eclass/autotools.eclass b/eclass/autotools.eclass
+index 625abd0e9d12..650aabf26b52 100644
+--- a/eclass/autotools.eclass
++++ b/eclass/autotools.eclass
+@@ -198,10 +198,15 @@ eautoreconf() {
+ 	local m4dirs=$(autotools_check_macro_val AC_CONFIG_{AUX,MACRO}_DIR)
+ 	[[ -n ${m4dirs} ]] && mkdir -p ${m4dirs}
+ 
++	local binpath
++	if use elibc_mingw; then
++		binpath="${ROOT:-/}usr/bin/"
++	fi
++
+ 	# Run all the tools before aclocal so we can gather the .m4 files.
+ 	local i tools=(
+ 		# <tool> <was run> <command>
+-		glibgettext false "autotools_run_tool glib-gettextize --copy --force"
++		glibgettext false "autotools_run_tool ${binpath}glib-gettextize --copy --force"
+ 		gettext     false "autotools_run_tool --at-missing autopoint --force"
+ 		# intltool must come after autopoint.
+ 		intltool    false "autotools_run_tool intltoolize --automake --copy --force"
