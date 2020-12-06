@@ -1,5 +1,5 @@
 diff --git a/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.0.ebuild b/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.0.ebuild
-index 4bbdfcaa31a4..616074293776 100644
+index 7713c4ba6651..397fc102ffae 100644
 --- a/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.0.ebuild
 +++ b/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.0.ebuild
 @@ -16,7 +16,6 @@ IUSE="gtk-doc +introspection jpeg tiff"
@@ -10,3 +10,35 @@ index 4bbdfcaa31a4..616074293776 100644
  	>=media-libs/libpng-1.4:0=[${MULTILIB_USEDEP}]
  	jpeg? ( virtual/jpeg:0=[${MULTILIB_USEDEP}] )
  	tiff? ( >=media-libs/tiff-3.9.2:0=[${MULTILIB_USEDEP}] )
+@@ -61,7 +60,7 @@ multilib_src_configure() {
+ 		-Dpng=true
+ 		$(meson_use tiff)
+ 		$(meson_use jpeg)
+-		-Dbuiltin_loaders=png
++		-Dbuiltin_loaders=all
+ 		-Drelocatable=false
+ 		#native_windows_loaders
+ 		-Dinstalled_tests=false
+@@ -97,6 +96,7 @@ multilib_src_install() {
+ 
+ pkg_preinst() {
+ 	xdg_pkg_preinst
++	use elibc_mingw && return
+ 
+ 	multilib_pkg_preinst() {
+ 		# Make sure loaders.cache belongs to gdk-pixbuf alone
+@@ -118,11 +118,14 @@ pkg_postinst() {
+ 	unset __GL_NO_DSO_FINALIZER
+ 
+ 	xdg_pkg_postinst
++	use elibc_mingw && return
++
+ 	multilib_foreach_abi gnome2_gdk_pixbuf_update
+ }
+ 
+ pkg_postrm() {
+ 	xdg_pkg_postrm
++	use elibc_mingw && return
+ 
+ 	if [[ -z ${REPLACED_BY_VERSION} ]]; then
+ 		rm -f "${EROOT}"/usr/lib*/${PN}-2.0/2.10.0/loaders.cache
