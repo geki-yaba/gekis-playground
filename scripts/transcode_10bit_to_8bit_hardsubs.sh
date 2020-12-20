@@ -25,14 +25,18 @@ transcode_10to8_hardsubs()
 	mkdir -p "${d}/fonts" \
 		|| die "failed to create destination fonts path: ${d}"
 
-	for f in "${p}"/*.mkv
+	local src_fmt="mkv"
+	local dst_fmt="mkv"
+
+	for f in "${p}"/*.${src_fmt}
 	do
 		o="${f//10bit/8bit}"
+		o="${o//${src_fmt}/${dst_fmt}}"
 		s="$(printf '%q' "${f}")"
 		t="$(printf '%q' "${d}")"
 
 		# shell window title
-		echo -ne "\033]0;Transcode "$(basename "${f}")"\007"
+		echo -ne "\033]0;Transcode to "$(basename "${o}")"\007"
 
 		pushd "${d}/fonts" \
 			|| die "failed to push into destination fonts path"
