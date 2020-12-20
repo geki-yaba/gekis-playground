@@ -36,7 +36,10 @@ transcode_10to8_hardsubs()
 		t="$(printf '%q' "${d}")"
 
 		# shell window title
-		echo -ne "\033]0;Transcode to "$(basename "${o}")"\007"
+		if [ -x "$(which basename)" ]
+		then
+			echo -ne "\033]0;Transcode to "$(basename "${o}")"\007"
+		fi
 
 		pushd "${d}/fonts" \
 			|| die "failed to push into destination fonts path"
