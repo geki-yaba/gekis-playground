@@ -1,7 +1,7 @@
 diff --git a/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.0.ebuild b/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.0.ebuild
 index 7713c4ba6651..397fc102ffae 100644
---- a/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.0.ebuild
-+++ b/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.0.ebuild
+--- a/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.2.ebuild
++++ b/x11-libs/gdk-pixbuf/gdk-pixbuf-2.42.2.ebuild
 @@ -16,7 +16,6 @@ IUSE="gtk-doc +introspection jpeg tiff"
  # TODO: For windows/darwin support: shared-mime-info conditional, native_windows_loaders option review
  DEPEND="
@@ -10,7 +10,7 @@ index 7713c4ba6651..397fc102ffae 100644
  	>=media-libs/libpng-1.4:0=[${MULTILIB_USEDEP}]
  	jpeg? ( virtual/jpeg:0=[${MULTILIB_USEDEP}] )
  	tiff? ( >=media-libs/tiff-3.9.2:0=[${MULTILIB_USEDEP}] )
-@@ -61,7 +60,7 @@ multilib_src_configure() {
+@@ -62,7 +61,7 @@ multilib_src_configure() {
  		-Dpng=true
  		$(meson_use tiff)
  		$(meson_use jpeg)
@@ -19,7 +19,7 @@ index 7713c4ba6651..397fc102ffae 100644
  		-Drelocatable=false
  		#native_windows_loaders
  		-Dinstalled_tests=false
-@@ -97,6 +96,7 @@ multilib_src_install() {
+@@ -98,6 +97,7 @@ multilib_src_install() {
  
  pkg_preinst() {
  	xdg_pkg_preinst
@@ -27,7 +27,7 @@ index 7713c4ba6651..397fc102ffae 100644
  
  	multilib_pkg_preinst() {
  		# Make sure loaders.cache belongs to gdk-pixbuf alone
-@@ -118,11 +118,14 @@ pkg_postinst() {
+@@ -119,11 +119,14 @@ pkg_postinst() {
  	unset __GL_NO_DSO_FINALIZER
  
  	xdg_pkg_postinst

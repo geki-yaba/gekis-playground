@@ -1,0 +1,30 @@
+diff --git a/mail-client/claws-mail/claws-mail-3.17.8.ebuild b/mail-client/claws-mail/claws-mail-3.17.8.ebuild
+index 92d042602969..e1a5056c9e17 100644
+--- a/mail-client/claws-mail/claws-mail-3.17.8.ebuild
++++ b/mail-client/claws-mail/claws-mail-3.17.8.ebuild
+@@ -19,7 +19,7 @@ fi
+ SLOT="0"
+ LICENSE="GPL-3"
+ 
+-IUSE="+appindicator archive bogofilter calendar clamav dbus debug dillo doc gdata +gnutls +imap ipv6 ldap +libcanberra +libnotify litehtml networkmanager nls nntp +notification pdf perl +pgp rss session sieve smime spamassassin spam-report spell startup-notification svg valgrind xface"
++IUSE="+appindicator archive bogofilter calendar clamav dbus debug dillo doc gdata +gnutls +imap ipv6 ldap +libcanberra +libnotify litehtml +mime networkmanager nls nntp +notification pdf perl +pgp rss session sieve smime spamassassin spam-report spell startup-notification svg valgrind xface"
+ 
+ REQUIRED_USE="
+ 	appindicator? ( notification )
+@@ -36,7 +36,6 @@ COMMONDEPEND="
+ 	x11-libs/cairo
+ 	x11-libs/gdk-pixbuf:2[jpeg]
+ 	>=x11-libs/gtk+-2.24:2
+-	x11-libs/libX11
+ 	x11-libs/pango
+ 	archive? (
+ 		app-arch/libarchive
+@@ -93,7 +92,7 @@ BDEPEND="
+ "
+ RDEPEND="${COMMONDEPEND}
+ 	app-misc/mime-types
+-	x11-misc/shared-mime-info
++	mime? ( x11-misc/shared-mime-info )
+ 	clamav? ( app-antivirus/clamav )
+ 	networkmanager? ( net-misc/networkmanager )
+ 	pdf? ( app-text/ghostscript-gpl )

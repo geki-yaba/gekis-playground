@@ -1,0 +1,79 @@
+diff --git a/x11-libs/gtk+/gtk+-2.24.32-r1.ebuild b/x11-libs/gtk+/gtk+-2.24.32-r1.ebuild
+index ae8c9dd88fb4..91b623a41acd 100644
+--- a/x11-libs/gtk+/gtk+-2.24.32-r1.ebuild
++++ b/x11-libs/gtk+/gtk+-2.24.32-r1.ebuild
+@@ -12,7 +12,7 @@ SRC_URI+=" https://dev.gentoo.org/~leio/distfiles/${P}-patchset-r1.tar.xz"
+ 
+ LICENSE="LGPL-2+"
+ SLOT="2"
+-IUSE="aqua cups examples +introspection test vim-syntax xinerama"
++IUSE="X aqua cups examples +introspection +mime test vim-syntax xinerama"
+ REQUIRED_USE="
+ 	xinerama? ( !aqua )
+ "
+@@ -31,11 +31,11 @@ COMMON_DEPEND="
+ 	>=x11-libs/cairo-1.12.14-r4:=[aqua?,svg,${MULTILIB_USEDEP}]
+ 	>=x11-libs/gdk-pixbuf-2.30.7:2[introspection?,${MULTILIB_USEDEP}]
+ 	>=x11-libs/pango-1.36.3[introspection?,${MULTILIB_USEDEP}]
+-	x11-misc/shared-mime-info
++	X? ( x11-misc/shared-mime-info )
+ 
+ 	cups? ( >=net-print/cups-1.7.1-r2:=[${MULTILIB_USEDEP}] )
+ 	introspection? ( >=dev-libs/gobject-introspection-0.9.3:= )
+-	!aqua? (
++	X? (
+ 		>=x11-libs/cairo-1.12.14-r4:=[aqua?,svg,X,${MULTILIB_USEDEP}]
+ 		>=x11-libs/libX11-1.6.2[${MULTILIB_USEDEP}]
+ 		>=x11-libs/libXcomposite-0.4.4-r1[${MULTILIB_USEDEP}]
+@@ -50,7 +50,7 @@ COMMON_DEPEND="
+ 	)
+ "
+ DEPEND="${COMMON_DEPEND}
+-	!aqua? ( x11-base/xorg-proto )
++	X? ( x11-base/xorg-proto )
+ 	test? (
+ 		media-fonts/font-cursor-misc
+ 		media-fonts/font-misc-misc
+@@ -62,15 +62,16 @@ DEPEND="${COMMON_DEPEND}
+ # Add blocker against old gtk-builder-convert to be sure we maintain both
+ # in sync.
+ RDEPEND="${COMMON_DEPEND}
+-	>=dev-util/gtk-update-icon-cache-2
+-	>=x11-themes/adwaita-icon-theme-3.14
+-	x11-themes/gnome-themes-standard
++	X? (
++		>=dev-util/gtk-update-icon-cache-2
++		>=x11-themes/adwaita-icon-theme-3.14
++		x11-themes/gnome-themes-standard )
+ 	!<dev-util/gtk-builder-convert-${PV}
+ "
+ # librsvg for svg icons (PDEPEND to avoid circular dep), bug #547710
+ PDEPEND="
+ 	gnome-base/librsvg[${MULTILIB_USEDEP}]
+-	x11-themes/gtk-engines-adwaita
++	X? ( x11-themes/gtk-engines-adwaita )
+ 	vim-syntax? ( app-vim/gtk-syntax )
+ "
+ # docbook-4.1.2 and xsl required for man pages
+@@ -126,6 +127,9 @@ src_prepare() {
+ 	rm -v gdk/gdkmarshalers.{c,h} gtk/gtkmarshal.{c,h} gtk/gtkmarshalers.{c,h} \
+ 		perf/marshalers.{c,h} gtk/gtkaliasdef.c gtk/gtkalias.h || die
+ 
++	# GTK's README.win32 suggests removing gtk.def for 64-bit
++	rm -v gtk/gtk.def
++
+ 	# Stop trying to build unmaintained docs, bug #349754, upstream bug #623150
+ 	strip_builddir SUBDIRS tutorial docs/Makefile.{am,in}
+ 	strip_builddir SUBDIRS faq docs/Makefile.{am,in}
+@@ -178,9 +182,10 @@ src_prepare() {
+ multilib_src_configure() {
+ 	[[ ${ABI} == ppc64 ]] && append-flags -mminimal-toc
+ 
++	# --with-gdktarget=x11 is set by default :>
+ 	ECONF_SOURCE=${S} \
+ 	gnome2_src_configure \
+-		$(usex aqua --with-gdktarget=quartz --with-gdktarget=x11) \
++		$(usex aqua --with-gdktarget=quartz) \
+ 		$(usex aqua "" --with-xinput) \
+ 		$(use_enable cups cups auto) \
+ 		$(multilib_native_use_enable introspection) \
