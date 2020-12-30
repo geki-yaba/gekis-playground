@@ -31,6 +31,22 @@ Feel free to skip and you be "vogelfrei".
 $ grep CFLAGS etc/portage/make.conf 
 CFLAGS="-O2 -march=x86-64 -mtune=generic -pipe -fomit-frame-pointer -funswitch-loops"
 ```
+In case you have built CBUILD packages with generic CFLAGS, rebuild them with non-generic CFLAGS like so:
+```
+$ pushd /var/db/pkg
+$ rm /tmp/rebuild_cflags
+
+$ for pkg in $(grep -l "x86-64" */*/CFLAGS | grep -v cross)
+$ do
+$   echo "=${pkg%/*}" >> /tmp/rebuild_cflags
+$ done
+
+$ sed -e ':a;N;$!ba;s/\n/ /g' -i /tmp/rebuild_cflags
+$ emerge --oneshot $(</tmp/rebuild_cflags)
+
+$ rm /tmp/rebuild_cflags
+$ popd
+```
 
 # Bootstrap cross-toolchain, no cxx
 ```
