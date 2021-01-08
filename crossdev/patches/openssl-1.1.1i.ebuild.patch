@@ -1,0 +1,13 @@
+diff --git a/dev-libs/openssl/openssl-1.1.1i.ebuild b/dev-libs/openssl/openssl-1.1.1i.ebuild
+index 6c86f655c996..008d95147fde 100644
+--- a/dev-libs/openssl/openssl-1.1.1i.ebuild
++++ b/dev-libs/openssl/openssl-1.1.1i.ebuild
+@@ -43,7 +43,7 @@ BDEPEND="
+ 		sys-devel/bc
+ 		sys-process/procps
+ 	)"
+-PDEPEND="app-misc/ca-certificates"
++PDEPEND="!elibc_mingw? ( app-misc/ca-certificates )"
+ 
+ PATCHES=(
+ 	"${FILESDIR}"/${PN}-1.1.0j-parallel_install_fix.patch #671602
