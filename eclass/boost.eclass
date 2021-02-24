@@ -28,7 +28,7 @@
 
 EAPI=7
 
-PYTHON_COMPAT=( python{2_7,3_{4,5,6}} )
+PYTHON_COMPAT=( python3_{7..9} )
 
 inherit check-reqs flag-o-matic multilib-minimal multiprocessing python-r1 toolchain-funcs
 
