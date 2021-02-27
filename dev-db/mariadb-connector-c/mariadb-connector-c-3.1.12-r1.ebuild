@@ -93,5 +93,8 @@ multilib_src_install_all() {
 	if use mysqlcompat ; then
 		dosym mariadb_config /usr/bin/mysql_config
 		dosym mariadb /usr/include/mysql
+
+		dosym "${EPREFIX}"/usr/libexec/mariadb/my_print_defaults /usr/bin/my_print_defaults
+		dosym "${EPREFIX}"/usr/libexec/mariadb/perror /usr/bin/perror
 	fi
 }
