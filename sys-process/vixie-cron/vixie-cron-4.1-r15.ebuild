@@ -1,7 +1,7 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=0
+EAPI=7
 
 inherit cron toolchain-funcs pam eutils flag-o-matic user systemd
 
@@ -23,7 +23,7 @@ DEPEND="selinux? ( sys-libs/libselinux )
 	pam? ( sys-libs/pam )"
 
 RDEPEND="selinux? ( sys-libs/libselinux )
-	 pam? ( sys-libs/pam )"
+	pam? ( sys-libs/pam )"
 
 #vixie-cron supports /etc/crontab
 CRON_SYSTEM_CRONTAB="yes"
