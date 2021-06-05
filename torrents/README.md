@@ -4,6 +4,5 @@ MP4 8bit HD x264 hardsubs for stupid devices unable to load softsubs, do fast-fo
 ## Script to transcode
 https://github.com/geki-yaba/gekis-playground/blob/master/scripts/transcode_10bit_to_8bit_hardsubs.sh
 
-
-Have fun! :D
+Have fun! :D<br/>
 geki
