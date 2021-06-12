@@ -38,13 +38,18 @@ transcode_10to8_hardsubs()
 	# ship script with batch to recreate
 	cp -v "${0}" "${d}/${b}"
 
+	local awk_tee_cmd='{ print >> "'${d}/${b}.log'"; print; }'
+	local awk_status_cmd='BEGIN{ RS="[\r\n]" }
+RT ~ /\n/{ print >> "'${d}/${b}.log'"; next; }
+{ printf "%s\r", $0; }'
+
 	# log transcode
 	ffmpeg -version \
-		| tee -a "${d}/${b}.log"
-	echo "" | tee -a "${d}/${b}.log"
+		| gawk "${awk_tee_cmd}"
+	echo "" | gawk "${awk_tee_cmd}"
 	ls -1 "${p}"/*.${src_fmt} \
-		| tee -a "${d}/${b}.log"
-	echo "" | tee -a "${d}/${b}.log"
+		| gawk "${awk_tee_cmd}"
+	echo "" | gawk "${awk_tee_cmd}"
 
 	for f in "${p}"/*.${src_fmt}
 	do
@@ -73,12 +78,12 @@ transcode_10to8_hardsubs()
 		r=${?}; [ ${r} -eq 0 ] || die ${r} \
 			"failed to pop out of destination fonts path"
 
+		echo "${f}" | gawk "${awk_tee_cmd}"
 		ffprobe "${f}" 2>&1 \
-			| grep ": Video" \
-			| tee -a "${d}/${b}.log"
+			| gawk '/: Video/{ print }' \
+			| gawk "${awk_tee_cmd}"
 		r=${?}; [ ${r} -eq 0 ] || die ${r} \
 			"failed to probe video from file: ${f}"
-		echo "" | tee -a "${d}/${b}.log"
 
 		AV_LOG_FORCE_NOCOLOR=1 \
 		ffmpeg -loglevel level+error \
@@ -86,23 +91,21 @@ transcode_10to8_hardsubs()
 			-vf "subtitles=${s}:fontsdir=${t}/fonts,format=yuv420p" \
 			-preset veryfast -tune animation -crf 23 \
 			-vsync passthrough -map 0:a -map 0:v "${o}" 2>&1 \
-			| tee >(grep -v -E "\r$" >> "${d}/${b}.log")
+			| gawk "${awk_status_cmd}"
 			# '-r 23.98' replaced by '-vsync passthrough'
 		r=${?}; [ ${r} -eq 0 ] || die ${r} \
 			"failed to transcode video from file: ${f}"
 
 		# crc32 8-digit
-		dst_crc="$(crc32 "${o}" | cut -f1 | tr '[a-z]' '[A-Z]')"
+		dst_crc="$(crc32 "${o}" | gawk '{ print toupper($1) }')"
 		c="${o:0:-14}[${dst_crc}].${dst_fmt}"
-
-		echo "i: ${f}" \
-			| tee -a "${d}/${b}.log"
-		echo "o: ${c}" \
-			| tee -a "${d}/${b}.log"
 
 		mv "${o}" "${c}"
 		r=${?}; [ ${r} -eq 0 ] || die ${r} \
 			"failed to update crc32 verification of file: ${o}"
+
+		echo "${c}" \
+			| gawk "${awk_tee_cmd}"
 	done
 }
 
@@ -110,8 +113,8 @@ validate_helper_commands()
 {
 	local cmd
 
-	for cmd in basename crc32 cut grep ffmpeg \
-		ffprobe ls mkdir realpath tee tr
+	for cmd in basename crc32 gawk ffmpeg \
+		ffprobe ls mkdir realpath
 	do
 		if [ ! -x "$(which ${cmd})" ]
 		then
