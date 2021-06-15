@@ -17,7 +17,7 @@ transcode_10to8_hardsubs()
 	local dst_fmt="mp4"
 	local dst_crc
 
-	b="$(basename ${0})"
+	b="$(basename "${0}")"
 	p="$(realpath "${1}")"
 	d="${p//10bit/8bit}"
 	t="$(printf '%q' "${d}")"
@@ -79,7 +79,7 @@ RT ~ /\n/{ print >> "'${d}/${b}.log'"; next; }
 			"failed to pop out of destination fonts path"
 
 		echo "${f}" | gawk "${awk_tee_cmd}"
-		ffprobe "${f}" 2>&1 \
+		ffprobe "${f}" 2>&1 >/dev/null \
 			| gawk '/: Video/{ print }' \
 			| gawk "${awk_tee_cmd}"
 		r=${?}; [ ${r} -eq 0 ] || die ${r} \
@@ -90,15 +90,19 @@ RT ~ /\n/{ print >> "'${d}/${b}.log'"; next; }
 			-stats -i "${f}" -c:a copy -c:v libx264 \
 			-vf "subtitles=${s}:fontsdir=${t}/fonts,format=yuv420p" \
 			-preset veryfast -tune animation -crf 23 \
-			-vsync passthrough -map 0:a -map 0:v "${o}" 2>&1 \
+			-vsync passthrough -map 0:a -map 0:v "${o}" \
+			2>&1 >/dev/null \
 			| gawk "${awk_status_cmd}"
 			# '-r 23.98' replaced by '-vsync passthrough'
 		r=${?}; [ ${r} -eq 0 ] || die ${r} \
 			"failed to transcode video from file: ${f}"
 
 		# crc32 8-digit
-		dst_crc="$(crc32 "${o}" | gawk '{ print toupper($1) }')"
-		c="${o:0:-14}[${dst_crc}].${dst_fmt}"
+		dst_crc="$(crc32 "${o}" \
+			| gawk '{ print toupper($1) }')"
+
+		c="${o%.${dst_fmt}}"
+		c="${c:0:-10}[${dst_crc}].${dst_fmt}"
 
 		mv "${o}" "${c}"
 		r=${?}; [ ${r} -eq 0 ] || die ${r} \
@@ -109,7 +113,7 @@ RT ~ /\n/{ print >> "'${d}/${b}.log'"; next; }
 	done
 }
 
-validate_helper_commands()
+which_helper_tools()
 {
 	local cmd
 
@@ -128,7 +132,7 @@ then
 	die 1 "parameter not a directory: ${1}"
 fi
 
-validate_helper_commands
+which_helper_tools
 transcode_10to8_hardsubs "${1}"
 
 exit 0
