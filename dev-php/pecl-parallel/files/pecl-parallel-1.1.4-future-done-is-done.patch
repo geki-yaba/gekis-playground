@@ -1,0 +1,22 @@
+--- a/src/future.c	2021-07-03 18:27:10.884477635 +0200
++++ b/src/future.c	2021-07-03 18:28:27.672481531 +0200
+@@ -136,9 +136,9 @@
+         return;
+     }
+ 
++_php_parallel_future_value:
+     php_parallel_monitor_set(future->monitor, PHP_PARALLEL_READY);
+ 
+-_php_parallel_future_value:
+     php_parallel_future_value_inline(future, return_value);
+ }
+ 
+@@ -190,7 +190,7 @@
+     php_parallel_future_t *future =
+         php_parallel_future_from(getThis());
+ 
+-    RETURN_BOOL(php_parallel_monitor_check(future->monitor, PHP_PARALLEL_READY));
++    RETURN_BOOL(php_parallel_monitor_check(future->monitor, PHP_PARALLEL_READY|PHP_PARALLEL_DONE));
+ }
+ 
+ ZEND_BEGIN_ARG_INFO_EX(php_parallel_future_construct_arginfo, 0, 0, 0)

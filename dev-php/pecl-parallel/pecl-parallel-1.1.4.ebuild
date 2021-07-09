@@ -28,3 +28,8 @@ IUSE=""
 
 DEPEND="php_targets_php7-4? ( dev-lang/php:7.4[threads] )"
 RDEPEND="${DEPEND}"
+
+PATCHES=(
+	"${FILESDIR}/${PN}-1.1.4-future-done-is-done.patch"
+	"${FILESDIR}/${PN}-1.1.4-recv-wait.patch"
+)
