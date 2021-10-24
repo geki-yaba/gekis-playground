@@ -1,7 +1,7 @@
 # Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 if [[ "${PV}" == 9999 ]] ; then
 	inherit git-r3
@@ -9,9 +9,9 @@ if [[ "${PV}" == 9999 ]] ; then
 else
 	MY_PN=${PN#mariadb-}
 	MY_PV=${PV/_b/-b}
-	SRC_URI="https://downloads.mariadb.org/f/${MY_PN}-${PV%_beta}/${PN}-${MY_PV}-src.tar.gz?serve -> ${P}-src.tar.gz"
+	SRC_URI="https://downloads.mariadb.com/Connectors/c/connector-c-${PV}/${P}-src.tar.gz"
 	S="${WORKDIR%/}/${PN}-${MY_PV}-src"
-	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~s390 ~sparc ~x86"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 fi
 
 CMAKE_ECLASS=cmake
@@ -62,6 +62,7 @@ multilib_src_configure() {
 		-DCLIENT_PLUGIN_AUTH_GSSAPI_CLIENT:STRING=$(usex kerberos DYNAMIC OFF)
 		-DMARIADB_UNIX_ADDR="${EPREFIX%/}/var/run/mysqld/mysqld.sock"
 		-DINSTALL_LIBDIR="$(get_libdir)"
+		-DINSTALL_MANDIR=share/man
 		-DINSTALL_PCDIR="$(get_libdir)/pkgconfig"
 		-DINSTALL_PLUGINDIR="$(get_libdir)/mariadb/plugin"
 		-DINSTALL_BINDIR=bin
