@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit cron toolchain-funcs pam eutils flag-o-matic user systemd
+inherit cron toolchain-funcs pam eutils flag-o-matic systemd
 
 # no useful homepage, bug #65898
 HOMEPAGE="ftp://ftp.isc.org/isc/cron/"
@@ -23,14 +23,11 @@ DEPEND="selinux? ( sys-libs/libselinux )
 	pam? ( sys-libs/pam )"
 
 RDEPEND="selinux? ( sys-libs/libselinux )
-	pam? ( sys-libs/pam )"
+	pam? ( sys-libs/pam )
+	acct-group/crontab"
 
 #vixie-cron supports /etc/crontab
 CRON_SYSTEM_CRONTAB="yes"
-
-pkg_setup() {
-	enewgroup crontab
-}
 
 src_unpack() {
 	unpack ${A}
