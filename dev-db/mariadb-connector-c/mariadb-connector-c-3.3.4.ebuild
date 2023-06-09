@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -11,7 +11,7 @@ else
 	MY_PV=${PV/_b/-b}
 	SRC_URI="https://downloads.mariadb.com/Connectors/c/connector-c-${PV}/${P}-src.tar.gz"
 	S="${WORKDIR%/}/${PN}-${MY_PV}-src"
-	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~mips ~ppc ~ppc64 ~riscv ~s390 ~x86"
 fi
 
 inherit cmake-multilib toolchain-funcs
@@ -47,6 +47,8 @@ MULTILIB_WRAPPED_HEADERS+=( /usr/include/mariadb/mariadb_version.h )
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-3.1.3-fix-pkconfig-file.patch
+	"${FILESDIR}"/${PN}-3.3.4-fix-building-without-gssapi.patch
+	"${FILESDIR}"/${PN}-3.3.4-remove-zstd.patch
 )
 
 src_prepare() {
