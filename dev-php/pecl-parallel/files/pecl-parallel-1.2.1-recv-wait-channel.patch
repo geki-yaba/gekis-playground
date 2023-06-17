@@ -1,6 +1,6 @@
 --- a/src/channel.c	2021-07-07 22:06:35.374678950 +0200
 +++ b/src/channel.c	2021-07-07 22:07:09.082680661 +0200
-@@ -248,6 +248,58 @@
+@@ -248,6 +248,59 @@
      }
  }
  
@@ -38,6 +38,7 @@
 +        return;
 +    }
 +
++    ZVAL_DEREF(value);
 +    status = php_parallel_link_recv_wait(channel->link, seconds, value);
 +
 +    if (!status) {
@@ -59,7 +60,7 @@
  ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(php_parallel_channel_close_arginfo, 0, 0, IS_VOID, 0)
  ZEND_END_ARG_INFO()
  
-@@ -292,6 +344,7 @@
+@@ -292,6 +345,7 @@
      PHP_ME(Channel, open, php_parallel_channel_open_arginfo, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
      PHP_ME(Channel, send, php_parallel_channel_send_arginfo, ZEND_ACC_PUBLIC)
      PHP_ME(Channel, recv, php_parallel_channel_recv_arginfo, ZEND_ACC_PUBLIC)
