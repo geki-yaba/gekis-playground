@@ -7,7 +7,7 @@ PHP_EXT_INI="yes"
 PHP_EXT_NAME="parallel"
 PHP_EXT_NEEDED_USE="threads"
 PHP_EXT_ZENDEXT="no"
-USE_PHP="php7-4"
+USE_PHP="php8-0 php8-1 php8-2"
 
 inherit php-ext-pecl-r3
 
@@ -15,11 +15,11 @@ DESCRIPTION="A succint parallel concurrency API for PHP"
 SRC_URI="${SRC_URI} -> ${P}.tgz"
 
 LICENSE="PHP-3.01"
-SLOT="7"
+SLOT="8"
 KEYWORDS="amd64 x86"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-1.1.4-future-done-is-done.patch"
-	"${FILESDIR}/${PN}-1.1.4-recv-wait-channel.patch"
+	"${FILESDIR}/${PN}-1.2.1-recv-wait-channel.patch"
 	"${FILESDIR}/${PN}-1.1.4-recv-wait-link.patch"
 )

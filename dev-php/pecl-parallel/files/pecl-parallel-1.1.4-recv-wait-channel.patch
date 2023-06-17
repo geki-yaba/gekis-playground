@@ -1,0 +1,69 @@
+--- a/src/channel.c	2021-07-07 22:06:35.374678950 +0200
++++ b/src/channel.c	2021-07-07 22:07:09.082680661 +0200
+@@ -248,6 +248,58 @@
+     }
+ }
+ 
++ZEND_BEGIN_ARG_INFO_EX(php_parallel_channel_recv_wait_arginfo, 0, 0, 2)
++    ZEND_ARG_TYPE_INFO(0, seconds, IS_LONG, 0)
++    ZEND_ARG_INFO(1, value)
++ZEND_END_ARG_INFO()
++
++PHP_METHOD(Channel, recv_wait)
++{
++    php_parallel_channel_t *channel = php_parallel_channel_from(getThis());
++
++    zval *value, *error;
++    zend_long seconds = -1;
++    zend_long status = 0;
++
++    ZEND_PARSE_PARAMETERS_START(2, 2)
++        Z_PARAM_LONG(seconds)
++        Z_PARAM_ZVAL_DEREF(value)
++    ZEND_PARSE_PARAMETERS_END();
++
++    if (!PARALLEL_ZVAL_CHECK(value, &error)) {
++        php_parallel_exception_ex(
++            php_parallel_channel_error_illegal_value_ce,
++            "value of type %s is illegal",
++            Z_TYPE_P(error) == IS_OBJECT ?
++                ZSTR_VAL(Z_OBJCE_P(error)->name) :
++                zend_get_type_by_const(Z_TYPE_P(error)));
++        return;
++    }
++
++    if (seconds <= 0) {
++        php_parallel_invalid_arguments(
++            "seconds may be a positive non-zero integer");
++        return;
++    }
++
++    status = php_parallel_link_recv_wait(channel->link, seconds, value);
++
++    if (!status) {
++        php_parallel_exception_ex(
++            php_parallel_channel_error_closed_ce,
++            "channel(%s) closed",
++            ZSTR_VAL(php_parallel_link_name(channel->link)));
++        return;
++    }
++
++    if (status < 0) {
++        RETURN_FALSE;
++        return;
++    }
++
++    RETURN_TRUE;
++}
++
+ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(php_parallel_channel_close_arginfo, 0, 0, IS_VOID, 0)
+ ZEND_END_ARG_INFO()
+ 
+@@ -285,6 +337,7 @@
+     PHP_ME(Channel, open, php_parallel_channel_open_arginfo, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+     PHP_ME(Channel, send, php_parallel_channel_send_arginfo, ZEND_ACC_PUBLIC)
+     PHP_ME(Channel, recv, php_parallel_channel_recv_arginfo, ZEND_ACC_PUBLIC)
++    PHP_ME(Channel, recv_wait, php_parallel_channel_recv_wait_arginfo, ZEND_ACC_PUBLIC)
+     PHP_ME(Channel, close, php_parallel_channel_close_arginfo, ZEND_ACC_PUBLIC)
+     PHP_ME(Channel, __toString, NULL, ZEND_ACC_PUBLIC)
+     PHP_FE_END
