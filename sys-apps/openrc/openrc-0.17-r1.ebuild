@@ -12,7 +12,7 @@ if [[ ${PV} == "9999" ]]; then
 	EGIT_REPO_URI="git://github.com/OpenRC/${PN}.git"
 	inherit git-r3
 else
-	SRC_URI="https://geki.selfhost.eu/files/${P}.tar.bz2"
+	SRC_URI="https://geki.10ff.de/files/${P}.tar.bz2"
 	KEYWORDS="alpha amd64 arm ~arm64 hppa ia64 ~m68k ~mips ppc ppc64 ~s390 ~sh sparc x86 ~amd64-fbsd ~sparc-fbsd ~x86-fbsd"
 fi
 
